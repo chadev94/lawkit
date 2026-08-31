@@ -52,7 +52,7 @@ src/
 흐름은 한 방향이다.
 
 ```
-fork의 feature 브랜치 → main → production
+feature 브랜치 → main → production
 ```
 
 두 브랜치 모두 보호되어 있다. 직접 push 불가, PR + 리뷰 1명 승인 + CI 통과 필요.
