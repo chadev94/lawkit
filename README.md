@@ -46,17 +46,16 @@ src/
 
 | 브랜치 | 역할 | 배포 |
 |---|---|---|
-| `develop` | 기본 브랜치. 모든 기능이 여기로 모인다 | — |
-| `main` | 스테이징. 배포 전 검증 | 스테이징 |
+| `main` | 기본 브랜치. 모든 작업이 여기로 모인다 | — |
 | `production` | 운영 | 운영 사이트 |
 
 흐름은 한 방향이다.
 
 ```
-fork의 feature 브랜치 → develop → main → production
+fork의 feature 브랜치 → main → production
 ```
 
-세 브랜치 모두 보호되어 있다. 직접 push 불가, PR + 리뷰 1명 승인 + CI 통과 필요.
+두 브랜치 모두 보호되어 있다. 직접 push 불가, PR + 리뷰 1명 승인 + CI 통과 필요.
 
 ## 작업 방법
 
@@ -68,12 +67,12 @@ gh repo fork chadev94/lawkit --clone
 cd lawkit
 
 # 작업할 때마다
-git checkout develop
-git pull upstream develop
+git checkout main
+git pull upstream main
 git checkout -b feat/무엇을-하는지
 # ... 작업 ...
 git push origin feat/무엇을-하는지
-gh pr create --repo chadev94/lawkit --base develop
+gh pr create --repo chadev94/lawkit --base main
 ```
 
 브랜치 이름: `feat/...`, `fix/...`, `chore/...`
@@ -84,12 +83,11 @@ gh pr create --repo chadev94/lawkit --base develop
 
 | 머지 | 방식 | 이유 |
 |---|---|---|
-| feature → `develop` | **Squash** | 커밋이 하나로 정리된다 |
-| `develop` → `main` | **Merge commit** | 히스토리를 유지해야 한다 (아래 설명) |
-| `main` → `production` | **Merge commit** | 같은 이유 |
+| feature → `main` | **Squash** | 커밋이 하나로 정리된다 |
+| `main` → `production` | **Merge commit** | 히스토리를 유지해야 한다 (아래 설명) |
 
-`develop → main` 을 squash 하면 안 된다. squash는 새 커밋을 만들기 때문에
-main과 develop의 히스토리가 갈라지고, 다음 PR부터 이미 머지한 변경이
+`main → production` 을 squash 하면 안 된다. squash는 새 커밋을 만들기 때문에
+production과 main의 히스토리가 갈라지고, 다음 PR부터 이미 머지한 변경이
 다시 diff에 잡히거나 충돌한다. 릴리스 방향 머지는 반드시 merge commit.
 
 Rebase 머지는 아예 비활성화해뒀다.
