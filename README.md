@@ -59,23 +59,24 @@ fork의 feature 브랜치 → main → production
 
 ## 작업 방법
 
-작업자는 이 리포를 **fork** 해서 자기 리포에서 작업하고, upstream으로 PR을 보낸다.
+브랜치를 따서 PR을 올린다.
 
 ```bash
-# 최초 1회
-gh repo fork chadev94/lawkit --clone
+git clone https://github.com/chadev94/lawkit.git
 cd lawkit
 
 # 작업할 때마다
 git checkout main
-git pull upstream main
+git pull
 git checkout -b feat/무엇을-하는지
 # ... 작업 ...
-git push origin feat/무엇을-하는지
-gh pr create --repo chadev94/lawkit --base main
+git push -u origin feat/무엇을-하는지
+gh pr create --base main
 ```
 
 브랜치 이름: `feat/...`, `fix/...`, `chore/...`
+
+`main` 과 `production` 은 직접 push가 막혀 있으므로 항상 PR을 거친다.
 
 ## 머지 방식 — 중요
 
