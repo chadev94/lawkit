@@ -42,7 +42,7 @@
     "runtime": null
   },
   "build": {
-    "buildCommand": "pnpm lint 2>&1 | tail -5; echo \"--- typecheck ---\"; pnpm typecheck 2>&1 | tail -5; echo \"--- build ---\"; pnpm build 2>&1 | tail -12",
+    "buildCommand": "set -e\npnpm lint 2>&1 | tail -3\npnpm typecheck 2>&1 | tail -3\npnpm build 2>&1 | grep -E \"Route|○ /|Compiled|error\" | head -8",
     "testCommand": null,
     "lintCommand": "pnpm lint",
     "devCommand": "pnpm dev",
@@ -123,8 +123,8 @@
   "hotPaths": [
     {
       "path": "src/app/(site)/page.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1789049237328,
+      "accessCount": 2,
+      "lastAccessed": 1789049302795,
       "type": "file"
     }
   ],
