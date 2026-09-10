@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"echo \\\"=== local ===\\\"; git config user.name; git config user.email; echo \\\"=== global ===\\\"; git config --global user.name; git config --global user.email\",\"description\":\"Check git identi...",
+  "error": "Exit code 1\n=== local ===\n=== global ===",
+  "timestamp": "2026-08-31T11:45:29.049Z",
+  "retry_count": 1
+}
