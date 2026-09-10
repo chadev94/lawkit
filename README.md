@@ -42,12 +42,69 @@ src/
 `(site)` 와 `(admin)` 은 Next.js Route Group이라 URL에 나타나지 않는다.
 공개 사이트와 관리자가 서로 다른 레이아웃·인증 정책을 갖도록 분리한 것.
 
-## 작업 규칙
+## 브랜치 전략
 
-- `main` 에 직접 push 금지. 브랜치를 따서 PR로 올린다.
-- PR은 리뷰 1명 승인 후 머지.
-- CI(lint / typecheck / build)가 통과해야 머지 가능.
-- 브랜치 이름: `feat/...`, `fix/...`, `chore/...`
+| 브랜치 | 역할 | 배포 |
+|---|---|---|
+| `main` | 기본 브랜치. 모든 작업이 여기로 모인다 | — |
+| `production` | 운영 | 운영 사이트 |
+
+흐름은 한 방향이다.
+
+```
+feature 브랜치 → main → production
+```
+
+두 브랜치 모두 직접 push가 막혀 있다. 항상 PR을 거친다.
+
+| | `main` | `production` |
+|---|---|---|
+| PR | 필수 | 필수 |
+| 승인 | 0명 (혼자 머지 가능) | **1명 필요** |
+| CI 통과 | 필수 | 필수 |
+
+`main` 에 승인을 요구하지 않는 이유는 시차를 두고 작업할 때 매번 승인을 기다리는 마찰이
+크기 때문이다. 대신 PR을 강제해서 머지 전에 diff를 한 번은 보게 만든다.
+실제 배포가 나가는 `production` 은 반드시 다른 사람의 승인을 거친다.
+
+admin은 필요할 때 이 규칙을 우회할 수 있다(`Merge without waiting for requirements`).
+긴급 상황을 위한 장치이므로 평소에는 쓰지 않는다.
+
+## 작업 방법
+
+브랜치를 따서 PR을 올린다.
+
+```bash
+git clone https://github.com/chadev94/lawkit.git
+cd lawkit
+
+# 작업할 때마다
+git checkout main
+git pull
+git checkout -b feat/무엇을-하는지
+# ... 작업 ...
+git push -u origin feat/무엇을-하는지
+gh pr create --base main
+```
+
+브랜치 이름: `feat/...`, `fix/...`, `chore/...`
+
+`main` 과 `production` 은 직접 push가 막혀 있다. 항상 PR을 거친다.
+
+## 머지 방식 — 중요
+
+**브랜치에 따라 머지 방식이 다르다. 섞으면 히스토리가 깨진다.**
+
+| 머지 | 방식 | 이유 |
+|---|---|---|
+| feature → `main` | **Squash** | 커밋이 하나로 정리된다 |
+| `main` → `production` | **Merge commit** | 히스토리를 유지해야 한다 (아래 설명) |
+
+`main → production` 을 squash 하면 안 된다. squash는 새 커밋을 만들기 때문에
+production과 main의 히스토리가 갈라지고, 다음 PR부터 이미 머지한 변경이
+다시 diff에 잡히거나 충돌한다. 릴리스 방향 머지는 반드시 merge commit.
+
+Rebase 머지는 아예 비활성화해뒀다.
 
 ## 환경변수
 
