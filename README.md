@@ -67,7 +67,8 @@ feature 브랜치 → main → production
 크기 때문이다. 대신 PR을 강제해서 머지 전에 diff를 한 번은 보게 만든다.
 실제 배포가 나가는 `production` 은 반드시 다른 사람의 승인을 거친다.
 
-admin도 이 규칙을 우회할 수 없다.
+admin은 필요할 때 이 규칙을 우회할 수 있다(`Merge without waiting for requirements`).
+긴급 상황을 위한 장치이므로 평소에는 쓰지 않는다.
 
 ## 작업 방법
 
@@ -88,7 +89,7 @@ gh pr create --base main
 
 브랜치 이름: `feat/...`, `fix/...`, `chore/...`
 
-`main` 과 `production` 은 직접 push가 막혀 있다. admin도 예외가 아니다.
+`main` 과 `production` 은 직접 push가 막혀 있다. 항상 PR을 거친다.
 
 ## 머지 방식 — 중요
 
