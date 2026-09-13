@@ -1,9 +1,13 @@
+import type { HomeSection } from "@/lib/sections";
+
 /** 푸터 상단 상담 문의 폼. 저장·동의·알림 처리는 YP-9 에서 붙인다. */
-export function ContactForm() {
+export function ContactForm({ section }: { section: HomeSection }) {
   return (
     <section className="py-20">
       <div className="mx-auto max-w-3xl px-6">
-        <h2 className="text-2xl font-semibold text-zinc-900">상담 문의</h2>
+        <h2 className="text-2xl font-semibold text-zinc-900">
+          {section.title ?? "상담 문의"}
+        </h2>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1">
