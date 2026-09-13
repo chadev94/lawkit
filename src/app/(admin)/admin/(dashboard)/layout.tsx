@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { logout } from "../login/actions";
+import { logout } from "@/app/(admin)/admin/login/actions";
 
 const NAV = [
   { href: "/admin/settings", label: "사이트 설정" },

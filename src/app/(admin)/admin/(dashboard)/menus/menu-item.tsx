@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import type { Menu } from "@/lib/queries/menus";
 import {
   deleteMenu,
@@ -91,17 +91,20 @@ function MenuEditForm({
   pending: boolean;
   onClose: () => void;
 }) {
-  const [submitted, setSubmitted] = useState(false);
+  const wasPendingRef = useRef(false);
 
   useEffect(() => {
     if (pending) {
-      setSubmitted(true);
+      wasPendingRef.current = true;
       return;
     }
-    if (submitted && state.error === null) {
+    if (wasPendingRef.current && state.error === null) {
+      wasPendingRef.current = false;
       onClose();
+      return;
     }
-  }, [pending, submitted, state.error, onClose]);
+    wasPendingRef.current = false;
+  }, [pending, state.error, onClose]);
 
   return (
     <form

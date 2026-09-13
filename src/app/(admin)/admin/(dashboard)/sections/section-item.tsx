@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import type { Menu } from "@/lib/queries/menus";
 import {
   parseContactContent,
@@ -134,7 +134,6 @@ function SectionEditForm({
   pending: boolean;
   onClose: () => void;
 }) {
-  const [submitted, setSubmitted] = useState(false);
   const [hero, setHero] = useState(() => parseHeroContent(section.content));
   const [cta, setCta] = useState(() => parseCtaContent(section.content));
   const [contact, setContact] = useState(() =>
@@ -142,16 +141,20 @@ function SectionEditForm({
   );
   const [items, setItems] = useState(() => toDraftItems(section.items));
   const mediaFolder = section.id;
+  const wasPendingRef = useRef(false);
 
   useEffect(() => {
     if (pending) {
-      setSubmitted(true);
+      wasPendingRef.current = true;
       return;
     }
-    if (submitted && state.error === null) {
+    if (wasPendingRef.current && state.error === null) {
+      wasPendingRef.current = false;
       onClose();
+      return;
     }
-  }, [pending, submitted, state.error, onClose]);
+    wasPendingRef.current = false;
+  }, [pending, state.error, onClose]);
 
   return (
     <form
