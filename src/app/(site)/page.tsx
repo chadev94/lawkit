@@ -1,12 +1,12 @@
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-3 bg-white px-6 text-center">
-      <p className="text-sm tracking-[0.2em] text-zinc-400">CHAMELEONDEV</p>
-      <h1 className="text-2xl font-semibold text-zinc-900 sm:text-3xl">
+    <main className="mx-auto max-w-5xl px-6 py-24">
+      <p className="text-xs tracking-[0.2em] text-zinc-400">CHAMELEONDEV</p>
+      <h1 className="mt-3 text-2xl font-semibold text-zinc-900">
         카멜레온데브 배포 테스트
       </h1>
-      <p className="text-sm text-zinc-500">
-        이 페이지가 보이면 배포 파이프라인이 정상 동작하는 것입니다.
+      <p className="mt-2 text-sm text-zinc-500">
+        상단 메뉴는 admin에서 등록한 내용이 그대로 반영됩니다.
       </p>
     </main>
   );
