@@ -1,13 +1,28 @@
-export default function Home() {
+import { getActiveMenus } from "@/lib/queries/menus";
+import { Hero } from "@/components/site/hero";
+import { MenuSection } from "@/components/site/menu-section";
+import { ConsultationCta } from "@/components/site/consultation-cta";
+import { ContactForm } from "@/components/site/contact-form";
+
+export default async function Home() {
+  const menus = await getActiveMenus();
+
   return (
-    <main className="mx-auto max-w-5xl px-6 py-24">
-      <p className="text-xs tracking-[0.2em] text-zinc-400">CHAMELEONDEV</p>
-      <h1 className="mt-3 text-2xl font-semibold text-zinc-900">
-        카멜레온데브 배포 테스트
-      </h1>
-      <p className="mt-2 text-sm text-zinc-500">
-        상단 메뉴는 admin에서 등록한 내용이 그대로 반영됩니다.
-      </p>
-    </main>
+    <>
+      <Hero />
+
+      {menus.length === 0 ? (
+        <section className="py-24 text-center">
+          <p className="text-sm text-zinc-400">
+            등록된 메뉴가 없습니다. admin에서 메뉴를 추가하면 여기에 섹션이 생깁니다.
+          </p>
+        </section>
+      ) : (
+        menus.map((menu) => <MenuSection key={menu.id} menu={menu} />)
+      )}
+
+      <ConsultationCta />
+      <ContactForm />
+    </>
   );
 }
