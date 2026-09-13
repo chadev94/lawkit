@@ -1,43 +1,17 @@
-import { getActiveSections } from "@/lib/queries/home-sections";
-import { Hero } from "@/components/site/hero";
-import { MenuSection } from "@/components/site/menu-section";
-import { ConsultationCta } from "@/components/site/consultation-cta";
-import { ContactForm } from "@/components/site/contact-form";
+import { notFound } from "next/navigation";
+import { PageSections } from "@/components/site/page-sections";
+import { getHomePage } from "@/lib/queries/pages";
+import { getActivePageSections } from "@/lib/queries/page-sections";
+
+export const dynamic = "force-dynamic";
 
 /**
- * 메인 페이지는 home_sections 에 등록된 것만 순서대로 렌더한다.
- * 코드에 고정된 섹션은 없다. 구성은 전적으로 admin이 정한다.
+ * 홈. pages.slug = home 의 page_sections 를 렌더한다.
  */
 export default async function Home() {
-  const sections = await getActiveSections();
+  const page = await getHomePage();
+  if (!page) notFound();
 
-  if (sections.length === 0) {
-    return (
-      <main className="py-32 text-center">
-        <p className="text-sm text-zinc-400">등록된 섹션이 없습니다.</p>
-        <p className="mt-1 text-xs text-zinc-300">
-          admin에서 섹션을 추가하면 여기에 표시됩니다.
-        </p>
-      </main>
-    );
-  }
-
-  return (
-    <main>
-      {sections.map((section) => {
-        switch (section.kind) {
-          case "hero":
-            return <Hero key={section.id} section={section} />;
-          case "menu":
-            return <MenuSection key={section.id} section={section} />;
-          case "cta":
-            return <ConsultationCta key={section.id} section={section} />;
-          case "contact":
-            return <ContactForm key={section.id} section={section} />;
-          default:
-            return null;
-        }
-      })}
-    </main>
-  );
+  const sections = await getActivePageSections(page.id);
+  return <PageSections sections={sections} />;
 }

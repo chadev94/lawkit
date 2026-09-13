@@ -1,6 +1,6 @@
 # lawkit
 
-변호사 웹사이트. admin에서 등록한 콘텐츠가 공개 사이트에 반영된다.
+변호사 웹사이트. admin에서 등록한 콘텐츠·테마가 공개 사이트에 반영된다.
 
 - **Next.js 16** (App Router) + TypeScript + Tailwind CSS 4
 - **Supabase** — DB / Auth / Storage
@@ -10,6 +10,21 @@
 
 pnpm 버전은 `package.json` 의 `packageManager` 가 단일 출처다. 버전이 안 맞으면
 실행이 거부되므로 `corepack enable` 을 한 번 해두면 자동으로 맞춰진다.
+
+## 현재 기능
+
+| 영역 | 경로 | 설명 |
+|---|---|---|
+| 공개 홈 | `/` | `pages.slug = home` 의 섹션 목록 렌더 |
+| 공개 페이지 | `/[slug]` | 메뉴와 연동된 페이지 섹션 렌더 |
+| 관리자 로그인 | `/admin/login` | Supabase Auth 세션 |
+| 사이트 설정 | `/admin/settings` | 색상·폰트·브랜드/연락·사업자 정보 (`site_settings`) |
+| 페이지 구성 | `/admin/sections` | 페이지별 섹션(hero/menu/cta/contact) CRUD·이미지 |
+| 메뉴 관리 | `/admin/menus` | 네비 메뉴 + 대응 `pages` 행 동기화 |
+
+인증은 `src/proxy.ts` 에서 `/admin` 을 보호한다. 로그인 없이 대시보드에 접근하면 `/admin/login` 으로 보낸다.
+
+공개 사이트 테마는 `site_settings` 를 CSS 변수로 주입한다. OS 다크모드와 무관하게 라이트 기준으로 고정하며, 색·폰트는 어드민에서 덮어쓴다.
 
 ## Setup
 
@@ -30,9 +45,14 @@ supabase db reset    # migrations + seed 적용
 pnpm dev
 ```
 
-`localhost:3000` 공개 사이트 / `localhost:3000/admin` 관리자
+- 공개 사이트: `http://localhost:3000`
+- 관리자: `http://localhost:3000/admin` (로그인 필요)
 
 Supabase 접근 권한은 `chameleondev` org에서 초대받는다.
+관리자 계정은 Supabase Dashboard > Authentication > Users 에서 생성한다.
+
+원격 DB만 쓰는 경우 `supabase db reset` 대신 대시보드 SQL Editor에서
+`supabase/migrations/` 파일을 순서대로 실행해도 된다.
 
 ## Scripts
 
@@ -48,24 +68,46 @@ Supabase 접근 권한은 `chameleondev` org에서 초대받는다.
 ```
 src/
 ├── app/
-│   ├── (site)/            공개 사이트
-│   └── (admin)/admin/     관리자
-├── components/
-│   ├── site/
-│   ├── admin/
-│   └── ui/                공통
-└── lib/
-    └── supabase/
-        ├── client.ts      Client Component용
-        └── server.ts      Server Component / Server Action용
+│   ├── (site)/                 공개 사이트 (/ , /[slug])
+│   └── (admin)/admin/
+│       ├── login/              로그인
+│       └── (dashboard)/        설정·섹션·메뉴 (인증 필요)
+├── components/site/            히어로·메뉴·CTA·문의·헤더/푸터
+├── lib/
+│   ├── queries/                pages / sections / menus / site_settings
+│   ├── section-content.ts      섹션 kind별 content 파서
+│   ├── section-media.ts        Storage 업로드
+│   ├── site-settings.ts        테마·콘텐츠 스키마 / CSS 변수
+│   └── supabase/
+│       ├── client.ts
+│       ├── server.ts
+│       └── proxy.ts
+└── proxy.ts                    Next.js 요청 가드 (admin auth)
 
 supabase/
 ├── config.toml
-├── migrations/            테이블 정의
-└── seed.sql               카테고리 등 초기 데이터
+├── migrations/                 스키마 단일 출처
+└── seed.sql
 ```
 
-`(site)` / `(admin)` 은 Route Group이라 URL에 나타나지 않는다. 레이아웃과 인증 정책 분리용.
+`(site)` / `(admin)` / `(dashboard)` 는 Route Group이라 URL에 나타나지 않는다.
+
+## 데이터 모델 (요약)
+
+| 테이블 / 버킷 | 역할 |
+|---|---|
+| `menus` | 헤더 네비 |
+| `pages` | 공개 페이지 (`slug`, home 예약) |
+| `sections` | 섹션 kind 카탈로그 (hero, menu, cta, contact) |
+| `page_sections` | 페이지에 배치된 섹션 + `content` jsonb |
+| `page_section_items` | 메뉴형 섹션의 아이템(+ `image_path`) |
+| `site_settings` | 싱글톤 전역 설정 (`colors` / `typography` / `content` jsonb) |
+| Storage `section-media` | 섹션 이미지. DB에는 path만 저장 |
+
+이미지 path 예: `{page_section_id}/{uuid}.png`  
+공개 URL: `{SUPABASE_URL}/storage/v1/object/public/section-media/{path}`
+
+대시보드에서 확인: **Storage → `section-media`**, **Table Editor → `page_sections` / `page_section_items` / `site_settings`**.
 
 ## 브랜치
 
@@ -124,6 +166,9 @@ supabase db push     # 검증 후 원격 반영
 
 대시보드에서 실수로 수정했다면 `supabase db diff -f 이름` 으로 파일에 회수한다.
 
+`site_settings.content` 처럼 jsonb 필드만 앱에서 확장하는 경우 마이그레이션은 필수가 아니다.
+행 구조·제약·RLS·버킷이 바뀌면 반드시 마이그레이션을 추가한다.
+
 ## 보안
 
 이 리포는 **public** 이다.
@@ -133,6 +178,8 @@ supabase db push     # 검증 후 원격 반영
 | `SUPABASE_SERVICE_ROLE_KEY` | `NEXT_PUBLIC_` 금지. RLS를 전부 우회한다 |
 | `.env.local` | 커밋 금지 |
 | 공개 테이블 | RLS 필수. anon key는 노출이 전제다 |
+| `site_settings` / 섹션 | `anon` 은 읽기, 쓰기는 `authenticated` |
+| `section-media` | public read, 업로드는 `authenticated` |
 | `inquiries` | `anon` 은 INSERT만. 사건 내용이 들어오는 민감정보 |
 | 해결사례 문서 이미지 | 사건관계인 정보 마스킹 확인 후 업로드 |
 

@@ -24,7 +24,7 @@ export async function createClient() {
             );
           } catch {
             // Server Component에서는 쿠키를 쓸 수 없다.
-            // 세션 갱신은 middleware가 담당하므로 무시해도 된다.
+            // 세션 갱신은 proxy가 담당하므로 무시해도 된다.
           }
         },
       },

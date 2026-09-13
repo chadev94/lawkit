@@ -16,6 +16,7 @@ export async function getActiveMenus(): Promise<Menu[]> {
   const { data, error } = await supabase
     .from("menus")
     .select("*")
+    .eq("is_active", true)
     .order("sort_order");
 
   if (error) throw error;
@@ -32,4 +33,18 @@ export async function getAllMenus(): Promise<Menu[]> {
 
   if (error) throw error;
   return data ?? [];
+}
+
+/** 공개 사이트용. slug로 활성 메뉴 한 건을 찾는다. 없으면 null. */
+export async function getActiveMenuBySlug(slug: string): Promise<Menu | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("menus")
+    .select("*")
+    .eq("slug", slug)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
 }
