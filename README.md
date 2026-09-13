@@ -6,7 +6,10 @@
 - **Supabase** — DB / Auth / Storage
 - **Vercel** — 배포
 
-요구사항: Node 22, pnpm 10, Docker
+요구사항: Node 22, pnpm 12, Docker
+
+pnpm 버전은 `package.json` 의 `packageManager` 가 단일 출처다. 버전이 안 맞으면
+실행이 거부되므로 `corepack enable` 을 한 번 해두면 자동으로 맞춰진다.
 
 ## Setup
 
