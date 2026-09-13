@@ -1,22 +1,37 @@
 # lawkit
 
-변호사 웹사이트. 변호사가 관리자 화면에서 콘텐츠를 등록·수정하면 공개 사이트에 반영되는 구조.
+변호사 웹사이트. admin에서 등록한 콘텐츠가 공개 사이트에 반영된다.
 
-- **Next.js** (App Router) + TypeScript + Tailwind CSS
-- **Supabase** — DB / 인증 / 스토리지
+- **Next.js 16** (App Router) + TypeScript + Tailwind CSS 4
+- **Supabase** — DB / Auth / Storage
 - **Vercel** — 배포
 
-## 시작하기
+요구사항: Node 22, pnpm 10, Docker
+
+## Setup
 
 ```bash
+git clone https://github.com/chadev94/lawkit.git
+cd lawkit
 pnpm install
-cp .env.example .env.local   # 값 채우기
+
+cp .env.example .env.local
+# Supabase 대시보드 > Project Settings > API Keys 에서 값 복사
+
+supabase login
+supabase link --project-ref ectpbcqluleitqrxoobx
+
+supabase start       # 로컬 스택 기동 (Docker)
+supabase db reset    # migrations + seed 적용
+
 pnpm dev
 ```
 
-Node 22, pnpm 10 기준.
+`localhost:3000` 공개 사이트 / `localhost:3000/admin` 관리자
 
-## 스크립트
+Supabase 접근 권한은 `chameleondev` org에서 초대받는다.
+
+## Scripts
 
 | 명령 | 설명 |
 |---|---|
@@ -25,95 +40,99 @@ Node 22, pnpm 10 기준.
 | `pnpm lint` | ESLint |
 | `pnpm typecheck` | 타입 검사 |
 
-## 디렉토리 구조
+## 구조
 
 ```
 src/
 ├── app/
-│   ├── (site)/            공개 사이트 — 방문자가 보는 화면
-│   └── (admin)/admin/     관리자 — 변호사가 콘텐츠를 관리
+│   ├── (site)/            공개 사이트
+│   └── (admin)/admin/     관리자
 ├── components/
-│   ├── site/              공개 사이트 전용
-│   ├── admin/             관리자 전용
-│   └── ui/                공통 (버튼, 입력 등)
-└── lib/                   유틸, Supabase 클라이언트, 타입
+│   ├── site/
+│   ├── admin/
+│   └── ui/                공통
+└── lib/
+    └── supabase/
+        ├── client.ts      Client Component용
+        └── server.ts      Server Component / Server Action용
+
+supabase/
+├── config.toml
+├── migrations/            테이블 정의
+└── seed.sql               카테고리 등 초기 데이터
 ```
 
-`(site)` 와 `(admin)` 은 Next.js Route Group이라 URL에 나타나지 않는다.
-공개 사이트와 관리자가 서로 다른 레이아웃·인증 정책을 갖도록 분리한 것.
+`(site)` / `(admin)` 은 Route Group이라 URL에 나타나지 않는다. 레이아웃과 인증 정책 분리용.
 
-## 브랜치 전략
-
-| 브랜치 | 역할 | 배포 |
-|---|---|---|
-| `main` | 기본 브랜치. 모든 작업이 여기로 모인다 | — |
-| `production` | 운영 | 운영 사이트 |
-
-흐름은 한 방향이다.
+## 브랜치
 
 ```
-feature 브랜치 → main → production
+feature → main → production
 ```
-
-두 브랜치 모두 직접 push가 막혀 있다. 항상 PR을 거친다.
 
 | | `main` | `production` |
 |---|---|---|
+| 직접 push | 차단 | 차단 |
 | PR | 필수 | 필수 |
-| 승인 | 0명 (혼자 머지 가능) | **1명 필요** |
-| CI 통과 | 필수 | 필수 |
+| 승인 | 0명 | 1명 |
+| CI | 필수 | 필수 |
+| 배포 | — | 운영 |
 
-`main` 에 승인을 요구하지 않는 이유는 시차를 두고 작업할 때 매번 승인을 기다리는 마찰이
-크기 때문이다. 대신 PR을 강제해서 머지 전에 diff를 한 번은 보게 만든다.
-실제 배포가 나가는 `production` 은 반드시 다른 사람의 승인을 거친다.
+`main` 승인이 0명인 이유: 시차 두고 작업할 때 승인 대기 마찰이 크다. PR은 강제해서 diff는 보게 만든다.
 
-admin은 필요할 때 이 규칙을 우회할 수 있다(`Merge without waiting for requirements`).
-긴급 상황을 위한 장치이므로 평소에는 쓰지 않는다.
-
-## 작업 방법
-
-브랜치를 따서 PR을 올린다.
+admin은 `Merge without waiting for requirements` 로 승인을 우회할 수 있다. 긴급용.
 
 ```bash
-git clone https://github.com/chadev94/lawkit.git
-cd lawkit
-
-# 작업할 때마다
-git checkout main
-git pull
+git checkout main && git pull
 git checkout -b feat/무엇을-하는지
-# ... 작업 ...
+# 작업
 git push -u origin feat/무엇을-하는지
 gh pr create --base main
 ```
 
-브랜치 이름: `feat/...`, `fix/...`, `chore/...`
+브랜치 이름: `feat/`, `fix/`, `chore/`
 
-`main` 과 `production` 은 직접 push가 막혀 있다. 항상 PR을 거친다.
+## 머지 방식
 
-## 머지 방식 — 중요
+| 머지 | 방식 |
+|---|---|
+| feature → `main` | **Squash** |
+| `main` → `production` | **Merge commit** |
 
-**브랜치에 따라 머지 방식이 다르다. 섞으면 히스토리가 깨진다.**
+`main → production` 을 squash 하면 새 커밋이 생겨 히스토리가 갈라진다. 다음 릴리스 PR부터 이미 반영된 변경이 다시 diff에 잡히거나 충돌한다. Rebase 머지는 비활성화.
 
-| 머지 | 방식 | 이유 |
-|---|---|---|
-| feature → `main` | **Squash** | 커밋이 하나로 정리된다 |
-| `main` → `production` | **Merge commit** | 히스토리를 유지해야 한다 (아래 설명) |
+## DB
 
-`main → production` 을 squash 하면 안 된다. squash는 새 커밋을 만들기 때문에
-production과 main의 히스토리가 갈라지고, 다음 PR부터 이미 머지한 변경이
-다시 diff에 잡히거나 충돌한다. 릴리스 방향 머지는 반드시 merge commit.
+**대시보드에서 테이블을 직접 만들지 않는다.** 마이그레이션 파일이 스키마의 단일 출처다.
 
-Rebase 머지는 아예 비활성화해뒀다.
+```bash
+supabase migration new create_something
+# SQL 작성
 
-## 환경변수
+supabase db reset    # 로컬에 재적용해 검증
+supabase db push     # 검증 후 원격 반영
+```
 
-`.env.example` 참고. 주의할 점 하나.
+| 위치 | DB |
+|---|---|
+| feature 브랜치 | 로컬 |
+| `main` | `yoo&partners-dev` |
+| `production` | 운영 (오픈 시 생성) |
 
-`SUPABASE_SERVICE_ROLE_KEY` 는 **서버에서만** 쓴다. `NEXT_PUBLIC_` 접두어를 붙이면
-브라우저로 노출되고, 이 키는 RLS를 전부 우회하므로 DB 전체가 열린다.
+대시보드에서 실수로 수정했다면 `supabase db diff -f 이름` 으로 파일에 회수한다.
 
-## DB 변경
+## 보안
 
-Supabase 대시보드에서 직접 수정하지 않는다. 마이그레이션 파일로 관리한다.
-그렇지 않으면 다른 환경에서 같은 스키마를 재현할 수 없다.
+이 리포는 **public** 이다.
+
+| | |
+|---|---|
+| `SUPABASE_SERVICE_ROLE_KEY` | `NEXT_PUBLIC_` 금지. RLS를 전부 우회한다 |
+| `.env.local` | 커밋 금지 |
+| 공개 테이블 | RLS 필수. anon key는 노출이 전제다 |
+| `inquiries` | `anon` 은 INSERT만. 사건 내용이 들어오는 민감정보 |
+| 해결사례 문서 이미지 | 사건관계인 정보 마스킹 확인 후 업로드 |
+
+`NEXT_PUBLIC_` 값은 빌드 시점에 브라우저 번들에 박힌다. 나중에 지워도 배포된 번들에는 남는다.
+
+키를 커밋했다면 revert로 부족하다. 히스토리에 남으므로 **대시보드에서 로테이션**한다.
