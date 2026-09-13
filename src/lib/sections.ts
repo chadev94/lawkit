@@ -1,35 +1,71 @@
 /**
- * 섹션 타입과 라벨.
+ * 페이지 / 섹션 공유 타입.
  *
- * Client Component 에서도 쓰므로 서버 전용 코드(supabase/server 등)를
- * import 하지 않는다. 조회 함수는 queries/home-sections.ts 에 있다.
+ * 섹션 종류(label)는 sections 테이블에서 조회한다.
+ * 레이아웃 라벨만 코드에 남긴다.
  */
 
-export type SectionKind = "hero" | "menu" | "cta" | "contact";
 export type SectionLayout = "cards" | "carousel" | "list";
 
-export type HomeSection = {
+export type Section = {
   id: string;
-  kind: SectionKind;
+  key: string;
+  name: string;
+  description: string | null;
+  requires_menu: boolean;
+  sort_order: number;
+  is_active: boolean;
+};
+
+export type SitePage = {
+  id: string;
+  slug: string;
+  title: string;
+  menu_id: string | null;
+  sort_order: number;
+  is_active: boolean;
+};
+
+export type PageSectionItem = {
+  id: string;
+  page_section_id: string;
+  sort_order: number;
+  title: string | null;
+  subtitle: string | null;
+  body: string | null;
+  href: string | null;
+  image_path: string | null;
+  meta: Record<string, unknown>;
+  is_active: boolean;
+};
+
+export type PageSection = {
+  id: string;
+  page_id: string;
+  kind: string;
   menu_id: string | null;
   title: string | null;
   subtitle: string | null;
   layout: SectionLayout;
   sort_order: number;
   is_active: boolean;
-  /** kind === "menu" 일 때 조인된 메뉴 */
+  content: Record<string, unknown>;
   menu: { id: string; name: string; slug: string } | null;
+  section: Pick<Section, "key" | "name" | "requires_menu"> | null;
+  items: PageSectionItem[];
 };
 
-export const SECTION_KIND_LABEL: Record<SectionKind, string> = {
-  hero: "히어로",
-  menu: "메뉴 연결",
-  cta: "상담 진단",
-  contact: "상담 문의 폼",
-};
+/** @deprecated HomeSection → PageSection. 하위 호환용. */
+export type HomeSection = PageSection;
+
+export const HOME_PAGE_SLUG = "home";
 
 export const SECTION_LAYOUT_LABEL: Record<SectionLayout, string> = {
   cards: "카드",
   carousel: "캐러셀",
   list: "리스트",
 };
+
+export function pagePath(slug: string): string {
+  return slug === HOME_PAGE_SLUG ? "/" : `/${slug}`;
+}
