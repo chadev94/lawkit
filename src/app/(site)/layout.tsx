@@ -1,9 +1,17 @@
-export default function SiteLayout({ children }: { children: React.ReactNode }) {
+import { SiteHeader } from "@/components/site/site-header";
+
+export const dynamic = "force-dynamic";
+
+export default function SiteLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <>
-      {/* TODO: 공개 사이트 헤더 */}
+      <SiteHeader />
       {children}
-      {/* TODO: 공개 사이트 푸터 (Contact + 사이트맵) */}
+      {/* TODO: 푸터 (YP-7) */}
     </>
   );
 }
