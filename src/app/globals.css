@@ -1,26 +1,59 @@
 @import "tailwindcss";
 
+/*
+ * 라이트 모드로 고정한다.
+ *
+ * 변호사 사이트는 신뢰감이 중요하고 인쇄·캡처로 공유되는 일이 많아
+ * 배경색이 시스템 설정에 따라 바뀌지 않는 편이 낫다.
+ * 다크 모드가 필요해지면 그때 디자인과 함께 설계한다.
+ * 사이트 테마 토큰은 어드민 site_settings 로 덮어쓸 수 있다.
+ */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --primary: #18181b;
+  --primary-foreground: #fafafa;
+  --border: #e4e4e7;
+  --accent: #a1a1aa;
+  --hero-background: #18181b;
+  --hero-foreground: #fafafa;
+  --font-site-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-site-heading: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-site-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: light;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-site-sans);
+}
+
+.site-theme {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-site-sans);
+}
+
+.site-theme h1,
+.site-theme h2,
+.site-theme h3 {
+  font-family: var(--font-site-heading);
 }
