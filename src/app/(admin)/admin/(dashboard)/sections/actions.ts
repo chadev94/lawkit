@@ -1,6 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 import { createClient } from "@/lib/supabase/server";
 import { getSectionByKey } from "@/lib/queries/sections";
 import { getPageById } from "@/lib/queries/pages";
@@ -15,8 +16,12 @@ export type ActionState = { error: string | null };
 
 async function revalidatePage(pageId: string) {
   const page = await getPageById(pageId);
+  revalidateTag(CACHE_TAGS.pageSections, "max");
+  revalidateTag(CACHE_TAGS.pages, "max");
   revalidatePath("/admin/sections");
   if (page) {
+    revalidateTag(`${CACHE_TAGS.pageSections}:${pageId}`, "max");
+    revalidateTag(`${CACHE_TAGS.pages}:${page.slug}`, "max");
     revalidatePath(pagePath(page.slug));
     revalidatePath("/", "layout");
   }

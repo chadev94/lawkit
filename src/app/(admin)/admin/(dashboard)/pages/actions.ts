@@ -1,6 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 import { createClient } from "@/lib/supabase/server";
 import { HOME_PAGE_SLUG, pagePath } from "@/lib/sections";
 
@@ -21,11 +22,15 @@ function validateSlug(slug: string): string | null {
 }
 
 function revalidateAll(...slugs: string[]) {
+  revalidateTag(CACHE_TAGS.pages, "max");
   revalidatePath("/admin/pages");
   revalidatePath("/admin/sections");
   revalidatePath("/", "layout");
   for (const slug of slugs) {
-    if (slug) revalidatePath(pagePath(slug));
+    if (slug) {
+      revalidateTag(`${CACHE_TAGS.pages}:${slug}`, "max");
+      revalidatePath(pagePath(slug));
+    }
   }
 }
 

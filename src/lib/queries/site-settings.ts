@@ -1,4 +1,7 @@
-import { createClient } from "@/lib/supabase/server";
+import { unstable_cache } from "next/cache";
+import { cache } from "react";
+import { CACHE_TAGS, PUBLIC_REVALIDATE_SECONDS } from "@/lib/cache-tags";
+import { createPublicClient } from "@/lib/supabase/public";
 import {
   DEFAULT_COLORS,
   DEFAULT_CONTENT,
@@ -15,9 +18,8 @@ const FALLBACK: SiteSettings = {
   content: DEFAULT_CONTENT,
 };
 
-/** 공개/관리 공통. 없으면 기본값. */
-export async function getSiteSettings(): Promise<SiteSettings> {
-  const supabase = await createClient();
+async function fetchSiteSettings(): Promise<SiteSettings> {
+  const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("site_settings")
     .select("*")
@@ -28,3 +30,15 @@ export async function getSiteSettings(): Promise<SiteSettings> {
   if (!data) return FALLBACK;
   return normalizeSiteSettings(data);
 }
+
+const getSiteSettingsCached = unstable_cache(
+  fetchSiteSettings,
+  ["site-settings"],
+  {
+    revalidate: PUBLIC_REVALIDATE_SECONDS,
+    tags: [CACHE_TAGS.siteSettings],
+  },
+);
+
+/** 공개/관리 공통. 요청 내 중복 호출은 React.cache, 요청 간은 unstable_cache. */
+export const getSiteSettings = cache(getSiteSettingsCached);

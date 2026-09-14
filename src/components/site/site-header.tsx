@@ -1,13 +1,10 @@
 import Link from "next/link";
 import { getNavPages } from "@/lib/queries/pages";
-import { getSiteSettings } from "@/lib/queries/site-settings";
+import type { SiteSettings } from "@/lib/site-settings";
 import { pagePath } from "@/lib/sections";
 
-export async function SiteHeader() {
-  const [pages, settings] = await Promise.all([
-    getNavPages(),
-    getSiteSettings(),
-  ]);
+export async function SiteHeader({ settings }: { settings: SiteSettings }) {
+  const pages = await getNavPages();
 
   return (
     <header className="border-b" style={{ borderColor: "var(--border)" }}>
