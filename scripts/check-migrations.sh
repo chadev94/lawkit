@@ -11,7 +11,7 @@
 #   6. 같은 타임스탬프가 둘 이상
 #
 # 비교 기준(base)
-#   PR CI : origin/<base 브랜치>  (GITHUB_BASE_REF)
+#   PR CI : origin/<base 브랜치>  (GITHUB_BASE_REF). base 가 production 이면 origin/main
 #   로컬  : 인자로 준 ref, 없으면 origin/main
 #   base 를 못 찾으면 변경분 검사(3,4)는 건너뛰고 전체 형식 검사(1,2,5,6)만 한다.
 
@@ -30,7 +30,11 @@ err() { red "✗ $1"; fail=1; }
 
 # ── base 결정 ────────────────────────────────────────────────────────────
 base=""
-if [ -n "${GITHUB_BASE_REF:-}" ]; then
+if [ "${GITHUB_BASE_REF:-}" = "production" ]; then
+  # release PR(main → production). 마이그레이션은 이미 main 에서 검사·머지·원격 적용을 거쳤다.
+  # production 과 비교하면 그 파일들이 전부 "새 파일" 로 잡히므로 main 을 기준으로 본다.
+  base="origin/main"
+elif [ -n "${GITHUB_BASE_REF:-}" ]; then
   base="origin/${GITHUB_BASE_REF}"
 elif [ -n "${1:-}" ]; then
   base="$1"
