@@ -22,7 +22,7 @@ export type HeroContent = {
   background_image: string;
 };
 
-export type MenuContent = Record<string, never>;
+export type PageLinkContent = Record<string, never>;
 
 export type CtaContent = {
   badge: string;
@@ -37,7 +37,7 @@ export type ContactContent = {
 
 export type SectionContentMap = {
   hero: HeroContent;
-  menu: MenuContent;
+  page_link: PageLinkContent;
   cta: CtaContent;
   contact: ContactContent;
 };
@@ -117,7 +117,7 @@ export function parseContentForKind(
       return parseCtaContent(raw);
     case "contact":
       return parseContactContent(raw);
-    case "menu":
+    case "page_link":
     default:
       return {};
   }

@@ -2,12 +2,12 @@ import type { PageSection } from "@/lib/sections";
 import { mediaPublicUrl } from "@/lib/section-content";
 
 /**
- * 메뉴에 연결된 콘텐츠 섹션.
+ * 다른 페이지에 연결된 콘텐츠 섹션. 제목·경로는 연결된 페이지에서 온다.
  * 카드/리스트 항목은 page_section_items 에서 온다.
  */
-export function MenuSection({ section }: { section: PageSection }) {
-  const title = section.title ?? section.menu?.name ?? "";
-  const slug = section.menu?.slug ?? "";
+export function PageLinkSection({ section }: { section: PageSection }) {
+  const title = section.title ?? section.source_page?.title ?? "";
+  const slug = section.source_page?.slug ?? "";
   const items = section.items;
 
   return (
