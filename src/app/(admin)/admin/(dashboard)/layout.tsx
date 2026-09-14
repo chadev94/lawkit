@@ -26,7 +26,7 @@ export default async function AdminDashboardLayout({
 
   return (
     <div className="flex min-h-screen">
-      <aside className="flex w-48 shrink-0 flex-col border-r border-zinc-200 p-6">
+      <aside className="sticky top-0 flex h-screen w-48 shrink-0 flex-col border-r border-zinc-200 p-6">
         <p className="text-xs font-semibold tracking-tight">ADMIN</p>
         <nav className="mt-6 flex flex-col gap-2">
           {NAV.map((item) => (

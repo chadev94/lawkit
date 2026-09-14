@@ -12,8 +12,8 @@ export function PageSections({ sections }: { sections: PageSection[] }) {
   if (sections.length === 0) {
     return (
       <main className="py-32 text-center">
-        <p className="text-sm text-zinc-400">등록된 섹션이 없습니다.</p>
-        <p className="mt-1 text-xs text-zinc-300">
+        <p className="text-sm text-muted-foreground">등록된 섹션이 없습니다.</p>
+        <p className="mt-1 text-xs text-muted-foreground/70">
           admin에서 이 페이지에 섹션을 추가하면 여기에 표시됩니다.
         </p>
       </main>
