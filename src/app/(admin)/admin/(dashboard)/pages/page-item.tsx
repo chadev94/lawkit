@@ -1,44 +1,52 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
-import type { Menu } from "@/lib/queries/menus";
+import { HOME_PAGE_SLUG, pagePath, type SitePage } from "@/lib/sections";
 import {
-  deleteMenu,
-  toggleMenu,
-  updateMenu,
+  deletePage,
+  togglePage,
+  updatePage,
   type ActionState,
 } from "./actions";
 
 const initialState: ActionState = { error: null };
 
-export function MenuItem({ menu }: { menu: Menu }) {
+export function PageItem({ page }: { page: SitePage }) {
   const [editing, setEditing] = useState(false);
-  const [state, formAction, pending] = useActionState(updateMenu, initialState);
+  const [state, formAction, pending] = useActionState(updatePage, initialState);
+  const isHome = page.slug === HOME_PAGE_SLUG;
 
   return (
     <li className="px-4 py-3">
       <div className="flex items-center gap-4">
-        <span className="w-8 text-xs text-zinc-400">{menu.sort_order}</span>
+        <span className="w-8 text-xs text-zinc-400">{page.sort_order}</span>
 
         <div className="flex-1">
-          <p className="text-sm font-medium">{menu.name}</p>
-          <p className="text-xs text-zinc-400">/{menu.slug}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-medium">{page.title}</p>
+            {page.show_in_nav && (
+              <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] text-zinc-500">
+                메뉴
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-zinc-400">{pagePath(page.slug)}</p>
         </div>
 
         <form
           action={async () => {
-            await toggleMenu(menu.id, !menu.is_active);
+            await togglePage(page.id, !page.is_active);
           }}
         >
           <button
             type="submit"
             className={`rounded px-2 py-1 text-xs ${
-              menu.is_active
+              page.is_active
                 ? "bg-emerald-50 text-emerald-700"
                 : "bg-zinc-100 text-zinc-400"
             }`}
           >
-            {menu.is_active ? "사용중" : "숨김"}
+            {page.is_active ? "사용중" : "숨김"}
           </button>
         </form>
 
@@ -50,24 +58,26 @@ export function MenuItem({ menu }: { menu: Menu }) {
           {editing ? "닫기" : "수정"}
         </button>
 
-        <form
-          action={async () => {
-            await deleteMenu(menu.id);
-          }}
-        >
-          <button
-            type="submit"
-            className="text-xs text-zinc-400 hover:text-red-600"
+        {!isHome && (
+          <form
+            action={async () => {
+              await deletePage(page.id);
+            }}
           >
-            삭제
-          </button>
-        </form>
+            <button
+              type="submit"
+              className="text-xs text-zinc-400 hover:text-red-600"
+            >
+              삭제
+            </button>
+          </form>
+        )}
       </div>
 
       {editing && (
-        <MenuEditForm
-          key={menu.id}
-          menu={menu}
+        <PageEditForm
+          key={page.id}
+          page={page}
           state={state}
           formAction={formAction}
           pending={pending}
@@ -78,20 +88,21 @@ export function MenuItem({ menu }: { menu: Menu }) {
   );
 }
 
-function MenuEditForm({
-  menu,
+function PageEditForm({
+  page,
   state,
   formAction,
   pending,
   onClose,
 }: {
-  menu: Menu;
+  page: SitePage;
   state: ActionState;
   formAction: (payload: FormData) => void;
   pending: boolean;
   onClose: () => void;
 }) {
   const wasPendingRef = useRef(false);
+  const isHome = page.slug === HOME_PAGE_SLUG;
 
   useEffect(() => {
     if (pending) {
@@ -111,16 +122,16 @@ function MenuEditForm({
       action={formAction}
       className="mt-4 flex flex-col gap-3 rounded-md border border-zinc-100 bg-zinc-50 p-4"
     >
-      <input type="hidden" name="id" value={menu.id} />
-      <input type="hidden" name="previous_slug" value={menu.slug} />
+      <input type="hidden" name="id" value={page.id} />
+      <input type="hidden" name="previous_slug" value={page.slug} />
 
       <div className="grid gap-3 sm:grid-cols-[1fr_1fr_100px_120px]">
         <label className="flex flex-col gap-1">
-          <span className="text-xs text-zinc-500">메뉴명</span>
+          <span className="text-xs text-zinc-500">페이지 이름</span>
           <input
-            name="name"
+            name="title"
             required
-            defaultValue={menu.name}
+            defaultValue={page.title}
             className="rounded border border-zinc-300 bg-white px-3 py-2 text-sm"
           />
         </label>
@@ -131,8 +142,10 @@ function MenuEditForm({
             name="slug"
             required
             pattern="[a-z0-9-]+"
-            defaultValue={menu.slug}
-            className="rounded border border-zinc-300 bg-white px-3 py-2 text-sm"
+            defaultValue={page.slug}
+            readOnly={isHome}
+            title={isHome ? "홈 경로는 바꿀 수 없습니다" : undefined}
+            className="rounded border border-zinc-300 bg-white px-3 py-2 text-sm read-only:bg-zinc-100 read-only:text-zinc-400"
           />
         </label>
 
@@ -141,7 +154,7 @@ function MenuEditForm({
           <input
             name="sort_order"
             type="number"
-            defaultValue={menu.sort_order}
+            defaultValue={page.sort_order}
             className="rounded border border-zinc-300 bg-white px-3 py-2 text-sm"
           />
         </label>
@@ -150,7 +163,7 @@ function MenuEditForm({
           <span className="text-xs text-zinc-500">상태</span>
           <select
             name="is_active"
-            defaultValue={menu.is_active ? "true" : "false"}
+            defaultValue={page.is_active ? "true" : "false"}
             className="rounded border border-zinc-300 bg-white px-3 py-2 text-sm"
           >
             <option value="true">사용중</option>
@@ -158,6 +171,11 @@ function MenuEditForm({
           </select>
         </label>
       </div>
+
+      <label className="flex items-center gap-2 text-xs text-zinc-600">
+        <input type="checkbox" name="show_in_nav" defaultChecked={page.show_in_nav} />
+        메뉴 노출 — 공개 사이트 상단 네비게이션에 표시
+      </label>
 
       {state.error && <p className="text-sm text-red-600">{state.error}</p>}
 

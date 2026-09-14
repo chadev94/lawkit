@@ -1,4 +1,3 @@
-import { getAllMenus } from "@/lib/queries/menus";
 import { getPageSections } from "@/lib/queries/page-sections";
 import { getAllPages } from "@/lib/queries/pages";
 import { getActiveSectionsCatalog } from "@/lib/queries/sections";
@@ -15,9 +14,8 @@ export default async function SectionsPage({
   searchParams: Promise<{ page?: string }>;
 }) {
   const params = await searchParams;
-  const [pages, menus, sectionKinds] = await Promise.all([
+  const [pages, sectionKinds] = await Promise.all([
     getAllPages(),
-    getAllMenus(),
     getActiveSectionsCatalog(),
   ]);
 
@@ -31,6 +29,11 @@ export default async function SectionsPage({
   const sections = selectedPage
     ? await getPageSections(selectedPage.id)
     : [];
+
+  // 페이지 연결 섹션이 끌어올 수 있는 대상. 자기 자신과 홈은 제외한다.
+  const linkablePages = pages.filter(
+    (page) => page.id !== selectedPage?.id && page.slug !== HOME_PAGE_SLUG,
+  );
 
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-6 p-8">
@@ -78,7 +81,7 @@ export default async function SectionsPage({
 
               <SectionForm
                 pageId={selectedPage.id}
-                menus={menus}
+                pages={linkablePages}
                 sectionKinds={sectionKinds}
               />
 
@@ -92,7 +95,7 @@ export default async function SectionsPage({
                     <SectionItem
                       key={section.id}
                       section={section}
-                      menus={menus}
+                      pages={linkablePages}
                     />
                   ))}
                 </ul>

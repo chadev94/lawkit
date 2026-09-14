@@ -12,18 +12,19 @@ export type Section = {
   key: string;
   name: string;
   description: string | null;
-  requires_menu: boolean;
+  requires_page: boolean;
   sort_order: number;
   is_active: boolean;
 };
 
+/** 라우팅되는 페이지. 헤더 네비게이션 항목 역할도 겸한다. */
 export type SitePage = {
   id: string;
   slug: string;
   title: string;
-  menu_id: string | null;
   sort_order: number;
   is_active: boolean;
+  show_in_nav: boolean;
 };
 
 export type PageSectionItem = {
@@ -43,20 +44,18 @@ export type PageSection = {
   id: string;
   page_id: string;
   kind: string;
-  menu_id: string | null;
+  /** requires_page 인 종류에서 콘텐츠를 끌어올 페이지 */
+  source_page_id: string | null;
   title: string | null;
   subtitle: string | null;
   layout: SectionLayout;
   sort_order: number;
   is_active: boolean;
   content: Record<string, unknown>;
-  menu: { id: string; name: string; slug: string } | null;
-  section: Pick<Section, "key" | "name" | "requires_menu"> | null;
+  source_page: Pick<SitePage, "id" | "title" | "slug"> | null;
+  section: Pick<Section, "key" | "name" | "requires_page"> | null;
   items: PageSectionItem[];
 };
-
-/** @deprecated HomeSection → PageSection. 하위 호환용. */
-export type HomeSection = PageSection;
 
 export const HOME_PAGE_SLUG = "home";
 

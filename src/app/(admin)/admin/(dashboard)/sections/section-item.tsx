@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
-import type { Menu } from "@/lib/queries/menus";
 import {
   parseContactContent,
   parseCtaContent,
@@ -10,6 +9,7 @@ import {
 import {
   SECTION_LAYOUT_LABEL,
   type PageSection,
+  type SitePage,
 } from "@/lib/sections";
 import {
   deleteSection,
@@ -23,10 +23,10 @@ const initialState: ActionState = { error: null };
 
 export function SectionItem({
   section,
-  menus,
+  pages,
 }: {
   section: PageSection;
-  menus: Menu[];
+  pages: SitePage[];
 }) {
   const [editing, setEditing] = useState(false);
   const [state, formAction, pending] = useActionState(
@@ -35,7 +35,7 @@ export function SectionItem({
   );
 
   const kindLabel = section.section?.name ?? section.kind;
-  const requiresMenu = section.section?.requires_menu ?? false;
+  const requiresPage = section.section?.requires_page ?? false;
 
   return (
     <li className="px-4 py-3">
@@ -48,12 +48,12 @@ export function SectionItem({
               {kindLabel}
             </span>
             <p className="text-sm font-medium">
-              {section.title ?? section.menu?.name ?? "—"}
+              {section.title ?? section.source_page?.title ?? "—"}
             </p>
           </div>
           <p className="mt-0.5 text-xs text-zinc-400">
-            {requiresMenu
-              ? `/${section.menu?.slug ?? "?"} · ${SECTION_LAYOUT_LABEL[section.layout]} · 항목 ${section.items.length}`
+            {requiresPage
+              ? `/${section.source_page?.slug ?? "?"} · ${SECTION_LAYOUT_LABEL[section.layout]} · 항목 ${section.items.length}`
               : (section.subtitle ?? `항목 ${section.items.length}`)}
           </p>
         </div>
@@ -105,8 +105,8 @@ export function SectionItem({
         <SectionEditForm
           key={section.id}
           section={section}
-          menus={menus}
-          requiresMenu={requiresMenu}
+          pages={pages}
+          requiresPage={requiresPage}
           state={state}
           formAction={formAction}
           pending={pending}
@@ -119,16 +119,16 @@ export function SectionItem({
 
 function SectionEditForm({
   section,
-  menus,
-  requiresMenu,
+  pages,
+  requiresPage,
   state,
   formAction,
   pending,
   onClose,
 }: {
   section: PageSection;
-  menus: Menu[];
-  requiresMenu: boolean;
+  pages: SitePage[];
+  requiresPage: boolean;
   state: ActionState;
   formAction: (payload: FormData) => void;
   pending: boolean;
@@ -165,20 +165,20 @@ function SectionEditForm({
       <input type="hidden" name="page_id" value={section.page_id} />
       <input type="hidden" name="kind" value={section.kind} />
 
-      {requiresMenu && (
+      {requiresPage && (
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-zinc-500">연결할 메뉴</span>
+            <span className="text-xs text-zinc-500">연결할 페이지</span>
             <select
-              name="menu_id"
+              name="source_page_id"
               required
-              defaultValue={section.menu_id ?? ""}
+              defaultValue={section.source_page_id ?? ""}
               className="rounded border border-zinc-300 bg-white px-3 py-2 text-sm"
             >
               <option value="">선택하세요</option>
-              {menus.map((menu) => (
-                <option key={menu.id} value={menu.id}>
-                  {menu.name}
+              {pages.map((page) => (
+                <option key={page.id} value={page.id}>
+                  {page.title}
                 </option>
               ))}
             </select>
@@ -384,16 +384,16 @@ function SectionEditForm({
         </div>
       )}
 
-      {section.kind === "menu" && (
+      {section.kind === "page_link" && (
         <ItemListEditor
-          kind="menu"
+          kind="page_link"
           items={items}
           onChange={setItems}
           folder={mediaFolder}
         />
       )}
 
-      {section.kind !== "menu" && section.kind !== "cta" && (
+      {section.kind !== "page_link" && section.kind !== "cta" && (
         <input type="hidden" name="items_json" value="[]" />
       )}
 
