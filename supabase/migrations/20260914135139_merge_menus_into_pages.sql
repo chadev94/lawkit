@@ -67,6 +67,10 @@ create index page_sections_source_page_idx
 -- ───────────────────────────────────────────────
 -- 3) sections: requires_menu → requires_page, 'menu' → 'page_link'
 -- ───────────────────────────────────────────────
+-- 옛 트리거가 requires_menu 를 읽으므로 컬럼 이름을 바꾸기 전에 먼저 내린다. (새 트리거는 4)에서 만든다)
+drop trigger if exists page_sections_menu_ref on page_sections;
+drop function if exists enforce_page_section_menu_ref();
+
 alter table sections rename column requires_menu to requires_page;
 
 comment on column sections.requires_page is
@@ -90,9 +94,6 @@ delete from sections where key = 'menu';
 -- ───────────────────────────────────────────────
 -- 4) 정합성 트리거 갱신
 -- ───────────────────────────────────────────────
-drop trigger if exists page_sections_menu_ref on page_sections;
-drop function if exists enforce_page_section_menu_ref();
-
 create or replace function enforce_page_section_source_ref()
 returns trigger
 language plpgsql
