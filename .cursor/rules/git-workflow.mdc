@@ -1,0 +1,59 @@
+---
+description: 브랜치, 커밋, PR 규칙. 어디로 PR 을 내고 어떤 방식으로 머지하는지, 커밋 전에 무엇을 확인하는지.
+alwaysApply: true
+---
+
+# Git 작업 규칙
+
+브랜치 전략과 머지 방식의 정본은 `README.md` 의 "브랜치", "머지 방식" 절이다. 여기는 에이전트가 자주 어기는 것만 모았다.
+
+## 작업 시작
+
+```bash
+git checkout main && git pull
+git checkout -b feat/무엇을-하는지
+```
+
+- `main` 과 `production` 에는 직접 push 할 수 없다. 반드시 브랜치를 딴다.
+- 브랜치 접두어: `feat/`, `fix/`, `refactor/`, `chore/`, `docs/`
+
+## 커밋 전 확인
+
+```bash
+git status            # .env.local 이나 .omc/ 같은 것이 섞이지 않았는지
+pnpm lint
+pnpm typecheck
+```
+
+`git add -A` 는 편하지만 `.gitignore` 에 없는 파일이 딸려 들어간다. 스테이징된 목록을 한 번 본다.
+
+## 커밋 메시지
+
+첫 줄은 `type: 무엇을 했는지` 로 짧게. 본문에는 **왜** 바꿨는지를 쓴다. 무엇을 바꿨는지는 diff 가 보여주지만 이유는 diff 에 없다.
+
+```
+refactor: menus 를 pages 로 통합
+
+같은 정보를 두 테이블에 들고 있어 이름을 바꿀 때 둘을 함께 고쳐야 했다.
+```
+
+## PR
+
+- base 는 항상 `main`. `production` 으로 직접 PR 을 올리지 않는다. `production` 에는 `main` 에서만 릴리스 PR 을 낸다.
+- PR 본문은 `.github/PULL_REQUEST_TEMPLATE.md` 형식을 따른다. 특히 **범위 밖**과 **확인** 절을 비우지 않는다.
+- 팀원 코드를 넓게 건드렸으면 그 사람을 리뷰어로 넣는다.
+
+## 머지 방식
+
+| PR | 방식 |
+| --- | --- |
+| feature → `main` | **Squash and merge** |
+| `main` → `production` | **Create a merge commit** |
+
+`main → production` 을 squash 하면 히스토리가 갈라져 다음 릴리스부터 이미 반영된 변경이 다시 diff 에 잡힌다.
+
+## 에이전트가 하지 않는 것
+
+- PR 을 스스로 머지하지 않는다. 머지는 사람이 한다.
+- `--no-verify`, `--force` 를 쓰지 않는다.
+- `production` 브랜치에 관련된 명령(체크아웃, 머지, push)을 사용자 지시 없이 실행하지 않는다.
