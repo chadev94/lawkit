@@ -32,6 +32,16 @@ case "$tool" in
     cmd=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
     [ -z "$cmd" ] && exit 0
 
+    # heredoc 본문은 명령이 아니라 데이터다(커밋 메시지, PR 본문 등). 검사에서 제외한다.
+    # `cat > x <<EOF` 처럼 heredoc 을 여는 줄 자체는 남겨서 리다이렉트 검사는 그대로 받게 한다.
+    cmd=$(printf '%s\n' "$cmd" | awk '
+      skip == 1 { if ($0 == tag) { skip = 0 }; next }
+      match($0, /<<-?[ \t]*["'"'"']?[A-Za-z_][A-Za-z0-9_]*["'"'"']?/) {
+        t = substr($0, RSTART, RLENGTH); sub(/^<<-?[ \t]*["'"'"']?/, "", t); sub(/["'"'"']$/, "", t)
+        tag = t; skip = 1; print; next
+      }
+      { print }')
+
     # 명령 시작 위치에서만 판정한다. 커밋 메시지나 PR 본문의 heredoc 에 적힌 설명 문구에는 걸리지 않도록,
     # 줄 처음 / ; / && / || / | / $( / ( 뒤에 (pnpm|npx 접두어 허용) 오는 것만 명령으로 본다.
     CMD_START='(^|[;&|(]|\$\()\s*(pnpm\s+(exec\s+)?|npx\s+)?'
