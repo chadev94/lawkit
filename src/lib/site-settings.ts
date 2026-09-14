@@ -25,7 +25,10 @@ export type SiteContent = {
   site_name: string;
   tagline: string;
   footer_text: string;
+  /** 우편번호 검색으로 채우는 기본주소(도로명) */
   address: string;
+  /** 층·호수 등 상세주소 */
+  address_detail: string;
   phone: string;
   email: string;
   business_number: string;
@@ -106,6 +109,7 @@ export const DEFAULT_CONTENT: SiteContent = {
   tagline: "",
   footer_text: "",
   address: "",
+  address_detail: "",
   phone: "",
   email: "",
   business_number: "",
@@ -185,6 +189,7 @@ export function parseContent(raw: unknown): SiteContent {
     tagline: asString(o.tagline, DEFAULT_CONTENT.tagline),
     footer_text: asString(o.footer_text, DEFAULT_CONTENT.footer_text),
     address: asString(o.address, DEFAULT_CONTENT.address),
+    address_detail: asString(o.address_detail, DEFAULT_CONTENT.address_detail),
     phone: asString(o.phone, DEFAULT_CONTENT.phone),
     email: asString(o.email, DEFAULT_CONTENT.email),
     business_number: asString(
@@ -275,6 +280,7 @@ export function contentFromFormData(formData: FormData): SiteContent {
     tagline: formData.get("tagline"),
     footer_text: formData.get("footer_text"),
     address: formData.get("address"),
+    address_detail: formData.get("address_detail"),
     phone: formData.get("phone"),
     email: formData.get("email"),
     business_number: formData.get("business_number"),
