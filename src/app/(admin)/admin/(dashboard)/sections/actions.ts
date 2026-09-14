@@ -60,7 +60,7 @@ export async function createSection(
 ): Promise<ActionState> {
   const pageId = String(formData.get("page_id") ?? "");
   const kind = String(formData.get("kind") ?? "");
-  const menuId = String(formData.get("menu_id") ?? "");
+  const sourcePageId = String(formData.get("source_page_id") ?? "");
   const title = String(formData.get("title") ?? "").trim();
   const subtitle = String(formData.get("subtitle") ?? "").trim();
   const layout = String(formData.get("layout") ?? "cards");
@@ -74,8 +74,8 @@ export async function createSection(
   if (!sectionKind || !sectionKind.is_active) {
     return { error: "유효하지 않은 섹션 종류입니다." };
   }
-  if (sectionKind.requires_menu && !menuId) {
-    return { error: "이 섹션 종류는 메뉴를 선택해야 합니다." };
+  if (sectionKind.requires_page && !sourcePageId) {
+    return { error: "이 섹션 종류는 연결할 페이지를 선택해야 합니다." };
   }
 
   const supabase = await createClient();
@@ -84,10 +84,10 @@ export async function createSection(
     .insert({
       page_id: pageId,
       kind,
-      menu_id: sectionKind.requires_menu ? menuId : null,
+      source_page_id: sectionKind.requires_page ? sourcePageId : null,
       title: title || null,
       subtitle: subtitle || null,
-      layout: sectionKind.requires_menu ? layout : "cards",
+      layout: sectionKind.requires_page ? layout : "cards",
       sort_order: sortOrder,
       content,
     })
@@ -97,7 +97,7 @@ export async function createSection(
   if (error) return { error: error.message };
   if (!data) return { error: "섹션 생성에 실패했습니다." };
 
-  if (kind === "menu" || kind === "cta") {
+  if (kind === "page_link" || kind === "cta") {
     const itemsError = await syncItems(data.id, items);
     if (itemsError) return { error: itemsError };
   }
@@ -113,7 +113,7 @@ export async function updateSection(
   const id = String(formData.get("id") ?? "");
   const pageId = String(formData.get("page_id") ?? "");
   const kind = String(formData.get("kind") ?? "");
-  const menuId = String(formData.get("menu_id") ?? "");
+  const sourcePageId = String(formData.get("source_page_id") ?? "");
   const title = String(formData.get("title") ?? "").trim();
   const subtitle = String(formData.get("subtitle") ?? "").trim();
   const layout = String(formData.get("layout") ?? "cards");
@@ -132,18 +132,18 @@ export async function updateSection(
   if (!sectionKind) {
     return { error: "유효하지 않은 섹션 종류입니다." };
   }
-  if (sectionKind.requires_menu && !menuId) {
-    return { error: "이 섹션 종류는 메뉴를 선택해야 합니다." };
+  if (sectionKind.requires_page && !sourcePageId) {
+    return { error: "이 섹션 종류는 연결할 페이지를 선택해야 합니다." };
   }
 
   const supabase = await createClient();
   const { error } = await supabase
     .from("page_sections")
     .update({
-      menu_id: sectionKind.requires_menu ? menuId : null,
+      source_page_id: sectionKind.requires_page ? sourcePageId : null,
       title: title || null,
       subtitle: subtitle || null,
-      layout: sectionKind.requires_menu ? layout : "cards",
+      layout: sectionKind.requires_page ? layout : "cards",
       sort_order: sortOrder,
       is_active: isActive,
       content,
@@ -152,7 +152,7 @@ export async function updateSection(
 
   if (error) return { error: error.message };
 
-  if (kind === "menu" || kind === "cta") {
+  if (kind === "page_link" || kind === "cta") {
     const itemsError = await syncItems(id, items);
     if (itemsError) return { error: itemsError };
   } else {

@@ -3,8 +3,8 @@ import type { PageSection, PageSectionItem } from "@/lib/sections";
 
 const SELECT = `
   *,
-  menu:menus(id, name, slug),
-  section:sections!kind(key, name, requires_menu),
+  source_page:pages!source_page_id(id, title, slug),
+  section:sections!kind(key, name, requires_page),
   items:page_section_items(*)
 `;
 

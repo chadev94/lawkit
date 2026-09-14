@@ -6,7 +6,7 @@ import { logout } from "@/app/(admin)/admin/login/actions";
 const NAV = [
   { href: "/admin/settings", label: "사이트 설정" },
   { href: "/admin/sections", label: "페이지 구성" },
-  { href: "/admin/menus", label: "메뉴 관리" },
+  { href: "/admin/pages", label: "페이지 관리" },
 ];
 
 export default async function AdminDashboardLayout({

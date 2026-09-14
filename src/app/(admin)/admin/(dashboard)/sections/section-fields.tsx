@@ -100,7 +100,7 @@ export function ItemListEditor({
   onChange,
   folder,
 }: {
-  kind: "menu" | "cta";
+  kind: "page_link" | "cta";
   items: DraftItem[];
   onChange: (items: DraftItem[]) => void;
   folder: string;
@@ -136,7 +136,7 @@ export function ItemListEditor({
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <p className="text-xs font-medium text-zinc-600">
-          {kind === "menu" ? "카드 / 리스트 항목" : "선택지"}
+          {kind === "page_link" ? "카드 / 리스트 항목" : "선택지"}
         </p>
         <button
           type="button"
@@ -178,7 +178,7 @@ export function ItemListEditor({
             />
           </label>
 
-          {kind === "menu" && (
+          {kind === "page_link" && (
             <>
               <label className="flex flex-col gap-1">
                 <span className="text-xs text-zinc-500">부제</span>
