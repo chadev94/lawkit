@@ -65,3 +65,25 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+---
+
+# 이 저장소의 규칙
+
+위 일반 원칙에 더해, **이 저장소에서 반드시 지켜야 하는 규칙은 `.claude/rules/`(= `.cursor/rules/`)에 있다.** 작업을 시작하기 전에 읽는다. Cursor 와 Claude Code 가 같은 파일을 읽도록 심볼릭 링크로 묶어 두었다.
+
+| 파일 | 내용 |
+| --- | --- |
+| `constitution.mdc` | 위반하면 머지되지 않는 절대 규칙 요약. 각 항목에 무엇이 막는지 적혀 있다 |
+| `imports.mdc` | import 방향 `app → components → lib`, 순환 금지, `@/` 별칭, 서버/클라이언트 경계 |
+| `supabase.mdc` | 마이그레이션은 `supabase migration new` 로만, 기존 파일 불변, RLS 필수, 머지 후 `db push` |
+| `git-workflow.mdc` | 브랜치, 커밋 전 검증, PR base, 머지 방식 |
+| `ai-behavior.mdc` | 추측 금지, 검증, 실수 대응, 읽는 사람 눈높이의 글쓰기 |
+
+규칙은 문서로만 두지 않고 기계가 막는다.
+
+- **CI** (`.github/workflows/ci.yml`): `pnpm check:migrations` → lint → typecheck → build. 하나라도 실패하면 머지 불가.
+- **Claude Code 훅** (`.claude/hooks/guard-db.sh`): `supabase/migrations/` 에 파일 직접 생성, `db reset --linked`, 원격 DB 파괴 SQL 을 거부하고 `db push` 는 확인을 받는다.
+- **ESLint** (`eslint.config.mjs`): 순환·역방향·상대경로 import 를 오류로 잡는다.
+
+규칙을 어겨야 하는 상황이면 우회하지 말고 사용자에게 이유를 말하고 규칙 파일을 함께 고친다.

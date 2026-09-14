@@ -1,0 +1,55 @@
+---
+description: 이 저장소에서 항상 적용되는 절대 규칙. 어길 경우 CI 또는 훅이 막는다.
+alwaysApply: true
+---
+
+# Constitution
+
+아래는 "권장"이 아니라 **위반하면 머지되지 않는 규칙**이다. 각 항목 옆에 무엇이 막는지 적었다.
+상세 이유와 예외는 같은 폴더의 개별 규칙 파일을 본다.
+
+## 1. import 방향은 한쪽으로만 흐른다
+
+```
+app/  →  components/  →  lib/
+```
+
+- 역방향 import 금지. `lib` 은 화면을 모른다. `components` 는 `app` 을 모른다.
+- 순환 import 금지.
+- 상위 디렉토리 상대경로(`../`) 금지. `@/` 별칭만 쓴다.
+- Client Component(`"use client"`)는 서버 전용 모듈(`@/lib/supabase/server`, `next/headers` 를 쓰는 것)에서 **값**을 import 하지 않는다. 타입만 `import type` 으로 가져온다.
+
+**막는 것:** `pnpm lint` (`import/no-cycle`, `import/no-restricted-paths`, `no-restricted-imports`). 서버 모듈 오염은 `pnpm build` 가 잡는다.
+상세: `imports.mdc`
+
+## 2. 마이그레이션 파일은 CLI 로만 만든다
+
+- `supabase migration new <이름>` 으로 생성한다. 파일명의 14자리 타임스탬프를 **손으로 쓰지 않는다.** `…120000`, `…090000` 처럼 정각으로 끝나는 이름은 사람이 만든 흔적이고, 두 사람이 같은 이름을 만들 수 있다.
+- 이미 존재하는 마이그레이션 파일은 **수정·삭제·이름 변경하지 않는다.** 고칠 것이 있으면 새 마이그레이션을 추가한다.
+- `create table` 에는 같은 파일에서 `enable row level security` 가 따라와야 한다.
+- 원격 반영(`supabase db push`)은 **PR 이 머지된 뒤** 한다. 코드가 먼저다.
+
+**막는 것:** CI `pnpm check:migrations`. Claude Code 훅은 `supabase/migrations/` 에 파일을 직접 쓰는 것과 `db reset --linked` 를 거부한다.
+상세: `supabase.mdc`
+
+## 3. 비밀값은 저장소에 들어오지 않는다
+
+- `.env.local` 은 커밋하지 않는다. `git add -A` 전에 `git status` 를 본다.
+- `SUPABASE_SERVICE_ROLE_KEY`(secret key)에 `NEXT_PUBLIC_` 접두어를 붙이지 않는다. 이 키는 RLS 를 전부 우회한다.
+- 이 저장소는 **public** 이다. 키가 한 번 커밋되면 revert 로 부족하고 대시보드에서 로테이션해야 한다.
+
+## 4. 공유 DB 를 부수는 명령은 실행하지 않는다
+
+- `supabase db reset --linked` 금지. 원격(dev) DB 는 팀이 공유한다.
+- 원격 DB 에 `drop table`, `truncate`, `delete` 를 직접 날리지 않는다. 필요하면 마이그레이션으로 만들고 PR 을 거친다.
+
+**막는 것:** Claude Code 훅 `.claude/hooks/guard-db.sh`.
+
+## 5. 커밋 전에 검증한다
+
+`pnpm lint && pnpm typecheck` 가 통과한 상태로 커밋한다. 화면 변경은 `pnpm build` 까지 확인한다.
+CI 가 같은 검사를 다시 하므로 로컬에서 깨진 것은 결국 머지되지 않는다.
+
+## 6. 문서를 스크립트로 통째로 덮어쓰지 않는다
+
+README, 규칙 파일 같은 문서는 편집 도구로 필요한 부분만 고친다. `python` 이나 `sed` 로 파일 전체를 치환하면 리뷰어가 무엇이 바뀌었는지 diff 로 추적할 수 없다.
