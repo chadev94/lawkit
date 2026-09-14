@@ -20,7 +20,7 @@ pnpm 버전은 `package.json` 의 `packageManager` 가 단일 출처다. 버전�
 | 관리자 로그인 | `/admin/login` | Supabase Auth 세션 |
 | 사이트 설정 | `/admin/settings` | 색상·폰트·브랜드/연락·사업자 정보 (`site_settings`) |
 | 페이지 구성 | `/admin/sections` | 페이지별 섹션(hero/menu/cta/contact) CRUD·이미지 |
-| 페이지 관리 | `/admin/menus` | 네비 메뉴 + 대응 `pages` 행 동기화 |
+| 페이지 관리 | `/admin/pages` | 페이지 등록·경로·순서·메뉴 노출. 헤더 네비게이션은 `show_in_nav` 로 결정 |
 
 인증은 `src/proxy.ts` 에서 `/admin` 을 보호한다. 로그인 없이 대시보드에 접근하면 `/admin/login` 으로 보낸다.
 
