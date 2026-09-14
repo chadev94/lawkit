@@ -7,6 +7,7 @@ import {
   type SiteSettings,
 } from "@/lib/site-settings";
 import { updateSiteSettings, type ActionState } from "./actions";
+import { AddressSearchInput } from "./address-search-input";
 
 const initialState: ActionState = { error: null };
 
@@ -61,14 +62,12 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="flex flex-col gap-1 sm:col-span-2">
-            <span className="text-xs text-zinc-500">주소</span>
-            <input
-              name="address"
-              defaultValue={settings.content.address}
-              className="rounded border border-zinc-300 px-3 py-2 text-sm"
-            />
-          </label>
+          <AddressSearchInput
+            name="address"
+            detailName="address_detail"
+            defaultValue={settings.content.address}
+            defaultDetail={settings.content.address_detail}
+          />
           <label className="flex flex-col gap-1">
             <span className="text-xs text-zinc-500">전화</span>
             <input
