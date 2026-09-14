@@ -1,12 +1,16 @@
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { getSiteSettings } from "@/lib/queries/site-settings";
-import {
-  googleFontsHref,
-  siteSettingsToCssVars,
-} from "@/lib/site-settings";
+import { PUBLIC_REVALIDATE_SECONDS } from "@/lib/cache-tags";
+import { siteSettingsToCssVars } from "@/lib/site-settings";
 
-export const dynamic = "force-dynamic";
+/**
+ * 공개 사이트 ISR (Vercel CDN).
+ * - revalidate 초 동안 엣지/서버 캐시 HIT
+ * - 만료 후 stale-while-revalidate: 캐시 응답 후 백그라운드 재생성
+ * - 어드민 저장 시 revalidateTag 로 즉시 무효화
+ */
+export const revalidate = PUBLIC_REVALIDATE_SECONDS;
 
 export default async function SiteLayout({
   children,
@@ -15,24 +19,12 @@ export default async function SiteLayout({
 }) {
   const settings = await getSiteSettings();
   const cssVars = siteSettingsToCssVars(settings);
-  const fontsHref = googleFontsHref(settings.typography);
 
   return (
     <div className="site-theme flex min-h-screen flex-col" style={cssVars}>
-      {fontsHref && (
-        <>
-          <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link
-            rel="preconnect"
-            href="https://fonts.gstatic.com"
-            crossOrigin="anonymous"
-          />
-          <link rel="stylesheet" href={fontsHref} />
-        </>
-      )}
-      <SiteHeader />
+      <SiteHeader settings={settings} />
       <div className="flex-1">{children}</div>
-      <SiteFooter />
+      <SiteFooter settings={settings} />
     </div>
   );
 }

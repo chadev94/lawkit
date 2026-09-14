@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import { PageSections } from "@/components/site/page-sections";
+import { PUBLIC_REVALIDATE_SECONDS } from "@/lib/cache-tags";
 import { HOME_PAGE_SLUG } from "@/lib/sections";
 import { getActivePageBySlug } from "@/lib/queries/pages";
 import { getActivePageSections } from "@/lib/queries/page-sections";
 
-export const dynamic = "force-dynamic";
+export const revalidate = PUBLIC_REVALIDATE_SECONDS;
 
 /**
  * pages.slug 에 대응하는 공개 페이지.

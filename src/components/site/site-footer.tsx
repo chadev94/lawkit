@@ -1,12 +1,11 @@
-import { getSiteSettings } from "@/lib/queries/site-settings";
 import { KakaoMap } from "@/components/site/kakao-map";
+import type { SiteSettings } from "@/lib/site-settings";
 
 function display(value: string) {
   return value.trim() || "—";
 }
 
-export async function SiteFooter() {
-  const settings = await getSiteSettings();
+export function SiteFooter({ settings }: { settings: SiteSettings }) {
   const { content } = settings;
   const privacyUrl = content.privacy_policy_url.trim();
 

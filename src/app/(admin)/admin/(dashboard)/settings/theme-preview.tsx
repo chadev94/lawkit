@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import {
   DEFAULT_CONTENT,
-  googleFontsHref,
   siteSettingsToCssVars,
   type SiteColors,
   type SiteTypography,
@@ -13,7 +12,7 @@ import {
  * 저장 전 테마 미리보기 다이얼로그.
  * 실제 공개 사이트를 iframe 으로 띄우고, 같은 오리진임을 이용해
  * 폼의 현재 색상·폰트를 iframe 안 CSS 변수에 직접 덮어쓴다.
- * 문구·이미지 등 콘텐츠는 저장된 값 그대로 보인다.
+ * 폰트는 next/font self-host 변수(--font-*)를 쓰므로 외부 CSS 로드 없음.
  */
 
 export type ThemePreviewData = {
@@ -38,9 +37,6 @@ export function ThemePreviewDialog({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  // iframe 로드(내부 링크 이동 포함)마다 draft 테마를 다시 주입한다.
-  // React 가 렌더한 요소의 style 속성을 직접 바꾸면 하이드레이션 불일치가 나므로,
-  // head 에 별도 <style> 을 추가해 !important 로 CSS 변수만 덮어쓴다.
   const applyTheme = useCallback(() => {
     const doc = iframeRef.current?.contentDocument;
     if (!doc?.head) return;
@@ -64,14 +60,6 @@ export function ThemePreviewDialog({
       doc.head.appendChild(styleEl);
     }
     styleEl.textContent = `.site-theme { ${decls} }`;
-
-    const fontsHref = googleFontsHref(data.typography);
-    if (fontsHref && !doc.querySelector(`link[href="${fontsHref}"]`)) {
-      const link = doc.createElement("link");
-      link.rel = "stylesheet";
-      link.href = fontsHref;
-      doc.head.appendChild(link);
-    }
   }, [data]);
 
   return (

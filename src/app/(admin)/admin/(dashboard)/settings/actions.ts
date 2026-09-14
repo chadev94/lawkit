@@ -1,6 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 import { createClient } from "@/lib/supabase/server";
 import {
   colorsFromFormData,
@@ -26,6 +27,7 @@ export async function updateSiteSettings(
 
   if (error) return { error: error.message };
 
+  revalidateTag(CACHE_TAGS.siteSettings, "max");
   revalidatePath("/admin/settings");
   revalidatePath("/", "layout");
   return { error: null };

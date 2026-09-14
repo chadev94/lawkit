@@ -1,4 +1,7 @@
+import { unstable_cache } from "next/cache";
+import { CACHE_TAGS, PUBLIC_REVALIDATE_SECONDS } from "@/lib/cache-tags";
 import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import type { PageSection, PageSectionItem } from "@/lib/sections";
 
 const SELECT = `
@@ -22,11 +25,10 @@ function normalizeSection(row: unknown): PageSection {
   };
 }
 
-/** 공개 사이트용. 특정 페이지의 활성 섹션 (+ 활성 아이템). */
-export async function getActivePageSections(
+async function fetchActivePageSections(
   pageId: string,
 ): Promise<PageSection[]> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("page_sections")
     .select(SELECT)
@@ -41,6 +43,20 @@ export async function getActivePageSections(
     section.items = section.items.filter((item) => item.is_active);
     return section;
   });
+}
+
+/** 공개 사이트용. 특정 페이지의 활성 섹션 (+ 활성 아이템). */
+export async function getActivePageSections(
+  pageId: string,
+): Promise<PageSection[]> {
+  return unstable_cache(
+    () => fetchActivePageSections(pageId),
+    ["active-page-sections", pageId],
+    {
+      revalidate: PUBLIC_REVALIDATE_SECONDS,
+      tags: [CACHE_TAGS.pageSections, `${CACHE_TAGS.pageSections}:${pageId}`],
+    },
+  )();
 }
 
 /** admin용. 특정 페이지의 섹션 전부. */
