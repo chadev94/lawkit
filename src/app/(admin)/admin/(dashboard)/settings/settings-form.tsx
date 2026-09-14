@@ -1,17 +1,21 @@
 "use client";
 
 import { useActionState } from "react";
-import {
-  COLOR_FIELDS,
-  FONT_OPTIONS,
-  type SiteSettings,
-} from "@/lib/site-settings";
+import { FONT_OPTIONS, type SiteSettings } from "@/lib/site-settings";
+import { type ThemePreset } from "@/lib/theme-presets";
 import { updateSiteSettings, type ActionState } from "./actions";
 import { AddressSearchInput } from "./address-search-input";
+import { ThemeColorSection } from "./theme-color-section";
 
 const initialState: ActionState = { error: null };
 
-export function SettingsForm({ settings }: { settings: SiteSettings }) {
+export function SettingsForm({
+  settings,
+  themePresets,
+}: {
+  settings: SiteSettings;
+  themePresets: ThemePreset[];
+}) {
   const [state, formAction, pending] = useActionState(
     updateSiteSettings,
     initialState,
@@ -116,24 +120,16 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
 
       <section className="flex flex-col gap-4">
         <div>
-          <h2 className="text-sm font-semibold text-zinc-900">색상</h2>
+          <h2 className="text-sm font-semibold text-zinc-900">색상 테마</h2>
           <p className="mt-1 text-xs text-zinc-500">
-            공개 사이트 CSS 변수로 적용됩니다. OS 다크모드와 무관하게 고정됩니다.
+            프리셋을 선택하거나 세부 색상을 직접 조정합니다. 저장하면 공개
+            사이트에 반영됩니다.
           </p>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {COLOR_FIELDS.map(({ key, label }) => (
-            <label key={key} className="flex flex-col gap-1">
-              <span className="text-xs text-zinc-500">{label}</span>
-              <input
-                type="color"
-                name={`color_${key}`}
-                defaultValue={settings.colors[key]}
-                className="h-9 w-full max-w-[12rem] cursor-pointer rounded border border-zinc-300 bg-white p-1"
-              />
-            </label>
-          ))}
-        </div>
+        <ThemeColorSection
+          presets={themePresets}
+          initialColors={settings.colors}
+        />
       </section>
 
       <section className="flex flex-col gap-4">
