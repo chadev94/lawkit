@@ -1,0 +1,78 @@
+---
+description: import 방향과 순환 참조 규칙. 어떤 파일이 어떤 파일을 가져올 수 있는지, 왜 그렇게 정했는지.
+globs: ['src/**/*.ts', 'src/**/*.tsx']
+alwaysApply: true
+---
+
+# import 규칙
+
+## 한마디로
+
+**`app/` 은 `components/` 를, `components/` 는 `lib/` 을 가져올 수 있다. 반대는 안 된다.**
+그리고 어떤 두 파일도 서로를 가져오지 않는다.
+
+```
+src/
+  app/          라우트와 페이지. 화면을 조립만 한다.
+  components/   재사용 UI. 데이터는 props 로 받는다.
+  lib/          도메인 로직, 쿼리, 타입. 화면을 모른다.
+```
+
+## 왜 이렇게 정했나
+
+- `lib` 이 화면을 알게 되면 그 로직을 다른 곳(다른 고객사 사이트, 스크립트, 테스트)에서 재사용할 수 없다. 이 저장소는 여러 변호사 사이트에 재납품하는 뼈대라 `lib` 의 독립성이 곧 자산이다.
+- 순환 import 는 한 번 생기면 "왜 이 값이 undefined 지" 같은 이상한 방식으로 깨지고, 원인을 찾는 데 시간이 많이 든다. 생기지 않게 막는 것이 푸는 것보다 훨씬 싸다.
+- `../../lib/foo` 같은 상대경로가 쌓이면 파일을 한 번 옮길 때마다 전부 깨진다. `@/lib/foo` 는 위치와 무관하다.
+
+## 허용되는 것
+
+| 위치 | 가져올 수 있는 것 |
+| --- | --- |
+| `app/**` | `@/components/*`, `@/lib/*`, 같은 폴더의 `./actions`, `./form` 같은 동료 파일 |
+| `components/**` | `@/lib/*`, 같은 폴더 안의 `./` 파일 |
+| `lib/**` | `@/lib/*` 안에서만. 단, 순환은 안 된다 |
+
+같은 기능 폴더 안에서의 `./` 상대경로는 오히려 권장한다. 그 폴더가 하나의 단위라는 뜻이기 때문이다.
+
+## 금지되는 것과 그 이유
+
+| 금지 | 이유 |
+| --- | --- |
+| `lib` 이 `components` 나 `app` 을 import | `lib` 이 화면에 묶여 재사용 불가 |
+| `components` 가 `app` 을 import | 컴포넌트가 특정 페이지에 묶임. props 로 받아야 한다 |
+| A → B → A 순환 | 로딩 순서에 따라 undefined 가 나옴 |
+| `../` 로 상위 디렉토리 참조 | 파일 이동에 취약. `@/` 를 쓴다 |
+| Client Component 가 서버 전용 모듈에서 **값** import | `next/headers` 등이 브라우저 번들에 들어가 빌드가 깨진다 |
+
+## 서버 / 클라이언트 경계
+
+`"use client"` 가 붙은 파일은 브라우저에서 실행된다. 여기서 `@/lib/supabase/server` 나 `@/lib/queries/*` 의 **함수나 상수를 가져오면 빌드가 실패한다.** 그 모듈이 `next/headers` 를 쓰기 때문이다.
+
+타입만 필요하면 `import type` 으로 가져온다. 타입은 컴파일 시 지워져서 번들에 남지 않는다.
+
+```ts
+// ✅ 타입만
+import type { SitePage } from "@/lib/sections";
+
+// ❌ 값을 가져오면 서버 모듈이 번들에 딸려온다
+import { SECTION_KIND_LABEL } from "@/lib/queries/home-sections";
+```
+
+라벨이나 상수처럼 **양쪽에서 다 쓰는 값**은 서버 코드가 없는 별도 파일(`@/lib/sections.ts` 같은)에 둔다. 조회 함수(`queries/*`)와 같은 파일에 두지 않는다.
+
+## 새 모듈을 만들 때
+
+1. 이 파일이 어느 층(`app` / `components` / `lib`)인지 먼저 정한다.
+2. 가져오려는 것이 그 층에서 허용되는지 위 표로 확인한다.
+3. 양방향으로 가져오게 될 것 같으면 공통 부분을 `lib` 아래 새 파일로 뽑는다.
+
+## 무엇이 막는가
+
+`pnpm lint` 가 다음 규칙으로 잡는다. CI 에 물려 있어 위반하면 머지되지 않는다.
+
+- `import/no-cycle` — 순환
+- `import/no-restricted-paths` — 역방향
+- `no-restricted-imports` — `../` 상대경로
+- `import/no-self-import`, `import/no-duplicates`
+
+서버 모듈 오염은 lint 로 잡기 어렵고 `pnpm build` 가 잡는다. 이것도 CI 에 있다.
