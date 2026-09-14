@@ -20,8 +20,8 @@ export function Hero({ section }: { section: PageSection }) {
       )}
       <div className="relative mx-auto w-full max-w-5xl px-6 py-24">
         <p
-          className="text-xs tracking-[0.3em]"
-          style={{ color: "var(--accent)" }}
+          className="text-xs tracking-[0.3em] opacity-70"
+          style={{ color: "var(--hero-foreground)" }}
         >
           {content.eyebrow || "YOO & PARTNERS"}
         </p>
@@ -33,8 +33,8 @@ export function Hero({ section }: { section: PageSection }) {
         </h1>
         {section.subtitle && (
           <p
-            className="mt-4 max-w-md text-sm"
-            style={{ color: "var(--accent)" }}
+            className="mt-4 max-w-md text-sm opacity-80"
+            style={{ color: "var(--hero-foreground)" }}
           >
             {section.subtitle}
           </p>
