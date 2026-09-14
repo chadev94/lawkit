@@ -1,23 +1,53 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useRef, useState } from "react";
 import {
-  COLOR_FIELDS,
   FONT_OPTIONS,
+  parseTypography,
+  type SiteColors,
   type SiteSettings,
 } from "@/lib/site-settings";
+import { type ThemePreset } from "@/lib/theme-presets";
 import { updateSiteSettings, type ActionState } from "./actions";
+import { AddressSearchInput } from "./address-search-input";
+import { ThemeColorSection } from "./theme-color-section";
+import { ThemePreviewDialog, type ThemePreviewData } from "./theme-preview";
 
 const initialState: ActionState = { error: null };
 
-export function SettingsForm({ settings }: { settings: SiteSettings }) {
+export function SettingsForm({
+  settings,
+  themePresets,
+}: {
+  settings: SiteSettings;
+  themePresets: ThemePreset[];
+}) {
   const [state, formAction, pending] = useActionState(
     updateSiteSettings,
     initialState,
   );
+  const [colors, setColors] = useState<SiteColors>(settings.colors);
+  const [preview, setPreview] = useState<ThemePreviewData | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  function openPreview() {
+    if (!formRef.current) return;
+    const formData = new FormData(formRef.current);
+    setPreview({
+      colors,
+      typography: parseTypography({
+        font_sans: formData.get("font_sans"),
+        font_heading: formData.get("font_heading"),
+      }),
+    });
+  }
 
   return (
-    <form action={formAction} className="flex max-w-3xl flex-col gap-8">
+    <form
+      ref={formRef}
+      action={formAction}
+      className="flex max-w-3xl flex-col gap-8"
+    >
       <section className="flex flex-col gap-4">
         <div>
           <h2 className="text-sm font-semibold text-zinc-900">브랜드 콘텐츠</h2>
@@ -61,14 +91,12 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="flex flex-col gap-1 sm:col-span-2">
-            <span className="text-xs text-zinc-500">주소</span>
-            <input
-              name="address"
-              defaultValue={settings.content.address}
-              className="rounded border border-zinc-300 px-3 py-2 text-sm"
-            />
-          </label>
+          <AddressSearchInput
+            name="address"
+            detailName="address_detail"
+            defaultValue={settings.content.address}
+            defaultDetail={settings.content.address_detail}
+          />
           <label className="flex flex-col gap-1">
             <span className="text-xs text-zinc-500">전화</span>
             <input
@@ -117,24 +145,17 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
 
       <section className="flex flex-col gap-4">
         <div>
-          <h2 className="text-sm font-semibold text-zinc-900">색상</h2>
+          <h2 className="text-sm font-semibold text-zinc-900">색상 테마</h2>
           <p className="mt-1 text-xs text-zinc-500">
-            공개 사이트 CSS 변수로 적용됩니다. OS 다크모드와 무관하게 고정됩니다.
+            프리셋을 선택하거나 세부 색상을 직접 조정합니다. 저장하면 공개
+            사이트에 반영됩니다.
           </p>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {COLOR_FIELDS.map(({ key, label }) => (
-            <label key={key} className="flex flex-col gap-1">
-              <span className="text-xs text-zinc-500">{label}</span>
-              <input
-                type="color"
-                name={`color_${key}`}
-                defaultValue={settings.colors[key]}
-                className="h-9 w-full max-w-[12rem] cursor-pointer rounded border border-zinc-300 bg-white p-1"
-              />
-            </label>
-          ))}
-        </div>
+        <ThemeColorSection
+          presets={themePresets}
+          colors={colors}
+          onColorsChange={setColors}
+        />
       </section>
 
       <section className="flex flex-col gap-4">
@@ -176,15 +197,29 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
         </div>
       </section>
 
-      {state.error && <p className="text-sm text-red-600">{state.error}</p>}
+      <div className="sticky bottom-0 flex items-center justify-end gap-2 border-t border-zinc-200 bg-white/95 py-3 backdrop-blur">
+        {state.error && (
+          <p className="mr-auto text-sm text-red-600">{state.error}</p>
+        )}
+        <button
+          type="button"
+          onClick={openPreview}
+          className="rounded border border-zinc-300 px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50"
+        >
+          미리보기
+        </button>
+        <button
+          type="submit"
+          disabled={pending}
+          className="rounded bg-zinc-900 px-4 py-2 text-sm text-white disabled:opacity-50"
+        >
+          {pending ? "저장 중..." : "설정 저장"}
+        </button>
+      </div>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="self-start rounded bg-zinc-900 px-4 py-2 text-sm text-white disabled:opacity-50"
-      >
-        {pending ? "저장 중..." : "설정 저장"}
-      </button>
+      {preview && (
+        <ThemePreviewDialog data={preview} onClose={() => setPreview(null)} />
+      )}
     </form>
   );
 }

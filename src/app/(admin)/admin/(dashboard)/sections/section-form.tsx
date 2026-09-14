@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import type { Menu } from "@/lib/queries/menus";
 import {
   DEFAULT_CONTACT_CONTENT,
   DEFAULT_CTA_CONTENT,
@@ -10,7 +9,7 @@ import {
   parseCtaContent,
   parseHeroContent,
 } from "@/lib/section-content";
-import { SECTION_LAYOUT_LABEL, type Section } from "@/lib/sections";
+import { SECTION_LAYOUT_LABEL, type Section, type SitePage } from "@/lib/sections";
 import { createSection, type ActionState } from "./actions";
 import { ImageField, ItemListEditor, toDraftItems } from "./section-fields";
 
@@ -18,11 +17,11 @@ const initialState: ActionState = { error: null };
 
 export function SectionForm({
   pageId,
-  menus,
+  pages,
   sectionKinds,
 }: {
   pageId: string;
-  menus: Menu[];
+  pages: SitePage[];
   sectionKinds: Section[];
 }) {
   const defaultKind = sectionKinds[0]?.key ?? "";
@@ -37,7 +36,7 @@ export function SectionForm({
   );
 
   const selected = sectionKinds.find((item) => item.key === kind);
-  const requiresMenu = selected?.requires_menu ?? false;
+  const requiresPage = selected?.requires_page ?? false;
   const mediaFolder = `draft/${pageId}`;
 
   if (sectionKinds.length === 0) {
@@ -75,25 +74,25 @@ export function SectionForm({
           </select>
         </label>
 
-        {requiresMenu && (
+        {requiresPage && (
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-zinc-500">연결할 메뉴</span>
+            <span className="text-xs text-zinc-500">연결할 페이지</span>
             <select
-              name="menu_id"
+              name="source_page_id"
               required
               className="rounded border border-zinc-300 px-3 py-2 text-sm"
             >
               <option value="">선택하세요</option>
-              {menus.map((menu) => (
-                <option key={menu.id} value={menu.id}>
-                  {menu.name}
+              {pages.map((page) => (
+                <option key={page.id} value={page.id}>
+                  {page.title}
                 </option>
               ))}
             </select>
           </label>
         )}
 
-        {requiresMenu && (
+        {requiresPage && (
           <label className="flex flex-col gap-1">
             <span className="text-xs text-zinc-500">표시 방식</span>
             <select
@@ -279,16 +278,16 @@ export function SectionForm({
         </div>
       )}
 
-      {kind === "menu" && (
+      {kind === "page_link" && (
         <ItemListEditor
-          kind="menu"
+          kind="page_link"
           items={items}
           onChange={setItems}
           folder={mediaFolder}
         />
       )}
 
-      {kind !== "menu" && kind !== "cta" && (
+      {kind !== "page_link" && kind !== "cta" && (
         <input type="hidden" name="items_json" value="[]" />
       )}
 

@@ -5,11 +5,19 @@ on:
   push:
     branches: [main, production]
 
+# 같은 PR 에 새 커밋이 오면 이전 실행을 취소한다. 러너 시간을 아끼고 오래된 결과가 남지 않게.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # check-migrations 가 base 브랜치와 diff 를 내려면 전체 히스토리가 필요하다
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@v4
 
@@ -20,6 +28,10 @@ jobs:
 
       - name: Install
         run: pnpm install --frozen-lockfile
+
+      # 마이그레이션 파일명·불변성·RLS 검사. 규칙은 .cursor/rules/supabase.mdc
+      - name: Check migrations
+        run: pnpm check:migrations
 
       - name: Lint
         run: pnpm lint

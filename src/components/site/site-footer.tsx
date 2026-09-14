@@ -1,4 +1,5 @@
 import { getSiteSettings } from "@/lib/queries/site-settings";
+import { KakaoMap } from "@/components/site/kakao-map";
 
 function display(value: string) {
   return value.trim() || "—";
@@ -40,7 +41,14 @@ export async function SiteFooter() {
           <dl className="space-y-1">
             <div className="flex gap-2">
               <dt className="w-12 shrink-0">주소</dt>
-              <dd style={{ color: "var(--accent)" }}>{display(content.address)}</dd>
+              <dd style={{ color: "var(--accent)" }}>
+                {display(
+                  [content.address, content.address_detail]
+                    .map((v) => v.trim())
+                    .filter(Boolean)
+                    .join(" "),
+                )}
+              </dd>
             </div>
             <div className="flex gap-2">
               <dt className="w-12 shrink-0">전화</dt>
@@ -75,6 +83,12 @@ export async function SiteFooter() {
             )}
           </div>
         </div>
+
+        {content.address.trim() && (
+          <div className="mt-8">
+            <KakaoMap address={content.address} />
+          </div>
+        )}
 
         <p className="mt-8 text-xs" style={{ color: "var(--accent)" }}>
           {content.footer_text ||

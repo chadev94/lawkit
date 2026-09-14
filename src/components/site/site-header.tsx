@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { getActiveMenus } from "@/lib/queries/menus";
+import { getNavPages } from "@/lib/queries/pages";
 import { getSiteSettings } from "@/lib/queries/site-settings";
+import { pagePath } from "@/lib/sections";
 
 export async function SiteHeader() {
-  const [menus, settings] = await Promise.all([
-    getActiveMenus(),
+  const [pages, settings] = await Promise.all([
+    getNavPages(),
     getSiteSettings(),
   ]);
 
@@ -20,14 +21,14 @@ export async function SiteHeader() {
         </Link>
 
         <nav className="flex gap-6">
-          {menus.map((menu) => (
+          {pages.map((page) => (
             <Link
-              key={menu.id}
-              href={`/${menu.slug}`}
+              key={page.id}
+              href={pagePath(page.slug)}
               className="text-sm transition-opacity hover:opacity-70"
               style={{ color: "var(--muted-foreground)" }}
             >
-              {menu.name}
+              {page.title}
             </Link>
           ))}
         </nav>
