@@ -335,3 +335,6 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/intellij+all,macos,windows,nextjs,react,node
 # oh-my-claudecode session state
 .omc/
+
+# 시드용 다운로드 이미지 (업로드 스크립트가 Storage로 보냄)
+scripts/seed-assets/

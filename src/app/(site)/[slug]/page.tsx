@@ -4,7 +4,7 @@ import { HOME_PAGE_SLUG } from "@/lib/sections";
 import { getActivePageBySlug } from "@/lib/queries/pages";
 import { getActivePageSections } from "@/lib/queries/page-sections";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 /**
  * pages.slug 에 대응하는 공개 페이지.

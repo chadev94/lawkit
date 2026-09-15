@@ -39,5 +39,10 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      # ISR 빌드가 공개 페이지를 미리 렌더할 때 Supabase 가 필요하다.
+      # NEXT_PUBLIC_* 는 브라우저에 노출되는 공개 값. 저장소 Variables 에 둔다.
       - name: Build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         run: pnpm build

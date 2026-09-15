@@ -47,10 +47,8 @@ export type SiteSettings = {
 export type FontOption = {
   id: string;
   label: string;
-  /** CSS font-family 스택 */
+  /** CSS font-family 스택 (next/font CSS 변수) */
   family: string;
-  /** Google Fonts CSS2 family 파라미터. null 이면 로컬/기본 폰트 */
-  google?: string | null;
 };
 
 export const FONT_OPTIONS: FontOption[] = [
@@ -58,31 +56,27 @@ export const FONT_OPTIONS: FontOption[] = [
     id: "geist",
     label: "Geist (기본)",
     family: "var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif",
-    google: null,
   },
   {
     id: "inter",
     label: "Inter",
-    family: '"Inter", ui-sans-serif, system-ui, sans-serif',
-    google: "Inter:wght@400;500;600;700",
+    family: "var(--font-inter), ui-sans-serif, system-ui, sans-serif",
   },
   {
     id: "noto-sans-kr",
     label: "Noto Sans KR",
-    family: '"Noto Sans KR", ui-sans-serif, system-ui, sans-serif',
-    google: "Noto+Sans+KR:wght@400;500;600;700",
+    family: "var(--font-noto-sans-kr), ui-sans-serif, system-ui, sans-serif",
   },
   {
     id: "ibm-plex-sans-kr",
     label: "IBM Plex Sans KR",
-    family: '"IBM Plex Sans KR", ui-sans-serif, system-ui, sans-serif',
-    google: "IBM+Plex+Sans+KR:wght@400;500;600;700",
+    family:
+      "var(--font-ibm-plex-sans-kr), ui-sans-serif, system-ui, sans-serif",
   },
   {
     id: "nanum-gothic",
     label: "Nanum Gothic",
-    family: '"Nanum Gothic", ui-sans-serif, system-ui, sans-serif',
-    google: "Nanum+Gothic:wght@400;700",
+    family: "var(--font-nanum-gothic), ui-sans-serif, system-ui, sans-serif",
   },
 ];
 
@@ -222,18 +216,6 @@ export function normalizeSiteSettings(row: {
 
 export function getFontOption(id: string): FontOption {
   return FONT_OPTIONS.find((f) => f.id === id) ?? FONT_OPTIONS[0]!;
-}
-
-/** Google Fonts CSS URL. 필요 없으면 null. */
-export function googleFontsHref(typography: SiteTypography): string | null {
-  const families = new Set<string>();
-  for (const id of [typography.font_sans, typography.font_heading]) {
-    const opt = getFontOption(id);
-    if (opt.google) families.add(opt.google);
-  }
-  if (families.size === 0) return null;
-  const q = [...families].map((f) => `family=${f}`).join("&");
-  return `https://fonts.googleapis.com/css2?${q}&display=swap`;
 }
 
 /** 공개 사이트 루트에 주입할 CSS 변수. */

@@ -3,7 +3,7 @@ import { PageSections } from "@/components/site/page-sections";
 import { getHomePage } from "@/lib/queries/pages";
 import { getActivePageSections } from "@/lib/queries/page-sections";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 /**
  * 홈. pages.slug = home 의 page_sections 를 렌더한다.
