@@ -47,8 +47,24 @@ export function PreviewPane({
   const measure = useCallback(() => {
     const slot = slotRef.current;
     if (!slot) return;
-    setZoom(Math.min(1, slot.clientWidth / width));
+    // 안쪽 여백(p-3 = 12px * 2)을 빼고, 반올림으로 칸을 넘치지 않게 1px 여유를 둔다.
+    const inner = slot.clientWidth - 24 - 1;
+    setZoom(Math.min(1, inner / width));
   }, [width]);
+
+  // scrollIntoView 는 overflow-x: hidden 인 칸도 가로로 밀어 왼쪽 여백을 없앤다.
+  // 세로만 직접 계산해 움직인다.
+  const scrollTo = useCallback((el: Element, center: boolean) => {
+    const slot = slotRef.current;
+    if (!slot) return;
+    const slotRect = slot.getBoundingClientRect();
+    const rect = el.getBoundingClientRect();
+    const offset = rect.top - slotRect.top + slot.scrollTop;
+    const top = center
+      ? offset - slot.clientHeight / 2 + rect.height / 2
+      : offset - 12;
+    slot.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+  }, []);
 
   useEffect(() => {
     const slot = slotRef.current;
@@ -65,8 +81,8 @@ export function PreviewPane({
     const target = contentRef.current?.querySelector(
       `[data-preview-section="${highlightId}"]`,
     );
-    target?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }, [highlightId, sections]);
+    if (target) scrollTo(target, false);
+  }, [highlightId, sections, scrollTo]);
 
   // 지금 입력 중인 칸에 해당하는 요소만 따로 표시한다.
   useEffect(() => {
@@ -81,8 +97,8 @@ export function PreviewPane({
     const target = block?.querySelector(`[data-field="${activeField}"]`);
     if (!target) return;
     target.setAttribute("data-field-active", "");
-    target.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [activeField, highlightId, sections]);
+    scrollTo(target, true);
+  }, [activeField, highlightId, sections, scrollTo]);
 
   const visible = sections.filter((section) => section.is_active);
   const hiddenEditing =
