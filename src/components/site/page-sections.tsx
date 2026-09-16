@@ -7,8 +7,16 @@ import type { PageSection } from "@/lib/sections";
 /**
  * page_sections 를 kind 별로 렌더한다.
  * 컴포넌트 매핑은 코드에 남고, 배치·카피는 DB가 담당한다.
+ *
+ * highlightId 는 어드민 미리보기 전용이다. 공개 사이트에서는 넘기지 않는다.
  */
-export function PageSections({ sections }: { sections: PageSection[] }) {
+export function PageSections({
+  sections,
+  highlightId = null,
+}: {
+  sections: PageSection[];
+  highlightId?: string | null;
+}) {
   if (sections.length === 0) {
     return (
       <main className="py-32 text-center">
@@ -23,19 +31,38 @@ export function PageSections({ sections }: { sections: PageSection[] }) {
   return (
     <main>
       {sections.map((section) => {
-        switch (section.kind) {
-          case "hero":
-            return <Hero key={section.id} section={section} />;
-          case "page_link":
-            return <PageLinkSection key={section.id} section={section} />;
-          case "cta":
-            return <ConsultationCta key={section.id} section={section} />;
-          case "contact":
-            return <ContactForm key={section.id} section={section} />;
-          default:
-            return null;
-        }
+        const body = renderSection(section);
+        if (body === null) return null;
+
+        return (
+          <div
+            key={section.id}
+            data-preview-section={section.id}
+            className={
+              section.id === highlightId
+                ? "relative outline-2 -outline-offset-2 outline-blue-500"
+                : undefined
+            }
+          >
+            {body}
+          </div>
+        );
       })}
     </main>
   );
+}
+
+function renderSection(section: PageSection) {
+  switch (section.kind) {
+    case "hero":
+      return <Hero section={section} />;
+    case "page_link":
+      return <PageLinkSection section={section} />;
+    case "cta":
+      return <ConsultationCta section={section} />;
+    case "contact":
+      return <ContactForm section={section} />;
+    default:
+      return null;
+  }
 }

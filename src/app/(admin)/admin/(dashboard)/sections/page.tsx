@@ -1,10 +1,11 @@
 import { getPageSections } from "@/lib/queries/page-sections";
-import { getAllPages } from "@/lib/queries/pages";
+import { getAllPages, getNavPages } from "@/lib/queries/pages";
 import { getActiveSectionsCatalog } from "@/lib/queries/sections";
+import { getSiteSettings } from "@/lib/queries/site-settings";
 import { HOME_PAGE_SLUG, pagePath } from "@/lib/sections";
+import { siteSettingsToCssVars } from "@/lib/site-settings";
 import { resolveAdminPageId } from "./actions";
-import { SectionForm } from "./section-form";
-import { SectionItem } from "./section-item";
+import { SectionsWorkbench } from "./workbench";
 
 export const dynamic = "force-dynamic";
 
@@ -14,9 +15,11 @@ export default async function SectionsPage({
   searchParams: Promise<{ page?: string }>;
 }) {
   const params = await searchParams;
-  const [pages, sectionKinds] = await Promise.all([
+  const [pages, sectionKinds, settings, navPages] = await Promise.all([
     getAllPages(),
     getActiveSectionsCatalog(),
+    getSiteSettings(),
+    getNavPages(),
   ]);
 
   const selectedPageId = await resolveAdminPageId(params.page);
@@ -36,7 +39,7 @@ export default async function SectionsPage({
   );
 
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-6 p-8">
+    <main className="mx-auto flex max-w-[1500px] flex-col gap-6 p-8">
       <div>
         <h1 className="text-xl font-semibold">페이지 구성</h1>
         <p className="mt-1 text-sm text-zinc-500">
@@ -79,27 +82,15 @@ export default async function SectionsPage({
                 선택: {selectedPage.title} → {pagePath(selectedPage.slug)}
               </p>
 
-              <SectionForm
+              <SectionsWorkbench
                 pageId={selectedPage.id}
-                pages={linkablePages}
+                sections={sections}
+                linkablePages={linkablePages}
                 sectionKinds={sectionKinds}
+                cssVars={siteSettingsToCssVars(settings)}
+                siteName={settings.content.site_name}
+                navTitles={navPages.map((page) => page.title)}
               />
-
-              {sections.length === 0 ? (
-                <p className="py-12 text-center text-sm text-zinc-400">
-                  이 페이지에 등록된 섹션이 없습니다.
-                </p>
-              ) : (
-                <ul className="divide-y divide-zinc-200 rounded-lg border border-zinc-200">
-                  {sections.map((section) => (
-                    <SectionItem
-                      key={section.id}
-                      section={section}
-                      pages={linkablePages}
-                    />
-                  ))}
-                </ul>
-              )}
             </>
           )}
         </>

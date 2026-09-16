@@ -5,7 +5,7 @@ import { mediaPublicUrl } from "@/lib/section-content";
 import { uploadSectionMedia } from "@/lib/section-media";
 import type { SectionItemInput } from "@/lib/section-content";
 
-type DraftItem = SectionItemInput & { key: string };
+export type DraftItem = SectionItemInput & { key: string };
 
 function newKey() {
   return crypto.randomUUID();
