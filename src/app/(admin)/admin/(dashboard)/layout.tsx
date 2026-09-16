@@ -26,37 +26,41 @@ export default async function AdminDashboardLayout({
 
   return (
     <div className="flex min-h-screen">
-      <aside className="sticky top-0 flex h-screen w-48 shrink-0 flex-col border-r border-zinc-200 p-6">
-        <p className="text-xs font-semibold tracking-tight">ADMIN</p>
-        <nav className="mt-6 flex flex-col gap-2">
+      <aside
+        className="sticky top-0 flex h-screen w-52 shrink-0 flex-col p-5"
+        style={{
+          background: "var(--a-surface)",
+          borderRight: "1px solid var(--a-line)",
+        }}
+      >
+        <p
+          className="px-2.5 text-[11px] font-bold tracking-[0.14em]"
+          style={{ color: "var(--a-ink-3)" }}
+        >
+          ADMIN
+        </p>
+        <nav className="mt-5 flex flex-col gap-0.5">
           {NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="text-sm text-zinc-600 hover:text-zinc-900"
-            >
+            <Link key={item.href} href={item.href} className="a-nav-link">
               {item.label}
             </Link>
           ))}
         </nav>
 
-        <div className="mt-auto space-y-2 pt-8">
+        <div className="mt-auto flex flex-col items-start gap-1.5 pt-8">
           {email && (
-            <p className="truncate text-[11px] text-zinc-400" title={email}>
+            <p className="a-hint max-w-full truncate px-2.5" title={email}>
               {email}
             </p>
           )}
           <form action={logout}>
-            <button
-              type="submit"
-              className="text-xs text-zinc-500 hover:text-zinc-900"
-            >
+            <button type="submit" className="a-btn a-btn-quiet a-btn-sm">
               로그아웃
             </button>
           </form>
         </div>
       </aside>
-      <div className="flex-1">{children}</div>
+      <div className="min-w-0 flex-1">{children}</div>
     </div>
   );
 }

@@ -12,13 +12,16 @@ export function ConsultationCta({ section }: { section: PageSection }) {
   return (
     <section className="bg-muted py-20">
       <div className="mx-auto max-w-xl px-6 text-center">
-        <p className="text-xs font-medium tracking-[0.2em] text-accent">
+        <p
+          data-field="content.badge"
+          className="text-xs font-medium tracking-[0.2em] text-accent"
+        >
           {content.badge || "YOUR SITUATION"}
         </p>
-        <h2 className="mt-3 text-2xl font-semibold text-foreground">
+        <h2 data-field="title" className="mt-3 text-2xl font-semibold text-foreground">
           {section.title ?? "내 상황, 1분이면 확인됩니다"}
         </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p data-field="subtitle" className="mt-2 text-sm text-muted-foreground">
           {section.subtitle ??
             "간단한 질문 4개에 답하면 맞춤 안내를 받으실 수 있습니다."}
         </p>
@@ -44,11 +47,13 @@ export function ConsultationCta({ section }: { section: PageSection }) {
                     <span className="h-4 w-4 rounded-full border border-border" />
                   </div>
                 ))
-              : options.map((item) => (
+              : options.map((item, index) => (
                   <button
                     key={item.id}
                     type="button"
-                    className="flex w-full items-center justify-between rounded-lg border border-border px-4 py-3 text-left text-sm text-foreground/80 hover:border-accent"
+                    data-field={`items.${index}.title`}
+                    data-item-no={index + 1}
+                    className="relative flex w-full items-center justify-between rounded-lg border border-border px-4 py-3 text-left text-sm text-foreground/80 hover:border-accent"
                   >
                     {item.title ?? "선택지"}
                     <span className="h-4 w-4 rounded-full border border-border" />
@@ -59,6 +64,7 @@ export function ConsultationCta({ section }: { section: PageSection }) {
           {content.button_label && (
             <button
               type="button"
+              data-field="content.button_label"
               className="mt-6 w-full rounded bg-primary px-4 py-2 text-sm text-primary-foreground"
             >
               {content.button_label}

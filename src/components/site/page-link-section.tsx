@@ -18,9 +18,13 @@ export function PageLinkSection({ section }: { section: PageSection }) {
             <p className="text-xs tracking-[0.2em] text-accent">
               {slug.toUpperCase()}
             </p>
-            <h2 className="mt-2 text-2xl font-semibold text-foreground">{title}</h2>
+            <h2 data-field="title" className="mt-2 text-2xl font-semibold text-foreground">
+              {title}
+            </h2>
             {section.subtitle && (
-              <p className="mt-2 text-sm text-muted-foreground">{section.subtitle}</p>
+              <p data-field="subtitle" className="mt-2 text-sm text-muted-foreground">
+                {section.subtitle}
+              </p>
             )}
           </div>
 
@@ -38,8 +42,13 @@ export function PageLinkSection({ section }: { section: PageSection }) {
           <p className="mt-8 text-sm text-muted-foreground">등록된 항목이 없습니다.</p>
         ) : section.layout === "list" ? (
           <ul className="mt-8 divide-y divide-border/60 border-y border-border/60">
-            {items.map((item) => (
-              <li key={item.id}>
+            {items.map((item, index) => (
+              <li
+                key={item.id}
+                data-field={`items.${index}`}
+                data-item-no={index + 1}
+                className="relative"
+              >
                 <ItemLink href={item.href} className="flex gap-4 py-4">
                   {item.image_path && (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -50,14 +59,27 @@ export function PageLinkSection({ section }: { section: PageSection }) {
                     />
                   )}
                   <div>
-                    <p className="text-sm font-medium text-foreground">
+                    <p
+                      data-field={`items.${index}.title`}
+                      className="text-sm font-medium text-foreground"
+                    >
                       {item.title ?? "제목 없음"}
                     </p>
                     {item.subtitle && (
-                      <p className="mt-1 text-xs text-muted-foreground">{item.subtitle}</p>
+                      <p
+                        data-field={`items.${index}.subtitle`}
+                        className="mt-1 text-xs text-muted-foreground"
+                      >
+                        {item.subtitle}
+                      </p>
                     )}
                     {item.body && (
-                      <p className="mt-1 text-xs text-muted-foreground/80">{item.body}</p>
+                      <p
+                        data-field={`items.${index}.body`}
+                        className="mt-1 text-xs text-muted-foreground/80"
+                      >
+                        {item.body}
+                      </p>
                     )}
                   </div>
                 </ItemLink>
@@ -66,11 +88,13 @@ export function PageLinkSection({ section }: { section: PageSection }) {
           </ul>
         ) : (
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            {items.map((item) => (
+            {items.map((item, index) => (
               <ItemLink
                 key={item.id}
                 href={item.href}
-                className="overflow-hidden rounded-lg border border-border"
+                data-field={`items.${index}`}
+                data-item-no={index + 1}
+                className="relative overflow-hidden rounded-lg border border-border"
               >
                 {item.image_path ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -85,14 +109,25 @@ export function PageLinkSection({ section }: { section: PageSection }) {
                   </div>
                 )}
                 <div className="p-4">
-                  <p className="text-sm font-medium text-foreground">
+                  <p
+                    data-field={`items.${index}.title`}
+                    className="text-sm font-medium text-foreground"
+                  >
                     {item.title ?? "제목 없음"}
                   </p>
                   {item.subtitle && (
-                    <p className="mt-1 text-xs text-muted-foreground">{item.subtitle}</p>
+                    <p
+                      data-field={`items.${index}.subtitle`}
+                      className="mt-1 text-xs text-muted-foreground"
+                    >
+                      {item.subtitle}
+                    </p>
                   )}
                   {item.body && (
-                    <p className="mt-2 text-xs text-muted-foreground/80 line-clamp-3">
+                    <p
+                      data-field={`items.${index}.body`}
+                      className="mt-2 text-xs text-muted-foreground/80 line-clamp-3"
+                    >
                       {item.body}
                     </p>
                   )}
@@ -110,17 +145,22 @@ function ItemLink({
   href,
   className,
   children,
+  ...rest
 }: {
   href: string | null;
   className?: string;
   children: React.ReactNode;
-}) {
+} & React.HTMLAttributes<HTMLElement>) {
   if (href) {
     return (
-      <a href={href} className={className}>
+      <a href={href} className={className} {...rest}>
         {children}
       </a>
     );
   }
-  return <div className={className}>{children}</div>;
+  return (
+    <div className={className} {...rest}>
+      {children}
+    </div>
+  );
 }

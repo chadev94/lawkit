@@ -74,10 +74,10 @@ export function ThemePreviewDialog({
         className="flex h-[85vh] w-full max-w-5xl flex-col overflow-hidden rounded-lg bg-white shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3">
+        <div className="flex items-center justify-between border-b px-4 py-3">
           <div>
-            <p className="text-sm font-semibold text-zinc-900">미리보기</p>
-            <p className="text-xs text-zinc-500">
+            <p className="text-sm font-semibold">미리보기</p>
+            <p className="a-label">
               현재 색상·폰트를 적용한 실제 사이트입니다. 설정 저장을 눌러야
               반영됩니다.
             </p>
@@ -85,7 +85,7 @@ export function ThemePreviewDialog({
           <button
             type="button"
             onClick={onClose}
-            className="rounded px-2 py-1 text-sm text-zinc-500 hover:bg-zinc-100"
+            className="a-btn a-btn-quiet a-btn-sm"
           >
             닫기
           </button>

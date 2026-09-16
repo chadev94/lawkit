@@ -35,22 +35,22 @@ export function ThemeColorSection({
                 aria-pressed={active}
                 className={`flex items-center gap-3 rounded border px-3 py-2.5 text-left transition-colors ${
                   active
-                    ? "border-zinc-900 ring-1 ring-zinc-900 ring-inset"
-                    : "border-zinc-300 hover:bg-zinc-50"
+                    ? "a-swatch-on"
+                    : "a-swatch-off"
                 }`}
               >
                 <span
                   aria-hidden
-                  className="h-9 w-9 shrink-0 rounded-full border border-zinc-200"
+                  className="h-9 w-9 shrink-0 rounded-full"
                   style={{
                     background: `conic-gradient(${c.hero_background} 0 40%, ${c.primary} 40% 70%, ${c.accent} 70% 88%, ${c.muted} 88% 100%)`,
                   }}
                 />
                 <span className="min-w-0">
-                  <span className="block text-sm font-medium text-zinc-900">
+                  <span className="block text-sm font-medium">
                     {preset.label}
                   </span>
-                  <span className="block truncate text-xs text-zinc-500">
+                  <span className="a-hint block truncate">
                     {preset.description}
                   </span>
                 </span>
@@ -61,20 +61,20 @@ export function ThemeColorSection({
       )}
 
       {presets.length > 0 && !activePreset && (
-        <p className="text-xs text-zinc-500">
+        <p className="a-label">
           사용자 지정 색상을 사용 중입니다. 프리셋을 누르면 해당 세트로
           바뀝니다.
         </p>
       )}
 
       <details open={presets.length === 0}>
-        <summary className="cursor-pointer text-xs font-medium text-zinc-600">
+        <summary className="a-label cursor-pointer font-medium">
           세부 색상 조정
         </summary>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           {COLOR_FIELDS.map(({ key, label }) => (
             <label key={key} className="flex flex-col gap-1">
-              <span className="text-xs text-zinc-500">{label}</span>
+              <span className="a-label">{label}</span>
               <input
                 type="color"
                 name={`color_${key}`}
@@ -82,7 +82,7 @@ export function ThemeColorSection({
                 onChange={(e) =>
                   onColorsChange({ ...colors, [key]: e.target.value })
                 }
-                className="h-9 w-full max-w-[12rem] cursor-pointer rounded border border-zinc-300 bg-white p-1"
+                className="a-input h-9 max-w-[12rem] cursor-pointer p-1"
               />
             </label>
           ))}
