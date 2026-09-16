@@ -38,11 +38,8 @@ export function PageSections({
           <div
             key={section.id}
             data-preview-section={section.id}
-            className={
-              section.id === highlightId
-                ? "relative shadow-[inset_0_0_0_2px_var(--color-blue-500)]"
-                : undefined
-            }
+            data-block-active={section.id === highlightId || undefined}
+            className="relative"
           >
             {body}
           </div>

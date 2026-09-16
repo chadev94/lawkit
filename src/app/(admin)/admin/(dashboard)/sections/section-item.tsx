@@ -415,6 +415,7 @@ function SectionEditForm({
             items={items}
             onChange={setItems}
             folder={mediaFolder}
+            onFieldFocus={onFieldFocus}
           />
         </div>
       )}
@@ -465,6 +466,7 @@ function SectionEditForm({
           items={items}
           onChange={setItems}
           folder={mediaFolder}
+          onFieldFocus={onFieldFocus}
         />
       )}
 
@@ -474,7 +476,7 @@ function SectionEditForm({
 
       {state.error && <p className="a-error">{state.error}</p>}
 
-      <div className="flex items-center gap-2">
+      <div className="a-editor-actions">
         <button
           type="submit"
           disabled={pending}

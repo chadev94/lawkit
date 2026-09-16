@@ -32,6 +32,7 @@
   --a-accent: oklch(0.48 0.075 180);
   --a-accent-hover: oklch(0.42 0.078 180);
   --a-accent-soft: oklch(0.945 0.028 180);
+  --a-accent-ink: oklch(0.36 0.07 180); /* 강조 틴트 위의 글자 */
   --a-on-accent: oklch(1 0 0);
   --a-ring: oklch(0.48 0.075 180 / 0.28);
 
@@ -42,6 +43,11 @@
   --a-warn-soft: oklch(0.955 0.045 75);
   --a-danger: oklch(0.52 0.17 25);
   --a-danger-soft: oklch(0.955 0.03 25);
+
+  /* ── 미리보기 표식 ──
+   * 사이트 팔레트(검정·주황)와 겹치지 않는 보라. 어드민 강조색과도 구분된다. */
+  --a-mark: oklch(0.55 0.23 300);
+  --a-mark-soft: oklch(0.55 0.23 300 / 0.16);
 
   /* ── 형태 ── */
   --a-radius: 10px;
@@ -376,8 +382,14 @@
   padding: 0.75rem 1rem;
 }
 
+/* 열린 행. 아래 편집 영역과 색이 같으면 경계가 사라지므로 강조 틴트 + 왼쪽 레일을 준다. */
 .a-row-open {
-  background: var(--a-surface-3);
+  background: var(--a-accent-soft);
+  box-shadow: inset 3px 0 0 var(--a-accent);
+}
+
+.a-row-open .a-row-name {
+  color: var(--a-accent-ink);
 }
 
 .a-row-ord {
@@ -427,9 +439,19 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  padding: 0.875rem 1rem 1.125rem;
-  background: var(--a-surface-3);
-  border-top: 1px solid var(--a-line-soft);
+  padding: 1rem 1rem 1.25rem;
+  background: var(--a-surface);
+  border-top: 1px dashed var(--a-line);
+  box-shadow: inset 3px 0 0 var(--a-accent);
+}
+
+/* 편집 폼 맨 아래 동작줄 */
+.a-editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding-top: 0.25rem;
 }
 
 /* 아무것도 없을 때 */
@@ -449,11 +471,25 @@
   --hero-min-height: 460px;
 }
 
-/* 지금 입력 중인 칸에 해당하는 요소 */
+/* 지금 입력 중인 칸에 해당하는 요소.
+ * 사이트 색과 겹치지 않는 보라 3px + 번짐. 얇은 파랑은 흰 배경에서 묻혔다. */
 .admin-preview [data-field-active] {
-  outline: 2px solid var(--a-accent);
+  outline: 3px solid var(--a-mark);
   outline-offset: 3px;
-  border-radius: 4px;
+  border-radius: 5px;
+  box-shadow: 0 0 0 7px var(--a-mark-soft);
+  animation: a-mark-in 0.18s ease-out;
+}
+
+@keyframes a-mark-in {
+  from {
+    box-shadow: 0 0 0 14px transparent;
+  }
+}
+
+/* 편집 중인 블록 전체. 요소 표식보다 한 단 약하게 둔다. */
+.admin-preview [data-preview-section][data-block-active] {
+  box-shadow: inset 0 0 0 3px var(--a-mark-soft);
 }
 
 @media (prefers-reduced-motion: reduce) {

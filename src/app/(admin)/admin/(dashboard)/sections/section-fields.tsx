@@ -99,12 +99,19 @@ export function ItemListEditor({
   items,
   onChange,
   folder,
+  onFieldFocus,
 }: {
   kind: "page_link" | "cta";
   items: DraftItem[];
   onChange: (items: DraftItem[]) => void;
   folder: string;
+  /** 커서가 놓인 칸을 미리보기에 알린다. 예: items.2.title */
+  onFieldFocus?: (field: string | null) => void;
 }) {
+  const focusProps = (index: number, name: string) => ({
+    onFocus: () => onFieldFocus?.(`items.${index}.${name}`),
+    onBlur: () => onFieldFocus?.(null),
+  });
   function updateAt(index: number, patch: Partial<DraftItem>) {
     onChange(
       items.map((item, i) => (i === index ? { ...item, ...patch } : item)),
@@ -175,6 +182,7 @@ export function ItemListEditor({
               value={item.title ?? ""}
               onChange={(e) => updateAt(index, { title: e.target.value })}
               className="a-input"
+              {...focusProps(index, "title")}
             />
           </label>
 
@@ -188,6 +196,7 @@ export function ItemListEditor({
                     updateAt(index, { subtitle: e.target.value })
                   }
                   className="a-input"
+                  {...focusProps(index, "subtitle")}
                 />
               </label>
               <label className="flex flex-col gap-1">
@@ -197,6 +206,7 @@ export function ItemListEditor({
                   value={item.body ?? ""}
                   onChange={(e) => updateAt(index, { body: e.target.value })}
                   className="a-input"
+                  {...focusProps(index, "body")}
                 />
               </label>
               <label className="flex flex-col gap-1">
@@ -206,6 +216,7 @@ export function ItemListEditor({
                   onChange={(e) => updateAt(index, { href: e.target.value })}
                   placeholder="/practice-areas"
                   className="a-input"
+                  {...focusProps(index, "href")}
                 />
               </label>
               <ImageField

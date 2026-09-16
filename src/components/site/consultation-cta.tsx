@@ -47,10 +47,11 @@ export function ConsultationCta({ section }: { section: PageSection }) {
                     <span className="h-4 w-4 rounded-full border border-border" />
                   </div>
                 ))
-              : options.map((item) => (
+              : options.map((item, index) => (
                   <button
                     key={item.id}
                     type="button"
+                    data-field={`items.${index}.title`}
                     className="flex w-full items-center justify-between rounded-lg border border-border px-4 py-3 text-left text-sm text-foreground/80 hover:border-accent"
                   >
                     {item.title ?? "선택지"}
