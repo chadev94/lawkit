@@ -1,70 +1,109 @@
 "use client";
 
 import { useCallback, useState, useSyncExternalStore } from "react";
-import { ADMIN_THEME_KEY, type AdminThemeMode as Mode } from "./admin-theme";
+import { ADMIN_THEME_KEY } from "./admin-theme";
 
-const MODES: { value: Mode; label: string }[] = [
-  { value: "light", label: "밝게" },
-  { value: "dark", label: "어둡게" },
-  { value: "system", label: "시스템" },
-];
-
-function apply(mode: Mode) {
-  const shell = document.querySelector<HTMLElement>(".admin-shell");
-  if (!shell) return;
-  if (mode === "system") delete shell.dataset.theme;
-  else shell.dataset.theme = mode;
-}
+type Resolved = "light" | "dark";
 
 function subscribe(onChange: () => void) {
-  // 다른 탭에서 바꾼 경우를 따라간다.
+  const media = window.matchMedia("(prefers-color-scheme: dark)");
+  media.addEventListener("change", onChange);
   window.addEventListener("storage", onChange);
-  return () => window.removeEventListener("storage", onChange);
+  return () => {
+    media.removeEventListener("change", onChange);
+    window.removeEventListener("storage", onChange);
+  };
 }
 
-function readStored(): Mode {
+/** 저장값 → 없으면 시스템 설정. 지금 실제로 보이는 밝기. */
+function readResolved(): Resolved {
   try {
     const saved = localStorage.getItem(ADMIN_THEME_KEY);
-    if (saved === "light" || saved === "dark" || saved === "system") return saved;
+    if (saved === "light" || saved === "dark") return saved;
   } catch {
-    // 사생활 보호 모드 등에서 접근이 막히면 시스템 설정을 따른다.
+    // 저장소 접근이 막히면 시스템 설정을 따른다.
   }
-  return "system";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
+function apply(next: Resolved) {
+  const shell = document.querySelector<HTMLElement>(".admin-shell");
+  if (shell) shell.dataset.theme = next;
+  try {
+    localStorage.setItem(ADMIN_THEME_KEY, next);
+  } catch {
+    // 저장에 실패해도 이번 세션에는 적용된다.
+  }
 }
 
 /**
- * 어드민 화면의 밝기. 공개 사이트는 라이트 고정이라 영향을 받지 않는다.
- * 선택은 이 브라우저에만 저장된다(localStorage).
+ * 우측 하단에 떠 있는 밝기 전환 버튼. 해 = 지금 밝음, 달 = 지금 어두움.
+ * 누르면 반대로 바뀌고 이 브라우저에 저장된다. 공개 사이트는 영향을 받지 않는다.
  */
 export function AdminThemeToggle() {
-  // 저장된 값은 브라우저에만 있다. 서버 렌더에서는 "시스템"으로 그린 뒤 맞춘다.
-  const saved = useSyncExternalStore(subscribe, readStored, () => "system" as Mode);
-  const [picked, setPicked] = useState<Mode | null>(null);
-  const mode = picked ?? saved;
+  const resolved = useSyncExternalStore(
+    subscribe,
+    readResolved,
+    () => "light" as Resolved,
+  );
+  const [picked, setPicked] = useState<Resolved | null>(null);
+  const current = picked ?? resolved;
+  const next: Resolved = current === "dark" ? "light" : "dark";
 
-  const choose = useCallback((next: Mode) => {
+  const toggle = useCallback(() => {
     setPicked(next);
     apply(next);
-    try {
-      localStorage.setItem(ADMIN_THEME_KEY, next);
-    } catch {
-      // 저장에 실패해도 이번 세션에는 적용된다.
-    }
-  }, []);
+  }, [next]);
 
   return (
-    <div className="a-seg" role="group" aria-label="화면 밝기">
-      {MODES.map((item) => (
-        <button
-          key={item.value}
-          type="button"
-          onClick={() => choose(item.value)}
-          aria-pressed={mode === item.value}
-          data-active={mode === item.value || undefined}
-        >
-          {item.label}
-        </button>
-      ))}
-    </div>
+    <button
+      type="button"
+      onClick={toggle}
+      className="a-fab"
+      aria-label={next === "dark" ? "어두운 화면으로" : "밝은 화면으로"}
+      title={next === "dark" ? "어두운 화면으로" : "밝은 화면으로"}
+      aria-pressed={current === "dark"}
+    >
+      {current === "dark" ? <MoonIcon /> : <SunIcon />}
+    </button>
+  );
+}
+
+function SunIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+    </svg>
+  );
+}
+
+function MoonIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+    </svg>
   );
 }

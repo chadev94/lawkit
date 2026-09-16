@@ -2,7 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/app/(admin)/admin/login/actions";
-import { AdminThemeToggle } from "@/app/(admin)/admin/theme-toggle";
 
 const NAV = [
   { href: "/admin/settings", label: "사이트 설정" },
@@ -48,8 +47,7 @@ export default async function AdminDashboardLayout({
           ))}
         </nav>
 
-        <div className="mt-auto flex flex-col items-start gap-2.5 pt-8">
-          <AdminThemeToggle />
+        <div className="mt-auto flex flex-col items-start gap-1.5 pt-8">
           {email && (
             <p className="a-hint max-w-full truncate px-2.5" title={email}>
               {email}

@@ -143,43 +143,53 @@
   --a-shadow: 0 1px 2px oklch(0 0 0 / 0.4), 0 10px 28px -18px oklch(0 0 0 / 0.7);
 }
 
-/* ─────────────────────────── 분절 버튼(밝기 전환 등) ─────────────────────────── */
-
-.a-seg {
+/* ─────────────────────────── 밝기 전환(우측 하단 떠 있는 버튼) ───────────────────────────
+ * 44px — 웹 최소(24px)보다 넉넉하게. 해/달 아이콘만 있으므로 aria-label 은 컴포넌트에서 준다. */
+.a-fab {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 30;
   display: inline-flex;
-  overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  color: var(--a-ink-2);
+  background: var(--a-surface);
   border: 1px solid var(--a-line);
   border-radius: 999px;
-  background: var(--a-surface);
-}
-
-.a-seg button {
-  font: inherit;
-  font-size: 0.6875rem;
-  padding: 0.25rem 0.5rem;
-  border: 0;
-  background: transparent;
-  color: var(--a-ink-2);
+  box-shadow: var(--a-shadow);
   cursor: pointer;
   transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
     background 0.15s ease,
-    color 0.15s ease;
+    transform 0.15s ease;
 }
 
-.a-seg button:hover {
+.a-fab:hover {
   color: var(--a-ink);
-  background: var(--a-surface-3);
+  border-color: var(--a-ink-3);
 }
 
-.a-seg button:focus-visible {
+.a-fab:active {
+  transform: scale(0.94);
+}
+
+.a-fab:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 2px var(--a-ring);
+  box-shadow:
+    var(--a-shadow),
+    0 0 0 3px var(--a-ring);
 }
 
-.a-seg button[data-active] {
-  background: var(--a-accent);
-  color: var(--a-on-accent);
-  font-weight: 500;
+.a-fab svg {
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.a-fab:hover svg {
+  transform: rotate(15deg);
 }
 
 /* 미리보기 속 사이트는 항상 자기 색을 쓴다. 어드민이 어두워도 흰 종이다. */

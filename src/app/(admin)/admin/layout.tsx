@@ -1,5 +1,6 @@
 import "./admin.css";
 import { ADMIN_THEME_KEY } from "./admin-theme";
+import { AdminThemeToggle } from "./theme-toggle";
 
 /**
  * 어드민 공통 껍데기.
@@ -20,6 +21,7 @@ export default function AdminLayout({
         }}
       />
       {children}
+      <AdminThemeToggle />
     </div>
   );
 }
