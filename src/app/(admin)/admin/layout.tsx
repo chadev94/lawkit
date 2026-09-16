@@ -11,7 +11,8 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="admin-shell">
+    // 아래 스크립트가 hydration 전에 data-theme 를 붙이므로, 그 속성 차이는 경고하지 않게 한다.
+    <div className="admin-shell" suppressHydrationWarning>
       {/* 첫 그림 전에 저장된 밝기를 적용한다. 없으면 시스템 설정을 따른다. */}
       <script
         dangerouslySetInnerHTML={{
