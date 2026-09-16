@@ -161,12 +161,12 @@ export function ItemListEditor({
       )}
 
       {items.map((item, index) => (
-        <div
-          key={item.key}
-          className="a-card flex flex-col gap-2 p-3"
-        >
-          <div className="flex items-center justify-between">
-            <span className="a-hint">#{index + 1}</span>
+        <div key={item.key} className="a-item">
+          <div className="a-item-head">
+            <span className="a-item-no">{index + 1}</span>
+            <span className="a-item-title">
+              {item.title?.trim() || "제목 없음"}
+            </span>
             <button
               type="button"
               onClick={() => removeAt(index)}
@@ -175,6 +175,7 @@ export function ItemListEditor({
               삭제
             </button>
           </div>
+          <div className="a-item-body">
 
           <label className="flex flex-col gap-1">
             <span className="a-label">제목</span>
@@ -228,6 +229,7 @@ export function ItemListEditor({
               />
             </>
           )}
+          </div>
         </div>
       ))}
 

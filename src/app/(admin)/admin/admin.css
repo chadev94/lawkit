@@ -47,7 +47,8 @@
   /* ── 미리보기 표식 ──
    * 사이트 팔레트(검정·주황)와 겹치지 않는 보라. 어드민 강조색과도 구분된다. */
   --a-mark: oklch(0.55 0.23 300);
-  --a-mark-soft: oklch(0.55 0.23 300 / 0.16);
+  --a-mark-soft: oklch(0.55 0.23 300 / 0.18);
+  --a-mark-wash: oklch(0.55 0.23 300 / 0.06); /* 블록 전체에 까는 아주 옅은 막 */
 
   /* ── 형태 ── */
   --a-radius: 10px;
@@ -454,6 +455,77 @@
   padding-top: 0.25rem;
 }
 
+/* ─────────────────────────── 항목(카드·리스트·선택지) ─────────────────────────── */
+
+.a-item {
+  background: var(--a-surface);
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius);
+  overflow: hidden;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+/* 지금 손대고 있는 항목이 목록에서도 드러나야 한다. */
+.a-item:focus-within {
+  border-color: var(--a-mark);
+  box-shadow: 0 0 0 3px var(--a-mark-soft);
+}
+
+.a-item-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  background: var(--a-surface-3);
+  border-bottom: 1px solid var(--a-line-soft);
+}
+
+.a-item:focus-within .a-item-head {
+  background: color-mix(in oklch, var(--a-mark) 10%, var(--a-surface));
+}
+
+/* 몇 번째 항목인지. 미리보기의 카드 순서와 같다. */
+.a-item-no {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  flex-shrink: 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--a-ink-2);
+  background: var(--a-surface);
+  border: 1px solid var(--a-line);
+  border-radius: 999px;
+}
+
+.a-item:focus-within .a-item-no {
+  color: #fff;
+  background: var(--a-mark);
+  border-color: var(--a-mark);
+}
+
+.a-item-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.a-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 0.75rem 0.625rem 0.875rem;
+}
+
 /* 아무것도 없을 때 */
 .a-empty {
   padding: 3rem 1rem;
@@ -469,6 +541,29 @@
 .admin-preview {
   /* 히어로의 60vh 는 어드민 창 기준이라 과하게 커진다. 틀 기준으로 고정한다. */
   --hero-min-height: 460px;
+}
+
+/* 편집 중인 블록에서는 항목마다 번호를 띄운다.
+ * 왼쪽 편집 목록의 1·2·3 과 같은 번호라, 어느 카드를 고치는지 바로 안다. */
+.admin-preview [data-block-active] [data-item-no]::before {
+  content: attr(data-item-no);
+  position: absolute;
+  top: -9px;
+  left: -9px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  color: #fff;
+  background: var(--a-mark);
+  border: 2px solid #fff;
+  border-radius: 999px;
+  pointer-events: none;
 }
 
 /* 지금 입력 중인 칸에 해당하는 요소.
@@ -487,9 +582,29 @@
   }
 }
 
-/* 편집 중인 블록 전체. 요소 표식보다 한 단 약하게 둔다. */
+/* 편집 중인 블록 전체.
+ * 요소 표식(실선 3px + 번짐)과 구분되도록 테두리는 굵게, 안쪽은 옅은 틴트로. */
 .admin-preview [data-preview-section][data-block-active] {
-  box-shadow: inset 0 0 0 3px var(--a-mark-soft);
+  box-shadow:
+    inset 0 0 0 4px var(--a-mark),
+    inset 0 0 0 9999px var(--a-mark-wash);
+}
+
+/* 어느 블록을 보고 있는지 이름표로도 알린다. */
+.admin-preview [data-preview-section][data-block-active]::after {
+  content: "편집 중";
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #fff;
+  background: var(--a-mark);
+  border-bottom-right-radius: 6px;
+  pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

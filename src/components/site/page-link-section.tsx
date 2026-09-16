@@ -43,7 +43,12 @@ export function PageLinkSection({ section }: { section: PageSection }) {
         ) : section.layout === "list" ? (
           <ul className="mt-8 divide-y divide-border/60 border-y border-border/60">
             {items.map((item, index) => (
-              <li key={item.id} data-field={`items.${index}`}>
+              <li
+                key={item.id}
+                data-field={`items.${index}`}
+                data-item-no={index + 1}
+                className="relative"
+              >
                 <ItemLink href={item.href} className="flex gap-4 py-4">
                   {item.image_path && (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -88,7 +93,8 @@ export function PageLinkSection({ section }: { section: PageSection }) {
                 key={item.id}
                 href={item.href}
                 data-field={`items.${index}`}
-                className="overflow-hidden rounded-lg border border-border"
+                data-item-no={index + 1}
+                className="relative overflow-hidden rounded-lg border border-border"
               >
                 {item.image_path ? (
                   // eslint-disable-next-line @next/next/no-img-element
