@@ -45,12 +45,14 @@ export function SectionItem({
   editing,
   onEditToggle,
   onDraft,
+  onFieldFocus,
 }: {
   section: PageSection;
   pages: SitePage[];
   editing: boolean;
   onEditToggle: () => void;
   onDraft: (draft: PageSection | null) => void;
+  onFieldFocus: (field: string | null) => void;
 }) {
   const [state, formAction, pending] = useActionState(
     updateSection,
@@ -138,6 +140,7 @@ export function SectionItem({
           formAction={formAction}
           pending={pending}
           onDraft={onDraft}
+          onFieldFocus={onFieldFocus}
           onClose={onEditToggle}
         />
       )}
@@ -153,6 +156,7 @@ function SectionEditForm({
   formAction,
   pending,
   onDraft,
+  onFieldFocus,
   onClose,
 }: {
   section: PageSection;
@@ -162,6 +166,7 @@ function SectionEditForm({
   formAction: (payload: FormData) => void;
   pending: boolean;
   onDraft: (draft: PageSection | null) => void;
+  onFieldFocus: (field: string | null) => void;
   onClose: () => void;
 }) {
   const [title, setTitle] = useState(section.title ?? "");
@@ -186,6 +191,12 @@ function SectionEditForm({
   );
   const mediaFolder = section.id;
   const wasPendingRef = useRef(false);
+
+  // 입력칸에 커서를 두면 미리보기에서 그 요소만 따로 표시한다.
+  const focusProps = (fieldName: string) => ({
+    onFocus: () => onFieldFocus(fieldName),
+    onBlur: () => onFieldFocus(null),
+  });
 
   // 편집 중인 값을 미리보기로 올린다. 저장과 무관하게 입력 즉시 반영된다.
   useEffect(() => {
@@ -304,6 +315,7 @@ function SectionEditForm({
             name="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            {...focusProps("title")}
             className={field}
           />
         </label>
@@ -314,6 +326,7 @@ function SectionEditForm({
             name="subtitle"
             value={subtitle}
             onChange={(e) => setSubtitle(e.target.value)}
+            {...focusProps("subtitle")}
             className={field}
           />
         </label>
@@ -351,6 +364,7 @@ function SectionEditForm({
               name="content_eyebrow"
               value={hero.eyebrow}
               onChange={(e) => setHero({ ...hero, eyebrow: e.target.value })}
+              {...focusProps("content.eyebrow")}
               className={field}
             />
           </label>
@@ -360,6 +374,7 @@ function SectionEditForm({
               name="content_cta_label"
               value={hero.cta_label}
               onChange={(e) => setHero({ ...hero, cta_label: e.target.value })}
+              {...focusProps("content.cta_label")}
               className={field}
             />
           </label>
@@ -391,6 +406,7 @@ function SectionEditForm({
                 name="content_badge"
                 value={cta.badge}
                 onChange={(e) => setCta({ ...cta, badge: e.target.value })}
+                {...focusProps("content.badge")}
                 className={field}
               />
             </label>
@@ -402,6 +418,7 @@ function SectionEditForm({
                 onChange={(e) =>
                   setCta({ ...cta, button_label: e.target.value })
                 }
+                {...focusProps("content.button_label")}
                 className={field}
               />
             </label>
@@ -425,6 +442,7 @@ function SectionEditForm({
               onChange={(e) =>
                 setContact({ ...contact, consent_label: e.target.value })
               }
+              {...focusProps("content.consent_label")}
               className={field}
             />
           </label>
@@ -436,6 +454,7 @@ function SectionEditForm({
               onChange={(e) =>
                 setContact({ ...contact, submit_label: e.target.value })
               }
+              {...focusProps("content.submit_label")}
               className={field}
             />
           </label>
@@ -484,7 +503,7 @@ function SectionEditForm({
           취소
         </button>
         <span className="text-xs text-zinc-400">
-          입력하는 대로 오른쪽 미리보기에 반영됩니다. 저장해야 사이트에
+          입력칸을 누르면 오른쪽에서 그 부분이 표시됩니다. 저장해야 사이트에
           적용됩니다.
         </span>
       </div>

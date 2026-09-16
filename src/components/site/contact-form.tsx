@@ -8,11 +8,13 @@ export function ContactForm({ section }: { section: PageSection }) {
   return (
     <section className="py-20">
       <div className="mx-auto max-w-3xl px-6">
-        <h2 className="text-2xl font-semibold text-foreground">
+        <h2 data-field="title" className="text-2xl font-semibold text-foreground">
           {section.title ?? "상담 문의"}
         </h2>
         {section.subtitle && (
-          <p className="mt-2 text-sm text-muted-foreground">{section.subtitle}</p>
+          <p data-field="subtitle" className="mt-2 text-sm text-muted-foreground">
+            {section.subtitle}
+          </p>
         )}
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
@@ -63,13 +65,17 @@ export function ContactForm({ section }: { section: PageSection }) {
         </div>
 
         <div className="mt-4 flex items-center justify-between">
-          <label className="flex items-center gap-2 text-xs text-muted-foreground">
+          <label
+            data-field="content.consent_label"
+            className="flex items-center gap-2 text-xs text-muted-foreground"
+          >
             <input type="checkbox" disabled />
             {content.consent_label}
           </label>
 
           <button
             disabled
+            data-field="content.submit_label"
             className="rounded bg-primary px-5 py-2 text-sm text-primary-foreground opacity-40"
           >
             {content.submit_label}

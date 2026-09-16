@@ -31,11 +31,13 @@ export function SectionsWorkbench({
 }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<PageSection | null>(null);
+  const [activeField, setActiveField] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
 
   const onEditToggle = useCallback((id: string) => {
     setEditingId((current) => (current === id ? null : id));
     setDraft(null);
+    setActiveField(null);
   }, []);
 
   // 저장된 목록에 편집 중인 값을 덮어 미리보기용 배열을 만든다.
@@ -82,6 +84,7 @@ export function SectionsWorkbench({
                 editing={editingId === section.id}
                 onEditToggle={() => onEditToggle(section.id)}
                 onDraft={setDraft}
+                onFieldFocus={setActiveField}
               />
             ))}
           </ul>
@@ -95,6 +98,7 @@ export function SectionsWorkbench({
           siteName={siteName}
           navTitles={navTitles}
           highlightId={editingId}
+          activeField={activeField}
           dirty={draft !== null}
         />
       </div>

@@ -8,7 +8,7 @@ export function Hero({ section }: { section: PageSection }) {
 
   return (
     <section
-      className="relative flex min-h-[60vh] items-center overflow-hidden"
+      className="relative flex min-h-[var(--hero-min-height,60vh)] items-center overflow-hidden"
       style={{ background: "var(--hero-background)" }}
     >
       {background && (
@@ -27,12 +27,14 @@ export function Hero({ section }: { section: PageSection }) {
       )}
       <div className="relative mx-auto w-full max-w-5xl px-6 py-24">
         <p
+          data-field="content.eyebrow"
           className="text-xs tracking-[0.3em] opacity-70"
           style={{ color: "var(--hero-foreground)" }}
         >
           {content.eyebrow || "YOO & PARTNERS"}
         </p>
         <h1
+          data-field="title"
           className="mt-4 text-3xl font-semibold leading-tight sm:text-4xl"
           style={{ color: "var(--hero-foreground)" }}
         >
@@ -40,6 +42,7 @@ export function Hero({ section }: { section: PageSection }) {
         </h1>
         {section.subtitle && (
           <p
+            data-field="subtitle"
             className="mt-4 max-w-md text-sm opacity-80"
             style={{ color: "var(--hero-foreground)" }}
           >
@@ -48,6 +51,7 @@ export function Hero({ section }: { section: PageSection }) {
         )}
         {content.cta_label && content.cta_href && (
           <a
+            data-field="content.cta_label"
             href={content.cta_href}
             className="mt-8 inline-block rounded px-5 py-2 text-sm font-medium"
             style={{

@@ -18,9 +18,13 @@ export function PageLinkSection({ section }: { section: PageSection }) {
             <p className="text-xs tracking-[0.2em] text-accent">
               {slug.toUpperCase()}
             </p>
-            <h2 className="mt-2 text-2xl font-semibold text-foreground">{title}</h2>
+            <h2 data-field="title" className="mt-2 text-2xl font-semibold text-foreground">
+              {title}
+            </h2>
             {section.subtitle && (
-              <p className="mt-2 text-sm text-muted-foreground">{section.subtitle}</p>
+              <p data-field="subtitle" className="mt-2 text-sm text-muted-foreground">
+                {section.subtitle}
+              </p>
             )}
           </div>
 

@@ -40,7 +40,7 @@ export function PageSections({
             data-preview-section={section.id}
             className={
               section.id === highlightId
-                ? "relative outline-2 -outline-offset-2 outline-blue-500"
+                ? "relative shadow-[inset_0_0_0_2px_var(--color-blue-500)]"
                 : undefined
             }
           >
