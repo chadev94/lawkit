@@ -45,8 +45,8 @@ supabase db reset    # migrations + seed 적용
 pnpm dev
 ```
 
-- 공개 사이트: `http://localhost:3000`
-- 관리자: `http://localhost:3000/admin` (로그인 필요)
+- 공개 사이트: `http://localhost:4000`
+- 관리자: `http://localhost:4000/admin` (로그인 필요)
 
 Supabase 접근 권한은 `chameleondev` org에서 초대받는다.
 관리자 계정은 Supabase Dashboard > Authentication > Users 에서 생성한다.
