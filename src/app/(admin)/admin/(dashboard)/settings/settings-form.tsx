@@ -50,34 +50,34 @@ export function SettingsForm({
     >
       <section className="flex flex-col gap-4">
         <div>
-          <h2 className="text-sm font-semibold text-zinc-900">브랜드 콘텐츠</h2>
-          <p className="mt-1 text-xs text-zinc-500">
+          <h2 className="text-sm font-semibold">브랜드 콘텐츠</h2>
+          <p className="a-hint mt-1">
             사이트명·태그라인 등 공통 문구. 이후 필드가 늘어날 수 있습니다.
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1 sm:col-span-2">
-            <span className="text-xs text-zinc-500">사이트명</span>
+            <span className="a-label">사이트명</span>
             <input
               name="site_name"
               defaultValue={settings.content.site_name}
-              className="rounded border border-zinc-300 px-3 py-2 text-sm"
+              className="a-input"
             />
           </label>
           <label className="flex flex-col gap-1 sm:col-span-2">
-            <span className="text-xs text-zinc-500">태그라인</span>
+            <span className="a-label">태그라인</span>
             <input
               name="tagline"
               defaultValue={settings.content.tagline}
-              className="rounded border border-zinc-300 px-3 py-2 text-sm"
+              className="a-input"
             />
           </label>
           <label className="flex flex-col gap-1 sm:col-span-2">
-            <span className="text-xs text-zinc-500">푸터 문구</span>
+            <span className="a-label">푸터 문구</span>
             <input
               name="footer_text"
               defaultValue={settings.content.footer_text}
-              className="rounded border border-zinc-300 px-3 py-2 text-sm"
+              className="a-input"
             />
           </label>
         </div>
@@ -85,8 +85,8 @@ export function SettingsForm({
 
       <section className="flex flex-col gap-4">
         <div>
-          <h2 className="text-sm font-semibold text-zinc-900">연락·사업자 정보</h2>
-          <p className="mt-1 text-xs text-zinc-500">
+          <h2 className="text-sm font-semibold">연락·사업자 정보</h2>
+          <p className="a-hint mt-1">
             푸터에 노출되는 주소·연락처·사업자 정보입니다.
           </p>
         </div>
@@ -98,46 +98,46 @@ export function SettingsForm({
             defaultDetail={settings.content.address_detail}
           />
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-zinc-500">전화</span>
+            <span className="a-label">전화</span>
             <input
               name="phone"
               defaultValue={settings.content.phone}
-              className="rounded border border-zinc-300 px-3 py-2 text-sm"
+              className="a-input"
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-zinc-500">이메일</span>
+            <span className="a-label">이메일</span>
             <input
               name="email"
               type="email"
               defaultValue={settings.content.email}
-              className="rounded border border-zinc-300 px-3 py-2 text-sm"
+              className="a-input"
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-zinc-500">사업자등록번호</span>
+            <span className="a-label">사업자등록번호</span>
             <input
               name="business_number"
               defaultValue={settings.content.business_number}
-              className="rounded border border-zinc-300 px-3 py-2 text-sm"
+              className="a-input"
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-zinc-500">대표변호사</span>
+            <span className="a-label">대표변호사</span>
             <input
               name="representative"
               defaultValue={settings.content.representative}
-              className="rounded border border-zinc-300 px-3 py-2 text-sm"
+              className="a-input"
             />
           </label>
           <label className="flex flex-col gap-1 sm:col-span-2">
-            <span className="text-xs text-zinc-500">개인정보처리방침 URL</span>
+            <span className="a-label">개인정보처리방침 URL</span>
             <input
               name="privacy_policy_url"
               type="url"
               placeholder="https://"
               defaultValue={settings.content.privacy_policy_url}
-              className="rounded border border-zinc-300 px-3 py-2 text-sm"
+              className="a-input"
             />
           </label>
         </div>
@@ -145,8 +145,8 @@ export function SettingsForm({
 
       <section className="flex flex-col gap-4">
         <div>
-          <h2 className="text-sm font-semibold text-zinc-900">색상 테마</h2>
-          <p className="mt-1 text-xs text-zinc-500">
+          <h2 className="text-sm font-semibold">색상 테마</h2>
+          <p className="a-hint mt-1">
             프리셋을 선택하거나 세부 색상을 직접 조정합니다. 저장하면 공개
             사이트에 반영됩니다.
           </p>
@@ -160,18 +160,18 @@ export function SettingsForm({
 
       <section className="flex flex-col gap-4">
         <div>
-          <h2 className="text-sm font-semibold text-zinc-900">타이포그래피</h2>
-          <p className="mt-1 text-xs text-zinc-500">
+          <h2 className="text-sm font-semibold">타이포그래피</h2>
+          <p className="a-hint mt-1">
             목록에 있는 폰트만 선택 가능합니다. Google Fonts는 자동 로드됩니다.
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-zinc-500">본문 폰트</span>
+            <span className="a-label">본문 폰트</span>
             <select
               name="font_sans"
               defaultValue={settings.typography.font_sans}
-              className="rounded border border-zinc-300 px-3 py-2 text-sm"
+              className="a-input"
             >
               {FONT_OPTIONS.map((font) => (
                 <option key={font.id} value={font.id}>
@@ -181,11 +181,11 @@ export function SettingsForm({
             </select>
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-zinc-500">제목 폰트</span>
+            <span className="a-label">제목 폰트</span>
             <select
               name="font_heading"
               defaultValue={settings.typography.font_heading}
-              className="rounded border border-zinc-300 px-3 py-2 text-sm"
+              className="a-input"
             >
               {FONT_OPTIONS.map((font) => (
                 <option key={font.id} value={font.id}>
@@ -197,21 +197,21 @@ export function SettingsForm({
         </div>
       </section>
 
-      <div className="sticky bottom-0 flex items-center justify-end gap-2 border-t border-zinc-200 bg-white/95 py-3 backdrop-blur">
+      <div className="a-sticky-actions sticky bottom-0 flex items-center justify-end gap-2 py-3">
         {state.error && (
-          <p className="mr-auto text-sm text-red-600">{state.error}</p>
+          <p className="a-error mr-auto">{state.error}</p>
         )}
         <button
           type="button"
           onClick={openPreview}
-          className="rounded border border-zinc-300 px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50"
+          className="a-btn a-btn-default"
         >
           미리보기
         </button>
         <button
           type="submit"
           disabled={pending}
-          className="rounded bg-zinc-900 px-4 py-2 text-sm text-white disabled:opacity-50"
+          className="a-btn a-btn-primary"
         >
           {pending ? "저장 중..." : "설정 저장"}
         </button>

@@ -57,19 +57,3 @@ body {
 .site-theme h3 {
   font-family: var(--font-site-heading);
 }
-
-/*
- * 어드민 미리보기 전용.
- * 사이트 컴포넌트를 그대로 쓰되, 축소된 틀 안에서 자연스럽도록 몇 가지만 조정한다.
- */
-.admin-preview {
-  /* 히어로의 60vh 는 어드민 화면 기준이라 너무 커진다. 틀 기준 고정 높이로 바꾼다. */
-  --hero-min-height: 460px;
-}
-
-/* 지금 입력 중인 칸에 해당하는 요소 */
-.admin-preview [data-field-active] {
-  outline: 2px solid #2563eb;
-  outline-offset: 3px;
-  border-radius: 4px;
-}

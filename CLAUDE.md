@@ -79,6 +79,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 | `supabase.mdc` | 마이그레이션은 `supabase migration new` 로만, 기존 파일 불변, RLS 필수, 머지 후 `db push` |
 | `git-workflow.mdc` | 브랜치, 커밋 전 검증, PR base, 머지 방식 |
 | `ai-behavior.mdc` | 추측 금지, 검증, 실수 대응, 읽는 사람 눈높이의 글쓰기 |
+| `design.mdc` | 어드민 토큰·컴포넌트 어휘, 사이트와의 분리 (상세: 루트 `DESIGN.md`) |
 
 규칙은 문서로만 두지 않고 기계가 막는다.
 

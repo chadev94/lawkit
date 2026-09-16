@@ -90,29 +90,39 @@ export function PreviewPane({
     sections.some((s) => s.id === highlightId && !s.is_active);
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50">
-      <div className="flex items-center justify-between gap-3 border-b border-zinc-200 bg-white px-3 py-2">
-        <p className="flex items-center gap-2 text-xs text-zinc-500">
+    <div className="a-card flex flex-col overflow-hidden">
+      <div
+        className="flex items-center justify-between gap-3 px-3 py-2"
+        style={{ borderBottom: "1px solid var(--a-line)" }}
+      >
+        <p className="a-label flex items-center gap-2">
           미리보기
           {dirty && (
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800">
+            <span className="a-badge a-badge-warn">
               저장 전
             </span>
           )}
         </p>
 
-        <div className="flex overflow-hidden rounded-md border border-zinc-300">
+        <div
+          className="flex overflow-hidden rounded-[7px]"
+          style={{ border: "1px solid var(--a-line)" }}
+        >
           {(Object.keys(DEVICE) as DeviceKey[]).map((key) => (
             <button
               key={key}
               type="button"
               onClick={() => setDevice(key)}
               aria-pressed={device === key}
-              className={`px-2.5 py-1 text-[11px] ${
+              className="px-2.5 py-1 text-[11px]"
+              style={
                 device === key
-                  ? "bg-zinc-900 text-white"
-                  : "bg-white text-zinc-600 hover:bg-zinc-100"
-              }`}
+                  ? {
+                      background: "var(--a-accent)",
+                      color: "var(--a-on-accent)",
+                    }
+                  : { background: "var(--a-surface)", color: "var(--a-ink-2)" }
+              }
             >
               {DEVICE[key].label}
             </button>
@@ -121,7 +131,14 @@ export function PreviewPane({
       </div>
 
       {hiddenEditing && (
-        <p className="border-b border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] text-amber-800">
+        <p
+          className="px-3 py-1.5 text-[11px]"
+          style={{
+            background: "var(--a-warn-soft)",
+            color: "var(--a-warn)",
+            borderBottom: "1px solid var(--a-line-soft)",
+          }}
+        >
           이 블록은 숨김 상태라 실제 사이트에는 나오지 않습니다.
         </p>
       )}
@@ -129,11 +146,17 @@ export function PreviewPane({
       <div
         ref={slotRef}
         className="max-h-[calc(100vh-11rem)] overflow-y-auto overflow-x-hidden p-3"
+        style={{ background: "var(--a-surface-3)" }}
       >
         <div
           ref={contentRef}
-          className="admin-preview site-theme mx-auto overflow-hidden rounded-md border border-zinc-200 bg-white"
-          style={{ ...cssVars, width, zoom }}
+          className="admin-preview site-theme mx-auto overflow-hidden rounded-[7px] bg-white"
+          style={{
+            ...cssVars,
+            width,
+            zoom,
+            border: "1px solid var(--a-line)",
+          }}
         >
           {/* 공개 사이트 헤더는 서버 컴포넌트라 여기서는 같은 모양으로 그린다. */}
           <header className="border-b" style={{ borderColor: "var(--border)" }}>
@@ -150,7 +173,7 @@ export function PreviewPane({
           </header>
 
           {visible.length === 0 ? (
-            <p className="px-6 py-24 text-center text-sm text-zinc-400">
+            <p className="a-hint px-6 py-24 text-center">
               노출 중인 블록이 없습니다.
             </p>
           ) : (

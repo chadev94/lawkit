@@ -81,32 +81,32 @@ export function AddressSearchInput({
   return (
     <>
       <label className="flex flex-col gap-1 sm:col-span-2">
-        <span className="text-xs text-zinc-500">주소</span>
+        <span className="a-label">주소</span>
         <div className="flex gap-2">
           <input
             name={name}
             value={address}
             readOnly
             placeholder="주소 검색으로 입력하세요"
-            className="flex-1 rounded border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-700"
+            className="a-input flex-1"
           />
           <button
             type="button"
             onClick={openPostcode}
-            className="shrink-0 rounded border border-zinc-300 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50"
+            className="a-btn a-btn-default shrink-0"
           >
             주소 검색
           </button>
         </div>
-        {error && <p className="text-xs text-red-600">{error}</p>}
+        {error && <p className="a-error">{error}</p>}
       </label>
       <label className="flex flex-col gap-1 sm:col-span-2">
-        <span className="text-xs text-zinc-500">상세주소</span>
+        <span className="a-label">상세주소</span>
         <input
           name={detailName}
           defaultValue={defaultDetail}
           placeholder="층·호수 등 (선택)"
-          className="rounded border border-zinc-300 px-3 py-2 text-sm"
+          className="a-input"
         />
       </label>
       {address.trim() && (

@@ -31,9 +31,8 @@ import {
 
 const initialState: ActionState = { error: null };
 
-const field =
-  "rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-900";
-const fieldLabel = "text-xs text-zinc-500";
+const field = "a-input";
+const fieldLabel = "a-label";
 
 /**
  * 목록의 한 줄. 열면 편집 폼이 펼쳐지고, 입력하는 값은 그때그때
@@ -63,27 +62,19 @@ export function SectionItem({
   const requiresPage = section.section?.requires_page ?? false;
 
   return (
-    <li className={editing ? "bg-zinc-50" : undefined}>
+    <li className={editing ? "a-row-open" : undefined}>
       {/* 고정 격자. 제목 길이와 무관하게 상태·동작이 같은 자리에 온다. */}
-      <div className="grid grid-cols-[2rem_minmax(0,1fr)_4.5rem_auto] items-center gap-3 px-4 py-2.5">
-        <span className="text-xs tabular-nums text-zinc-400">
-          {section.sort_order}
-        </span>
+      <div className="a-row">
+        <span className="a-row-ord">{section.sort_order}</span>
 
-        <button
-          type="button"
-          onClick={onEditToggle}
-          className="min-w-0 text-left"
-        >
+        <button type="button" onClick={onEditToggle} className="a-row-main">
           <span className="flex min-w-0 items-center gap-2">
-            <span className="shrink-0 rounded border border-zinc-200 bg-white px-1.5 py-0.5 text-[10px] text-zinc-500">
-              {kindLabel}
-            </span>
-            <span className="truncate text-sm font-medium">
+            <span className="a-chip">{kindLabel}</span>
+            <span className="a-row-name">
               {section.title ?? section.source_page?.title ?? "—"}
             </span>
           </span>
-          <span className="mt-0.5 block truncate text-xs text-zinc-400">
+          <span className="a-row-sub">
             {requiresPage
               ? `/${section.source_page?.slug ?? "?"} · ${SECTION_LAYOUT_LABEL[section.layout]} · 항목 ${section.items.length}`
               : (section.subtitle ?? `항목 ${section.items.length}`)}
@@ -97,21 +88,17 @@ export function SectionItem({
         >
           <button
             type="submit"
-            className={`w-full rounded-full px-2 py-1 text-[11px] ${
-              section.is_active
-                ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200"
-            }`}
+            className={`a-badge ${section.is_active ? "a-badge-ok" : "a-badge-off"}`}
           >
             {section.is_active ? "노출중" : "숨김"}
           </button>
         </form>
 
-        <div className="flex justify-end gap-1.5">
+        <div className="a-row-acts">
           <button
             type="button"
             onClick={onEditToggle}
-            className="rounded-md border border-zinc-300 px-2.5 py-1 text-xs text-zinc-600 hover:border-zinc-900 hover:text-zinc-900"
+            className="a-btn a-btn-default a-btn-sm"
           >
             {editing ? "닫기" : "수정"}
           </button>
@@ -122,7 +109,7 @@ export function SectionItem({
           >
             <button
               type="submit"
-              className="rounded-md border border-zinc-300 px-2.5 py-1 text-xs text-zinc-500 hover:border-red-500 hover:text-red-600"
+              className="a-btn a-btn-danger a-btn-sm"
             >
               삭제
             </button>
@@ -262,7 +249,7 @@ function SectionEditForm({
   return (
     <form
       action={formAction}
-      className="flex flex-col gap-3 border-t border-zinc-200 px-4 pb-4 pt-3"
+      className="a-editor"
     >
       <input type="hidden" name="id" value={section.id} />
       <input type="hidden" name="page_id" value={section.page_id} />
@@ -309,7 +296,7 @@ function SectionEditForm({
       <div className="grid gap-3 sm:grid-cols-[1fr_1fr_5rem_6rem]">
         <label className="flex flex-col gap-1">
           <span className={fieldLabel}>
-            제목 <span className="text-zinc-300">(비우면 메뉴명 사용)</span>
+            제목 <span className="">(비우면 메뉴명 사용)</span>
           </span>
           <input
             name="title"
@@ -485,24 +472,24 @@ function SectionEditForm({
         <input type="hidden" name="items_json" value="[]" />
       )}
 
-      {state.error && <p className="text-sm text-red-600">{state.error}</p>}
+      {state.error && <p className="a-error">{state.error}</p>}
 
       <div className="flex items-center gap-2">
         <button
           type="submit"
           disabled={pending}
-          className="rounded-md bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-800 disabled:opacity-50"
+          className="a-btn a-btn-primary"
         >
           {pending ? "저장 중..." : "저장"}
         </button>
         <button
           type="button"
           onClick={onClose}
-          className="rounded-md border border-zinc-300 px-4 py-2 text-sm text-zinc-600 hover:border-zinc-900 hover:text-zinc-900"
+          className="a-btn a-btn-default"
         >
           취소
         </button>
-        <span className="text-xs text-zinc-400">
+        <span className="a-hint">
           입력칸을 누르면 오른쪽에서 그 부분이 표시됩니다. 저장해야 사이트에
           적용됩니다.
         </span>
