@@ -1,4 +1,5 @@
 import "./admin.css";
+import { ADMIN_THEME_KEY } from "./admin-theme";
 
 /**
  * 어드민 공통 껍데기.
@@ -9,5 +10,15 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <div className="admin-shell">{children}</div>;
+  return (
+    <div className="admin-shell">
+      {/* 첫 그림 전에 저장된 밝기를 적용한다. 없으면 시스템 설정을 따른다. */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `try{var m=localStorage.getItem(${JSON.stringify(ADMIN_THEME_KEY)});if(m==="light"||m==="dark"){document.currentScript.parentElement.dataset.theme=m}}catch(e){}`,
+        }}
+      />
+      {children}
+    </div>
+  );
 }
