@@ -22,7 +22,10 @@ export type HeroContent = {
   background_image: string;
 };
 
-export type PageLinkContent = Record<string, never>;
+export type PageLinkContent = {
+  /** "story" 면 리스트를 스크롤 스토리(글 고정 · 이미지 넘김)로 보인다. 빈 값이면 일반 목록 */
+  variant: "" | "story";
+};
 
 export type CtaContent = {
   badge: string;
@@ -118,9 +121,15 @@ export function parseContentForKind(
     case "contact":
       return parseContactContent(raw);
     case "page_link":
+      return parsePageLinkContent(raw);
     default:
       return {};
   }
+}
+
+export function parsePageLinkContent(raw: unknown): PageLinkContent {
+  const o = asRecord(raw);
+  return { variant: o.variant === "story" ? "story" : "" };
 }
 
 /** FormData 의 content_* 필드를 kind별 content 객체로 모은다. */
@@ -146,6 +155,10 @@ export function contentFromFormData(
         consent_label: formData.get("content_consent_label"),
         submit_label: formData.get("content_submit_label"),
         success_message: formData.get("content_success_message"),
+      });
+    case "page_link":
+      return parsePageLinkContent({
+        variant: formData.get("content_variant") === "story" ? "story" : "",
       });
     default:
       return {};

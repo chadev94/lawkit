@@ -5,6 +5,7 @@ import {
   parseContactContent,
   parseCtaContent,
   parseHeroContent,
+  parsePageLinkContent,
   type ContactContent,
   type CtaContent,
   type HeroContent,
@@ -247,6 +248,9 @@ function SectionEditForm({
   const [items, setItems] = useState<DraftItem[]>(() =>
     toDraftItems(section.items),
   );
+  const [story, setStory] = useState(
+    () => parsePageLinkContent(section.content).variant === "story",
+  );
   const mediaFolder = section.id;
   const wasPendingRef = useRef(false);
 
@@ -265,7 +269,9 @@ function SectionEditForm({
           ? { ...cta }
           : section.kind === "contact"
             ? { ...contact }
-            : {};
+            : section.kind === "page_link"
+              ? { variant: story ? "story" : "" }
+              : {};
     const linked = pages.find((page) => page.id === sourcePageId) ?? null;
 
     onDraft({
@@ -298,6 +304,7 @@ function SectionEditForm({
     cta,
     contact,
     items,
+    story,
     onDraft,
   ]);
 
@@ -581,13 +588,26 @@ function SectionEditForm({
       )}
 
       {section.kind === "page_link" && (
-        <ItemListEditor
-          kind="page_link"
-          items={items}
-          onChange={setItems}
-          folder={mediaFolder}
-          onFieldFocus={onFieldFocus}
-        />
+        <>
+          <label className="a-check">
+            <input
+              type="checkbox"
+              name="content_variant"
+              value="story"
+              checked={story}
+              onChange={(e) => setStory(e.target.checked)}
+            />
+            스크롤 스토리로 보이기 — 글은 고정, 항목 이미지가 스크롤에 따라 넘어감
+            (이미지가 있는 항목 3개 이상일 때)
+          </label>
+          <ItemListEditor
+            kind="page_link"
+            items={items}
+            onChange={setItems}
+            folder={mediaFolder}
+            onFieldFocus={onFieldFocus}
+          />
+        </>
       )}
 
       {section.kind !== "page_link" && section.kind !== "cta" && (
