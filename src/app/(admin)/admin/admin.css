@@ -197,6 +197,22 @@
   color-scheme: light;
 }
 
+/* 색 깜빡임이 튀지 않게. 원래 색으로 돌아올 때도 같은 시간 */
+.admin-preview,
+.admin-preview * {
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-preview,
+  .admin-preview * {
+    transition: none;
+  }
+}
+
 /* ─────────────────────────── 글자 ─────────────────────────── */
 
 .a-title {
@@ -1141,4 +1157,49 @@
     margin-left: 0;
     width: 100%;
   }
+}
+
+
+/* ─────────────────────────── 색 선택 칸 ─────────────────────────── */
+
+.a-colorpick {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: var(--a-control-h);
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius-sm);
+  background: var(--a-surface);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.a-colorpick input[type="color"] {
+  width: 1.625rem;
+  height: 1.625rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.a-colorpick code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.6875rem;
+  color: var(--a-ink-2);
+}
+
+/* 커서가 놓인 색. 미리보기의 표식색과 같은 보라로 이어 준다 */
+.a-colorpick:focus-within,
+.a-colorpick[data-active] {
+  border-color: var(--a-mark);
+  box-shadow: 0 0 0 3px var(--a-mark-soft);
+}
+
+.a-color-where {
+  min-height: 1rem;
+  font-size: 0.6875rem;
+  color: var(--a-mark);
 }

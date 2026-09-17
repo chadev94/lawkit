@@ -10,20 +10,40 @@ import { colorsMatchPreset, type ThemePreset } from "@/lib/theme-presets";
  * 개별 색을 바꾸면 프리셋 선택 표시가 해제된다(사용자 지정 상태).
  * 색상 상태는 미리보기와 공유하기 위해 부모(SettingsForm)가 소유한다.
  */
+/** 색이 실제로 칠해지는 곳. 칸에 커서를 두면 이 문구와 함께 미리보기가 깜빡인다. */
+const COLOR_WHERE: Record<keyof SiteColors, string> = {
+  background: "페이지 바탕, 카드 안쪽",
+  foreground: "제목·본문·메뉴 글자",
+  muted: "상담 진단 구간, 꼬리말, 카드 이미지 자리",
+  muted_foreground: "설명 문장, 선택지, 꼬리말 글자",
+  primary: "상담 버튼 배경, 첫 화면 버튼 글자",
+  primary_foreground: "상담 버튼 글자, 첫 화면 버튼 배경",
+  border: "카드·구분선·머리말 아래 선",
+  accent: "구간 위 작은 영문 제목, 꼬리말 연락처",
+  hero_background: "맨 위 큰 배너 배경",
+  hero_foreground: "배너 제목·설명",
+};
+
 export function ThemeColorSection({
   presets,
   colors,
   onColorsChange,
+  onColorFocus,
+  focusedColor,
 }: {
   presets: ThemePreset[];
   colors: SiteColors;
   onColorsChange: (colors: SiteColors) => void;
+  /** 커서가 놓인 색. 미리보기가 그 색이 쓰이는 곳을 깜빡인다 */
+  onColorFocus?: (key: keyof SiteColors | null) => void;
+  focusedColor?: keyof SiteColors | null;
 }) {
   const activePreset = presets.find((p) => colorsMatchPreset(colors, p));
   const checks = checkSiteContrast(colors);
   const failing = checks.filter((c) => !c.pass);
   const worst = failing.reduce<number | null>(
-    (min, c) => (c.ratio !== null && (min === null || c.ratio < min) ? c.ratio : min),
+    (min, c) =>
+      c.ratio !== null && (min === null || c.ratio < min) ? c.ratio : min,
     null,
   );
 
@@ -34,8 +54,8 @@ export function ThemeColorSection({
         <div className="a-notice" data-tone="ok">
           <span aria-hidden="true">✓</span>
           <div>
-            <b>지금 색은 모두 잘 읽힙니다.</b> 글자와 배경의 대비가 기준(4.5:1)을
-            넘습니다.
+            <b>지금 색은 모두 잘 읽힙니다.</b> 글자와 배경의 대비가
+            기준(4.5:1)을 넘습니다.
           </div>
         </div>
       ) : (
@@ -47,8 +67,8 @@ export function ThemeColorSection({
               {worst !== null ? ` (가장 낮은 곳 ${formatRatio(worst)})` : ""}.
             </b>{" "}
             기준은 4.5:1 입니다. 의뢰인 부모 세대에게는 흐리게 보입니다. 아래
-            &ldquo;미달&rdquo; 표시된 색을 조금 더 진하게 하거나, 통과하는 프리셋을
-            고르세요.
+            &ldquo;미달&rdquo; 표시된 색을 조금 더 진하게 하거나, 통과하는
+            프리셋을 고르세요.
           </div>
         </div>
       )}
@@ -57,7 +77,9 @@ export function ThemeColorSection({
           {presets.map((preset) => {
             const c = preset.colors;
             const active = activePreset?.id === preset.id;
-            const presetFails = checkSiteContrast(c).filter((x) => !x.pass).length;
+            const presetFails = checkSiteContrast(c).filter(
+              (x) => !x.pass,
+            ).length;
             return (
               <button
                 key={preset.id}
@@ -65,9 +87,7 @@ export function ThemeColorSection({
                 onClick={() => onColorsChange(c)}
                 aria-pressed={active}
                 className={`flex items-center gap-3 rounded border px-3 py-2.5 text-left transition-colors ${
-                  active
-                    ? "a-swatch-on"
-                    : "a-swatch-off"
+                  active ? "a-swatch-on" : "a-swatch-off"
                 }`}
               >
                 <span
@@ -86,9 +106,13 @@ export function ThemeColorSection({
                   </span>
                   <span
                     className="block text-[11px]"
-                    style={{ color: presetFails ? "var(--a-warn)" : "var(--a-ok)" }}
+                    style={{
+                      color: presetFails ? "var(--a-warn)" : "var(--a-ok)",
+                    }}
                   >
-                    {presetFails ? `읽기 어려운 조합 ${presetFails}곳` : "✓ 모두 잘 읽힘"}
+                    {presetFails
+                      ? `읽기 어려운 조합 ${presetFails}곳`
+                      : "✓ 모두 잘 읽힘"}
                   </span>
                 </span>
               </button>
@@ -134,15 +158,26 @@ export function ThemeColorSection({
           {COLOR_FIELDS.map(({ key, label }) => (
             <label key={key} className="flex flex-col gap-1">
               <span className="a-label">{label}</span>
-              <input
-                type="color"
-                name={`color_${key}`}
-                value={colors[key]}
-                onChange={(e) =>
-                  onColorsChange({ ...colors, [key]: e.target.value })
-                }
-                className="a-input h-9 max-w-[12rem] cursor-pointer p-1"
-              />
+              <span
+                className="a-colorpick"
+                data-active={focusedColor === key || undefined}
+              >
+                <input
+                  type="color"
+                  name={`color_${key}`}
+                  value={colors[key]}
+                  onChange={(e) =>
+                    onColorsChange({ ...colors, [key]: e.target.value })
+                  }
+                  onFocus={() => onColorFocus?.(key)}
+                  onBlur={() => onColorFocus?.(null)}
+                  aria-label={label}
+                />
+                <code>{colors[key].toUpperCase()}</code>
+              </span>
+              <span className="a-color-where" aria-live="polite">
+                {focusedColor === key ? `→ ${COLOR_WHERE[key]}` : ""}
+              </span>
             </label>
           ))}
         </div>

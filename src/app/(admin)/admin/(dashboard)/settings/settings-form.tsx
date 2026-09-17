@@ -64,6 +64,7 @@ export function SettingsForm({
   );
   const [content, setContent] = useState<SiteContent>(settings.content);
   const [activeField, setActiveField] = useState<string | null>(null);
+  const [pulseColor, setPulseColor] = useState<keyof SiteColors | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const wasPendingRef = useRef(false);
 
@@ -235,6 +236,8 @@ export function SettingsForm({
             presets={themePresets}
             colors={colors}
             onColorsChange={setColors}
+            onColorFocus={setPulseColor}
+            focusedColor={pulseColor}
           />
         </section>
 
@@ -301,6 +304,7 @@ export function SettingsForm({
           label="사이트 전체 · 홈"
           dirty={dirty}
           activeField={activeField}
+          pulseColor={pulseColor}
           scrollToSelector={
             activeField === "content.site_name" ? '[data-field="header"]' : null
           }

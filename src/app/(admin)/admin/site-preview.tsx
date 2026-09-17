@@ -8,7 +8,26 @@ import {
   type ReactNode,
 } from "react";
 import { SiteFooter } from "@/components/site/site-footer";
-import { siteSettingsToCssVars, type SiteSettings } from "@/lib/site-settings";
+import {
+  siteSettingsToCssVars,
+  type SiteColors,
+  type SiteSettings,
+} from "@/lib/site-settings";
+
+/** 색 이름 → CSS 변수. siteSettingsToCssVars 와 같은 규칙(_ → -). */
+const colorVar = (key: keyof SiteColors) => `--${key.replace(/_/g, "-")}`;
+
+/** 면(배경)인 색. 표식을 반투명으로 섞어 놀라지 않게 한다. */
+const SURFACE_KEYS = new Set<keyof SiteColors>([
+  "background",
+  "muted",
+  "primary",
+  "hero_background",
+]);
+
+const MARK = "oklch(0.55 0.23 300)";
+const MARK_SOFT = "oklch(0.55 0.23 300 / 0.5)";
+const PULSE_MS = 600;
 
 const DEVICE = {
   desktop: { label: "데스크톱", width: 1280 },
@@ -47,6 +66,8 @@ export function SitePreviewFrame({
   scopeSelector,
   /** 바뀌면 이 요소가 보이도록 스크롤한다(블록 선택 등) */
   scrollToSelector,
+  /** 이 색이 쓰이는 곳을 깜빡여 보여준다. 색 칸에 커서를 둔 동안 */
+  pulseColor,
 }: {
   settings: SiteSettings;
   nav: PreviewNavItem[];
@@ -57,8 +78,10 @@ export function SitePreviewFrame({
   activeField?: string | null;
   scopeSelector?: string | null;
   scrollToSelector?: string | null;
+  pulseColor?: keyof SiteColors | null;
 }) {
   const [device, setDevice] = useState<DeviceKey>("desktop");
+  const [pulseOn, setPulseOn] = useState(false);
   const [zoom, setZoom] = useState(1);
   const slotRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -114,7 +137,30 @@ export function SitePreviewFrame({
     scrollTo(target, true);
   }, [activeField, scopeSelector, scrollTo, children]);
 
+  // 색 깜빡임. 변수 하나의 값을 원래 색 ↔ 표식색으로 번갈아 바꾸면 그 변수를 쓰는 요소가
+  // 전부 함께 깜빡인다. 요소를 찾는 방식이 아니라 배경·테두리도 잡힌다.
+  // 상태 변경은 전부 타이머 안에서 한다(효과 본문에서 직접 바꾸지 않는다).
+  useEffect(() => {
+    if (!pulseColor) return;
+    const reduce = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    // 색이 바뀌면 항상 표식색부터 시작한다.
+    const first = window.setTimeout(() => setPulseOn(true), 0);
+    if (reduce) return () => window.clearTimeout(first);
+    const id = window.setInterval(() => setPulseOn((v) => !v), PULSE_MS);
+    return () => {
+      window.clearTimeout(first);
+      window.clearInterval(id);
+    };
+  }, [pulseColor]);
+
   const cssVars = siteSettingsToCssVars(settings);
+  if (pulseColor && pulseOn) {
+    cssVars[colorVar(pulseColor)] = SURFACE_KEYS.has(pulseColor)
+      ? MARK_SOFT
+      : MARK;
+  }
 
   return (
     <div className="a-card flex flex-col overflow-hidden">
