@@ -176,113 +176,117 @@ body {
   transform: scaleX(1);
 }
 
-/* 4 · 카드 — 이미지 안 하단에 글(도아식). 흰 판결문 위에서도 읽히도록 아래 그라데이션을 항상 깐다 */
+/* 4 · 카드 — 결과 스탬프. 사진 위엔 결과·법원만, 사건명·설명은 아래 흰 판 */
 .m-card {
   position: relative;
-  display: block;
-  aspect-ratio: 3 / 4;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   border-radius: 10px;
-  background: var(--muted);
-  color: #fff;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
   text-decoration: none;
   transition:
     transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 0.35s ease;
 }
-.m-card-img {
-  position: absolute;
-  inset: 0;
+.m-card-pic {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--muted);
+}
+.m-card-pic img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: top;
+  display: block;
   transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }
+.m-card-pic::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.38), transparent 45%);
+  pointer-events: none;
+}
 .m-card-noimg {
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--muted-foreground);
   font-size: 0.875rem;
 }
-.m-card::after {
-  content: "";
+/* 붉은 결과 스탬프. 사이트 테마의 강조 배경(primary)을 쓴다 */
+.m-stamp {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(10, 10, 12, 0.92) 0%,
-    rgba(10, 10, 12, 0.55) 40%,
-    rgba(10, 10, 12, 0) 70%
-  );
-  pointer-events: none;
+  top: 0.875rem;
+  left: 0.875rem;
+  z-index: 1;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4em;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+}
+.m-stamp small {
+  font-size: 0.75rem;
+  font-weight: 500;
+  opacity: 0.85;
+  text-decoration: line-through;
+}
+.m-court {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.625rem;
+  z-index: 1;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 0.75rem;
+  backdrop-filter: blur(4px);
 }
 .m-card-txt {
-  position: absolute;
-  inset: auto 0 0 0;
-  z-index: 1;
-  padding: 1.25rem;
-}
-.m-card-res {
-  margin: 0 0 0.375rem;
-  font-size: 0.875rem;
-}
-.m-card-res .m-from {
-  color: rgba(255, 255, 255, 0.65);
-  text-decoration-color: rgba(255, 255, 255, 0.45);
-}
-.m-card-res .m-to {
-  color: #ffd9c4; /* 어두운 막 위에서 읽히는 밝은 강조. 테마와 무관 */
-}
-.m-card-res .m-to::after {
-  background: #ffd9c4;
+  padding: 1rem 1.125rem 1.125rem;
 }
 .m-card-title {
   margin: 0 0 0.375rem;
   font-family: var(--font-site-heading);
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 700;
   line-height: 1.3;
-}
-.m-card-meta {
-  margin: 0;
-  font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.82);
+  color: var(--foreground);
 }
 .m-card-body {
-  margin: 0.5rem 0 0;
-  font-size: 0.875rem;
+  margin: 0;
+  font-size: 0.9375rem;
   line-height: 1.5;
-  color: rgba(255, 255, 255, 0.88);
-  max-height: 0;
+  color: var(--muted-foreground);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  opacity: 0;
-  transition:
-    max-height 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.35s ease;
 }
 @media (hover: hover) {
   .m-card:hover,
   .m-card:focus-within {
     transform: translateY(-4px);
-    box-shadow: 0 30px 50px -28px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 26px 40px -28px rgba(0, 0, 0, 0.4);
   }
-  .m-card:hover .m-card-img,
-  .m-card:focus-within .m-card-img {
+  .m-card:hover .m-card-pic img,
+  .m-card:focus-within .m-card-pic img {
     transform: scale(1.05);
-  }
-  .m-card:hover .m-card-body,
-  .m-card:focus-within .m-card-body {
-    max-height: 6em;
-    opacity: 1;
-  }
-}
-/* 호버가 없는 기기(폰)에서는 본문을 항상 펼친다 */
-@media (hover: none) {
-  .m-card-body {
-    max-height: none;
-    opacity: 1;
   }
 }
 

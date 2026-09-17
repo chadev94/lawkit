@@ -1,7 +1,7 @@
 import type { PageSection } from "@/lib/sections";
 import { mediaPublicUrl, parsePageLinkContent } from "@/lib/section-content";
 import { Carousel } from "@/components/site/motion/carousel";
-import { ResultText } from "@/components/site/motion/result";
+import { ResultText, splitResult } from "@/components/site/motion/result";
 import { Reveal } from "@/components/site/motion/reveal";
 import { StoryScroller } from "@/components/site/motion/story";
 import { caseMeta } from "@/components/site/motion/case-meta";
@@ -151,8 +151,9 @@ export function PageLinkSection({ section }: { section: PageSection }) {
 }
 
 /**
- * 카드 한 장 — 이미지 안 하단에 결과·사건명·법원이 항상 보인다(도아식).
- * 아래쪽 진한 그라데이션이 글자를 받친다. 호버하면 본문이 아래서 펼쳐진다(폰은 항상 펼침).
+ * 카드 한 장 — 결과 스탬프.
+ * 사진(4:3) 왼쪽 위에 붉은 스탬프("1심 유죄 → 무죄"), 오른쪽 아래에 법원·선고일.
+ * 사건명·설명은 사진 아래 흰 판에. 사진을 거의 가리지 않고, 글은 흰 바탕 위라 대비 문제가 없다.
  */
 function CardBody({
   item,
@@ -162,29 +163,29 @@ function CardBody({
   index: number;
 }) {
   const { court, date, body } = caseMeta(item);
+  const res = splitResult(item.subtitle);
   const metaLine = [court, date].filter(Boolean).join(" · ");
   return (
     <>
-      {item.image_path ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={mediaPublicUrl(item.image_path) ?? ""}
-          alt=""
-          className="m-card-img"
-        />
-      ) : (
-        <div className="m-card-img m-card-noimg">{item.title ?? ""}</div>
-      )}
-      <div className="m-card-txt">
-        {item.subtitle && (
-          <p data-field={`items.${index}.subtitle`} className="m-card-res">
-            <ResultText text={item.subtitle} />
-          </p>
+      <div className="m-card-pic">
+        {item.image_path ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={mediaPublicUrl(item.image_path) ?? ""} alt="" />
+        ) : (
+          <div className="m-card-noimg">{item.title ?? ""}</div>
         )}
+        {res && (
+          <span data-field={`items.${index}.subtitle`} className="m-stamp">
+            {res.from && <small>{res.from}</small>}
+            <b>→ {res.to}</b>
+          </span>
+        )}
+        {metaLine && <span className="m-court">{metaLine}</span>}
+      </div>
+      <div className="m-card-txt">
         <p data-field={`items.${index}.title`} className="m-card-title">
           {item.title ?? "제목 없음"}
         </p>
-        {metaLine && <p className="m-card-meta">{metaLine}</p>}
         {body && (
           <p data-field={`items.${index}.body`} className="m-card-body">
             {body}
