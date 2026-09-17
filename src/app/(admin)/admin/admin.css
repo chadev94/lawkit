@@ -47,7 +47,8 @@
   /* ── 미리보기 표식 ──
    * 사이트 팔레트(검정·주황)와 겹치지 않는 보라. 어드민 강조색과도 구분된다. */
   --a-mark: oklch(0.55 0.23 300);
-  --a-mark-soft: oklch(0.55 0.23 300 / 0.18);
+  --a-mark-strong: oklch(0.7 0.25 300); /* 번쩍일 때 더 밝게 */
+  --a-mark-soft: oklch(0.55 0.23 300 / 0.5);
   --a-mark-wash: oklch(0.55 0.23 300 / 0.06); /* 블록 전체에 까는 아주 옅은 막 */
 
   /* ── 형태 ── */
@@ -100,7 +101,8 @@
     --a-danger-soft: oklch(0.3 0.07 25);
 
     --a-mark: oklch(0.72 0.19 300);
-    --a-mark-soft: oklch(0.72 0.19 300 / 0.22);
+    --a-mark-strong: oklch(0.85 0.2 300);
+    --a-mark-soft: oklch(0.72 0.19 300 / 0.55);
     --a-mark-wash: oklch(0.72 0.19 300 / 0.08);
 
     --a-shadow: 0 1px 2px oklch(0 0 0 / 0.4), 0 10px 28px -18px oklch(0 0 0 / 0.7);
@@ -137,7 +139,8 @@
   --a-danger-soft: oklch(0.3 0.07 25);
 
   --a-mark: oklch(0.72 0.19 300);
-  --a-mark-soft: oklch(0.72 0.19 300 / 0.22);
+  --a-mark-strong: oklch(0.85 0.2 300);
+  --a-mark-soft: oklch(0.72 0.19 300 / 0.55);
   --a-mark-wash: oklch(0.72 0.19 300 / 0.08);
 
   --a-shadow: 0 1px 2px oklch(0 0 0 / 0.4), 0 10px 28px -18px oklch(0 0 0 / 0.7);
@@ -747,6 +750,29 @@
   border: 4px solid var(--a-mark);
   background: var(--a-mark-wash);
   pointer-events: none;
+  /* 선택되는 순간 테두리가 세 번 번쩍여 어디인지 눈이 간다. 그 뒤엔 가만히 */
+  animation: a-block-pulse 0.7s ease-out 3;
+}
+
+@keyframes a-block-pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--a-mark-soft);
+    border-color: var(--a-mark);
+  }
+  50% {
+    box-shadow: 0 0 0 14px transparent;
+    border-color: var(--a-mark-strong);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+    border-color: var(--a-mark);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-preview [data-preview-section][data-block-active]::before {
+    animation: none;
+  }
 }
 
 /* 어느 블록을 보고 있는지 이름표로도 알린다. */
