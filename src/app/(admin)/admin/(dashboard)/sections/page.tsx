@@ -3,7 +3,6 @@ import { getAllPages, getNavPages } from "@/lib/queries/pages";
 import { getActiveSectionsCatalog } from "@/lib/queries/sections";
 import { getSiteSettings } from "@/lib/queries/site-settings";
 import { HOME_PAGE_SLUG, pagePath } from "@/lib/sections";
-import { siteSettingsToCssVars } from "@/lib/site-settings";
 import { resolveAdminPageId } from "./actions";
 import { SectionsWorkbench } from "./workbench";
 
@@ -39,7 +38,7 @@ export default async function SectionsPage({
   );
 
   return (
-    <main className="mx-auto flex max-w-[1500px] flex-col gap-6 p-8">
+    <main className="mx-auto flex max-w-[1600px] flex-col gap-5 px-6 py-6">
       <div>
         <h1 className="a-title">화면 구성</h1>
         <p className="a-lead mt-1">
@@ -84,9 +83,9 @@ export default async function SectionsPage({
                 sections={sections}
                 linkablePages={linkablePages}
                 sectionKinds={sectionKinds}
-                cssVars={siteSettingsToCssVars(settings)}
-                siteName={settings.content.site_name}
-                navTitles={navPages.map((page) => page.title)}
+                settings={settings}
+                nav={navPages.map((page) => ({ id: page.id, title: page.title }))}
+                pageTitle={selectedPage.title}
               />
             </>
           )}

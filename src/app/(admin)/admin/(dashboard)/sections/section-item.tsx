@@ -129,7 +129,11 @@ export function SectionItem({
 
         <form
           action={async () => {
-            await toggleSection(section.id, section.page_id, !section.is_active);
+            await toggleSection(
+              section.id,
+              section.page_id,
+              !section.is_active,
+            );
             toast({
               message: section.is_active
                 ? "숨겼습니다 · 사이트에서 사라집니다"
@@ -318,10 +322,7 @@ function SectionEditForm({
     ) : null;
 
   return (
-    <form
-      action={formAction}
-      className="a-editor"
-    >
+    <form action={formAction} className="a-editor">
       <input type="hidden" name="id" value={section.id} />
       <input type="hidden" name="page_id" value={section.page_id} />
       <input type="hidden" name="kind" value={section.kind} />
@@ -403,7 +404,8 @@ function SectionEditForm({
 
       <label className="flex flex-col gap-1">
         <span className={fieldLabel}>
-          부제 <span style={{ color: "var(--a-ink-3)" }}>(비우면 표시 안 함)</span>
+          부제{" "}
+          <span style={{ color: "var(--a-ink-3)" }}>(비우면 표시 안 함)</span>
         </span>
         <input
           name="subtitle"
@@ -417,7 +419,8 @@ function SectionEditForm({
 
       <label className="flex flex-col gap-1">
         <span className={fieldLabel}>
-          부제 <span style={{ color: "var(--a-ink-3)" }}>(비우면 표시 안 함)</span>
+          부제{" "}
+          <span style={{ color: "var(--a-ink-3)" }}>(비우면 표시 안 함)</span>
         </span>
         <input
           name="subtitle"
@@ -593,11 +596,7 @@ function SectionEditForm({
         >
           {pending ? "저장 중..." : "저장"}
         </button>
-        <button
-          type="button"
-          onClick={onClose}
-          className="a-btn a-btn-default"
-        >
+        <button type="button" onClick={onClose} className="a-btn a-btn-default">
           취소
         </button>
         <span className="a-hint">

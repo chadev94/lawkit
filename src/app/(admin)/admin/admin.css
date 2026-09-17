@@ -703,7 +703,8 @@
 
 /* 지금 입력 중인 칸에 해당하는 요소.
  * 사이트 색과 겹치지 않는 보라 3px + 번짐. 얇은 파랑은 흰 배경에서 묻혔다. */
-.admin-preview [data-field-active] {
+.admin-preview [data-field-active],
+.admin-preview [data-field-focus] {
   outline: 3px solid var(--a-mark);
   outline-offset: 3px;
   border-radius: 5px;
@@ -1012,4 +1013,132 @@
 .a-notice[data-tone="ok"] {
   background: var(--a-ok-soft);
   color: var(--a-ok);
+}
+
+
+/* ─────────────────────────── 상단 바 (B 구조) ───────────────────────────
+ * 사이드바를 걷어내고 얇은 바 하나. 편집 대상 셋은 탭으로, 미리보기는 아래에서 그대로 산다. */
+.a-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: 3.25rem;
+  padding: 0 1.25rem;
+  background: var(--a-surface);
+  border-bottom: 1px solid var(--a-line);
+}
+
+.a-topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+}
+
+.a-topbar-brand b {
+  font-size: 0.875rem;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 14rem;
+}
+
+.a-tabs {
+  display: inline-flex;
+  gap: 0.125rem;
+  padding: 0.125rem;
+  background: var(--a-surface-3);
+  border: 1px solid var(--a-line-soft);
+  border-radius: 999px;
+}
+
+.a-tabs a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.875rem;
+  padding: 0 0.875rem;
+  font-size: 0.8125rem;
+  color: var(--a-ink-2);
+  border-radius: 999px;
+  text-decoration: none;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.a-tabs a:hover {
+  color: var(--a-ink);
+}
+
+.a-tabs a:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--a-ring);
+}
+
+.a-tabs a[data-active] {
+  background: var(--a-surface);
+  color: var(--a-accent-ink);
+  font-weight: 500;
+  box-shadow: 0 1px 2px oklch(0 0 0 / 0.08);
+}
+
+.a-topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--a-ink-3);
+}
+
+.a-topbar-right a {
+  color: var(--a-accent);
+  text-decoration: none;
+  font-size: 0.8125rem;
+}
+
+.a-topbar-right a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.a-topbar-right .who {
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 좌 편집 / 우 미리보기. 세 화면이 같은 격자를 쓴다. */
+.a-workbench {
+  display: grid;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (min-width: 1100px) {
+  .a-workbench {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  }
+
+  .a-workbench > .a-workbench-preview {
+    position: sticky;
+    top: 4.25rem;
+  }
+}
+
+@media (max-width: 760px) {
+  .a-topbar {
+    flex-wrap: wrap;
+    padding-block: 0.5rem;
+  }
+
+  .a-topbar-right {
+    margin-left: 0;
+    width: 100%;
+  }
 }
