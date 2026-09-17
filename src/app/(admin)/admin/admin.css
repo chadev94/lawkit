@@ -700,8 +700,8 @@
 .admin-preview [data-block-active] [data-item-no]::before {
   content: attr(data-item-no);
   position: absolute;
-  top: -9px;
-  left: -9px;
+  top: 8px;
+  left: 8px; /* 카드·캐러셀은 overflow:hidden 이라 바깥에 두면 잘린다 */
   z-index: 2;
   display: flex;
   align-items: center;

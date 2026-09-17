@@ -176,59 +176,101 @@ export function ItemListEditor({
             </button>
           </div>
           <div className="a-item-body">
-
-          <label className="flex flex-col gap-1">
-            <span className="a-label">제목</span>
-            <input
-              value={item.title ?? ""}
-              onChange={(e) => updateAt(index, { title: e.target.value })}
-              className="a-input"
-              {...focusProps(index, "title")}
-            />
-          </label>
-
-          {kind === "page_link" && (
-            <>
-              <label className="flex flex-col gap-1">
-                <span className="a-label">부제</span>
-                <input
-                  value={item.subtitle ?? ""}
-                  onChange={(e) =>
-                    updateAt(index, { subtitle: e.target.value })
-                  }
-                  className="a-input"
-                  {...focusProps(index, "subtitle")}
-                />
-              </label>
-              <label className="flex flex-col gap-1">
-                <span className="a-label">본문</span>
-                <textarea
-                  rows={2}
-                  value={item.body ?? ""}
-                  onChange={(e) => updateAt(index, { body: e.target.value })}
-                  className="a-input"
-                  {...focusProps(index, "body")}
-                />
-              </label>
-              <label className="flex flex-col gap-1">
-                <span className="a-label">링크</span>
-                <input
-                  value={item.href ?? ""}
-                  onChange={(e) => updateAt(index, { href: e.target.value })}
-                  placeholder="/practice-areas"
-                  className="a-input"
-                  {...focusProps(index, "href")}
-                />
-              </label>
-              <ImageField
-                label="이미지"
-                name={`item_image_${item.key}`}
-                value={item.image_path ?? ""}
-                folder={folder}
-                onChange={(path) => updateAt(index, { image_path: path })}
+            <label className="flex flex-col gap-1">
+              <span className="a-label">제목</span>
+              <input
+                value={item.title ?? ""}
+                onChange={(e) => updateAt(index, { title: e.target.value })}
+                className="a-input"
+                {...focusProps(index, "title")}
               />
-            </>
-          )}
+            </label>
+
+            {kind === "page_link" && (
+              <>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <label className="flex flex-col gap-1">
+                    <span className="a-label">법원</span>
+                    <input
+                      value={
+                        typeof item.meta?.court === "string"
+                          ? item.meta.court
+                          : ""
+                      }
+                      onChange={(e) =>
+                        updateAt(index, {
+                          meta: { ...(item.meta ?? {}), court: e.target.value },
+                        })
+                      }
+                      placeholder="예: 서울고등법원"
+                      className="a-input"
+                      {...focusProps(index, "meta")}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1">
+                    <span className="a-label">선고일</span>
+                    <input
+                      value={
+                        typeof item.meta?.date === "string"
+                          ? item.meta.date
+                          : ""
+                      }
+                      onChange={(e) =>
+                        updateAt(index, {
+                          meta: { ...(item.meta ?? {}), date: e.target.value },
+                        })
+                      }
+                      placeholder="예: 2026. 6. 4."
+                      className="a-input"
+                      {...focusProps(index, "meta")}
+                    />
+                  </label>
+                </div>
+                <label className="flex flex-col gap-1">
+                  <span className="a-label">
+                    결과{" "}
+                    <span style={{ color: "var(--a-ink-3)" }}>
+                      &ldquo;→&rdquo; 뒤가 강조됨. 예: 1심 유죄 → 항소심 무죄
+                    </span>
+                  </span>
+                  <input
+                    value={item.subtitle ?? ""}
+                    onChange={(e) =>
+                      updateAt(index, { subtitle: e.target.value })
+                    }
+                    className="a-input"
+                    {...focusProps(index, "subtitle")}
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="a-label">본문</span>
+                  <textarea
+                    rows={2}
+                    value={item.body ?? ""}
+                    onChange={(e) => updateAt(index, { body: e.target.value })}
+                    className="a-input"
+                    {...focusProps(index, "body")}
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="a-label">링크</span>
+                  <input
+                    value={item.href ?? ""}
+                    onChange={(e) => updateAt(index, { href: e.target.value })}
+                    placeholder="/practice-areas"
+                    className="a-input"
+                    {...focusProps(index, "href")}
+                  />
+                </label>
+                <ImageField
+                  label="이미지"
+                  name={`item_image_${item.key}`}
+                  value={item.image_path ?? ""}
+                  folder={folder}
+                  onChange={(path) => updateAt(index, { image_path: path })}
+                />
+              </>
+            )}
           </div>
         </div>
       ))}

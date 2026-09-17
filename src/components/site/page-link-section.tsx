@@ -4,6 +4,7 @@ import { Carousel } from "@/components/site/motion/carousel";
 import { ResultText } from "@/components/site/motion/result";
 import { Reveal } from "@/components/site/motion/reveal";
 import { StoryScroller } from "@/components/site/motion/story";
+import { caseMeta } from "@/components/site/motion/case-meta";
 
 /**
  * 다른 페이지에 연결된 콘텐츠 섹션. 제목·경로는 연결된 페이지에서 온다.
@@ -122,7 +123,7 @@ export function PageLinkSection({ section }: { section: PageSection }) {
                 href={item.href}
                 data-field={`items.${index}`}
                 data-item-no={index + 1}
-                className="m-card relative overflow-hidden rounded-lg border border-border bg-background"
+                className="m-card"
               >
                 <CardBody item={item} index={index} />
               </ItemLink>
@@ -136,7 +137,7 @@ export function PageLinkSection({ section }: { section: PageSection }) {
                 href={item.href}
                 data-field={`items.${index}`}
                 data-item-no={index + 1}
-                className="m-card m-up relative overflow-hidden rounded-lg border border-border"
+                className="m-card m-up"
                 style={mi(index + 2)}
               >
                 <CardBody item={item} index={index} />
@@ -149,7 +150,10 @@ export function PageLinkSection({ section }: { section: PageSection }) {
   );
 }
 
-/** 카드 한 장. 사진 위에 결과·제목이 올라온다(호버). 폰에서는 항상 보인다. */
+/**
+ * 카드 한 장 — 이미지 안 하단에 결과·사건명·법원이 항상 보인다(도아식).
+ * 아래쪽 진한 그라데이션이 글자를 받친다. 호버하면 본문이 아래서 펼쳐진다(폰은 항상 펼침).
+ */
 function CardBody({
   item,
   index,
@@ -157,6 +161,8 @@ function CardBody({
   item: PageSection["items"][number];
   index: number;
 }) {
+  const { court, date, body } = caseMeta(item);
+  const metaLine = [court, date].filter(Boolean).join(" · ");
   return (
     <>
       {item.image_path ? (
@@ -164,41 +170,27 @@ function CardBody({
         <img
           src={mediaPublicUrl(item.image_path) ?? ""}
           alt=""
-          className="h-56 w-full object-cover object-top"
+          className="m-card-img"
         />
       ) : (
-        <div className="flex h-56 items-center justify-center bg-muted text-xs text-muted-foreground/60">
-          No image
-        </div>
+        <div className="m-card-img m-card-noimg">{item.title ?? ""}</div>
       )}
-      <div className="p-4">
-        <p
-          data-field={`items.${index}.title`}
-          className="text-sm font-medium text-foreground"
-        >
-          {item.title ?? "제목 없음"}
-        </p>
+      <div className="m-card-txt">
         {item.subtitle && (
-          <p data-field={`items.${index}.subtitle`} className="mt-1 text-xs">
+          <p data-field={`items.${index}.subtitle`} className="m-card-res">
             <ResultText text={item.subtitle} />
           </p>
         )}
-        {item.body && (
-          <p
-            data-field={`items.${index}.body`}
-            className="mt-2 line-clamp-2 text-xs text-muted-foreground/80"
-          >
-            {item.body}
+        <p data-field={`items.${index}.title`} className="m-card-title">
+          {item.title ?? "제목 없음"}
+        </p>
+        {metaLine && <p className="m-card-meta">{metaLine}</p>}
+        {body && (
+          <p data-field={`items.${index}.body`} className="m-card-body">
+            {body}
           </p>
         )}
       </div>
-      {(item.body || item.subtitle) && (
-        <div className="m-card-veil" aria-hidden="true">
-          <p className="m-veil-title">{item.title ?? ""}</p>
-          {item.subtitle && <p className="m-veil-result">{item.subtitle}</p>}
-          {item.body && <p className="m-veil-body line-clamp-4">{item.body}</p>}
-        </div>
-      )}
     </>
   );
 }
