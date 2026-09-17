@@ -41,11 +41,10 @@ export default async function SectionsPage({
   return (
     <main className="mx-auto flex max-w-[1500px] flex-col gap-6 p-8">
       <div>
-        <h1 className="a-title">페이지 구성</h1>
+        <h1 className="a-title">화면 구성</h1>
         <p className="a-lead mt-1">
-          페이지를 고른 뒤 섹션을 배치합니다. 홈은{" "}
-          <code className="a-chip">/</code>, 그 외는{" "}
-          <code className="a-chip">/{`{slug}`}</code> 로 열립니다.
+          페이지를 고르면 그 화면의 블록이 위에서 아래로 보이는 순서대로 나옵니다.
+          행을 누르면 고칠 수 있고, 고치는 동안 오른쪽에서 결과가 보입니다.
         </p>
       </div>
 
@@ -76,11 +75,12 @@ export default async function SectionsPage({
           {selectedPage && (
             <>
               <p className="a-hint">
-                선택: {selectedPage.title} → {pagePath(selectedPage.slug)}
+                {selectedPage.title} · 주소 {pagePath(selectedPage.slug)}
               </p>
 
               <SectionsWorkbench
                 pageId={selectedPage.id}
+                pagePath={pagePath(selectedPage.slug)}
                 sections={sections}
                 linkablePages={linkablePages}
                 sectionKinds={sectionKinds}

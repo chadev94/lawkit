@@ -1,5 +1,6 @@
 "use client";
 
+import { checkSiteContrast, formatRatio } from "@/lib/contrast";
 import { COLOR_FIELDS, type SiteColors } from "@/lib/site-settings";
 import { colorsMatchPreset, type ThemePreset } from "@/lib/theme-presets";
 
@@ -19,14 +20,44 @@ export function ThemeColorSection({
   onColorsChange: (colors: SiteColors) => void;
 }) {
   const activePreset = presets.find((p) => colorsMatchPreset(colors, p));
+  const checks = checkSiteContrast(colors);
+  const failing = checks.filter((c) => !c.pass);
+  const worst = failing.reduce<number | null>(
+    (min, c) => (c.ratio !== null && (min === null || c.ratio < min) ? c.ratio : min),
+    null,
+  );
 
   return (
     <div className="flex flex-col gap-4">
+      {/* 글자가 읽히는지. 변호사가 접근성 기준을 몰라도 되게 여기서 검사한다. */}
+      {failing.length === 0 ? (
+        <div className="a-notice" data-tone="ok">
+          <span aria-hidden="true">✓</span>
+          <div>
+            <b>지금 색은 모두 잘 읽힙니다.</b> 글자와 배경의 대비가 기준(4.5:1)을
+            넘습니다.
+          </div>
+        </div>
+      ) : (
+        <div className="a-notice" data-tone="warn">
+          <span aria-hidden="true">⚠</span>
+          <div>
+            <b>
+              {failing.length}곳의 글자가 읽기 어렵습니다
+              {worst !== null ? ` (가장 낮은 곳 ${formatRatio(worst)})` : ""}.
+            </b>{" "}
+            기준은 4.5:1 입니다. 의뢰인 부모 세대에게는 흐리게 보입니다. 아래
+            &ldquo;미달&rdquo; 표시된 색을 조금 더 진하게 하거나, 통과하는 프리셋을
+            고르세요.
+          </div>
+        </div>
+      )}
       {presets.length > 0 && (
         <div className="grid gap-2 sm:grid-cols-2">
           {presets.map((preset) => {
             const c = preset.colors;
             const active = activePreset?.id === preset.id;
+            const presetFails = checkSiteContrast(c).filter((x) => !x.pass).length;
             return (
               <button
                 key={preset.id}
@@ -53,6 +84,12 @@ export function ThemeColorSection({
                   <span className="a-hint block truncate">
                     {preset.description}
                   </span>
+                  <span
+                    className="block text-[11px]"
+                    style={{ color: presetFails ? "var(--a-warn)" : "var(--a-ok)" }}
+                  >
+                    {presetFails ? `읽기 어려운 조합 ${presetFails}곳` : "✓ 모두 잘 읽힘"}
+                  </span>
                 </span>
               </button>
             );
@@ -67,7 +104,29 @@ export function ThemeColorSection({
         </p>
       )}
 
-      <details open={presets.length === 0}>
+      <div className="a-contrast">
+        {checks.map((c) => (
+          <div key={`${c.fg}-${c.bg}`}>
+            <span>{c.label}</span>
+            <span
+              className="demo"
+              style={{ color: colors[c.fg], background: colors[c.bg] }}
+            >
+              가나다 Aa
+            </span>
+            <span className="ratio">
+              {formatRatio(c.ratio)}
+              <span
+                className={`a-badge ${c.pass ? "a-badge-ok" : "a-badge-warn"}`}
+              >
+                {c.pass ? "통과" : "미달"}
+              </span>
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <details open={presets.length === 0 || failing.length > 0}>
         <summary className="a-label cursor-pointer font-medium">
           세부 색상 조정
         </summary>

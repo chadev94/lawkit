@@ -5,7 +5,8 @@ import { CACHE_TAGS } from "@/lib/cache-tags";
 import { createClient } from "@/lib/supabase/server";
 import { HOME_PAGE_SLUG, pagePath } from "@/lib/sections";
 
-export type ActionState = { error: string | null };
+/** field 가 있으면 그 입력칸 옆에 오류를 보여준다(name 속성값). */
+export type ActionState = { error: string | null; field?: string };
 
 const SLUG_PATTERN = /^[a-z0-9-]+$/;
 // 앱 라우트와 충돌하는 경로. 홈은 별도 행이 이미 있으므로 새로 만들 수 없다.
@@ -13,10 +14,10 @@ const RESERVED_SLUGS = new Set(["admin", "api", "login", HOME_PAGE_SLUG]);
 
 function validateSlug(slug: string): string | null {
   if (!SLUG_PATTERN.test(slug)) {
-    return "경로는 소문자, 숫자, 하이픈만 사용할 수 있습니다.";
+    return "주소는 영문 소문자, 숫자, 하이픈(-)만 쓸 수 있습니다. 예: practice-areas";
   }
   if (RESERVED_SLUGS.has(slug)) {
-    return `"${slug}" 는 예약된 경로입니다.`;
+    return `"${slug}" 는 시스템이 쓰는 주소라 사용할 수 없습니다.`;
   }
   return null;
 }
@@ -43,9 +44,9 @@ export async function createPage(
   const sortOrder = Number(formData.get("sort_order") ?? 0);
   const showInNav = formData.get("show_in_nav") === "on";
 
-  if (!title) return { error: "페이지 이름을 입력하세요." };
+  if (!title) return { error: "페이지 이름을 입력하세요.", field: "title" };
   const slugError = validateSlug(slug);
-  if (slugError) return { error: slugError };
+  if (slugError) return { error: slugError, field: "slug" };
   if (Number.isNaN(sortOrder)) return { error: "순서는 숫자여야 합니다." };
 
   const supabase = await createClient();
@@ -58,7 +59,7 @@ export async function createPage(
   });
 
   if (error) {
-    if (error.code === "23505") return { error: "이미 사용 중인 경로입니다." };
+    if (error.code === "23505") return { error: "이미 사용 중인 주소입니다.", field: "slug" };
     return { error: error.message };
   }
 
@@ -79,7 +80,7 @@ export async function updatePage(
   const previousSlug = String(formData.get("previous_slug") ?? "").trim();
 
   if (!id) return { error: "페이지를 찾을 수 없습니다." };
-  if (!title) return { error: "페이지 이름을 입력하세요." };
+  if (!title) return { error: "페이지 이름을 입력하세요.", field: "title" };
   if (Number.isNaN(sortOrder)) return { error: "순서는 숫자여야 합니다." };
 
   // 홈은 경로가 '/' 에 고정되어 있으므로 slug 를 바꿀 수 없다
@@ -89,7 +90,7 @@ export async function updatePage(
   }
   if (!isHome) {
     const slugError = validateSlug(slug);
-    if (slugError) return { error: slugError };
+    if (slugError) return { error: slugError, field: "slug" };
   }
 
   const supabase = await createClient();
@@ -105,7 +106,7 @@ export async function updatePage(
     .eq("id", id);
 
   if (error) {
-    if (error.code === "23505") return { error: "이미 사용 중인 경로입니다." };
+    if (error.code === "23505") return { error: "이미 사용 중인 주소입니다.", field: "slug" };
     return { error: error.message };
   }
 
@@ -124,6 +125,44 @@ export async function togglePage(id: string, isActive: boolean) {
 
   if (error) throw error;
   revalidateAll(data?.slug ?? "");
+}
+
+/** 페이지를 한 칸 위/아래로. 전체를 다시 번호 매긴 뒤 이웃과 바꾼다. */
+export async function movePage(id: string, direction: "up" | "down") {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("pages")
+    .select("id, slug")
+    .order("sort_order")
+    .order("created_at");
+  if (error) throw error;
+
+  const rows = data ?? [];
+  const index = rows.findIndex((row) => row.id === id);
+  const target = direction === "up" ? index - 1 : index + 1;
+  if (index === -1 || target < 0 || target >= rows.length) return;
+
+  [rows[index], rows[target]] = [rows[target], rows[index]];
+
+  const results = await Promise.all(
+    rows.map((row, order) =>
+      supabase.from("pages").update({ sort_order: order }).eq("id", row.id),
+    ),
+  );
+  const failed = results.find((r) => r.error);
+  if (failed?.error) throw failed.error;
+
+  revalidateAll(...rows.map((row) => row.slug));
+}
+
+/** 페이지에 딸린 블록 수. 삭제 확인 문구에 쓴다. */
+export async function countPageSections(pageId: string): Promise<number> {
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("page_sections")
+    .select("id", { count: "exact", head: true })
+    .eq("page_id", pageId);
+  return count ?? 0;
 }
 
 export async function deletePage(id: string) {

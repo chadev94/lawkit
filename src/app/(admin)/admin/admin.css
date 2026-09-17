@@ -775,3 +775,241 @@
   border-top: 1px solid var(--a-line);
   backdrop-filter: blur(8px);
 }
+
+/* ─────────────────────────── 토스트 ─────────────────────────── */
+
+.a-toasts {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 4.75rem; /* 밝기 버튼(44px) 위 */
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: min(26rem, calc(100vw - 2.5rem));
+}
+
+.a-toast {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.8125rem;
+  color: var(--a-bg);
+  background: var(--a-ink);
+  border-radius: var(--a-radius);
+  box-shadow: var(--a-shadow);
+  animation: a-toast-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.a-toast i {
+  width: 0.5rem;
+  height: 0.5rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--a-ok);
+}
+
+.a-toast[data-kind="error"] i {
+  background: var(--a-danger);
+}
+
+.a-toast a {
+  margin-left: 0.25rem;
+  color: inherit;
+  opacity: 0.85;
+  font-size: 0.75rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@keyframes a-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* ─────────────────────────── 두 단계 삭제 ─────────────────────────── */
+
+.a-confirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.a-btn-danger[data-arm] {
+  background: var(--a-danger);
+  color: #fff;
+  border-color: var(--a-danger);
+  font-variant-numeric: tabular-nums;
+}
+
+.a-confirm-note {
+  font-size: 0.75rem;
+  color: var(--a-danger);
+  white-space: nowrap;
+}
+
+/* ─────────────────────────── 순서 ▲▼ ─────────────────────────── */
+
+.a-ord {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.a-ord button {
+  appearance: none;
+  width: 1.5rem;
+  height: 1.125rem;
+  padding: 0;
+  font-size: 0.5625rem;
+  line-height: 1;
+  color: var(--a-ink-2);
+  background: var(--a-surface);
+  border: 1px solid var(--a-line);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.a-ord button:hover:not(:disabled) {
+  border-color: var(--a-ink-3);
+  color: var(--a-ink);
+}
+
+.a-ord button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.a-ord button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--a-ring);
+}
+
+/* 순서 열: ▲▼ + 번호 */
+.a-row {
+  grid-template-columns: 3.5rem minmax(0, 1fr) 4.5rem auto;
+}
+
+.a-row-ord {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* 저장 직후 잠깐 빛나는 행 */
+.a-row[data-flash] {
+  animation: a-row-flash 1.8s ease-out;
+}
+
+@keyframes a-row-flash {
+  0%,
+  40% {
+    background: var(--a-ok-soft);
+  }
+}
+
+/* 칸 단위 오류 */
+.a-input[aria-invalid="true"],
+.a-select[aria-invalid="true"] {
+  border-color: var(--a-danger);
+}
+
+.a-field-error {
+  display: flex;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--a-danger);
+}
+
+/* 사이드바 머리: 사무소 이름 + 사이트 열기 */
+.a-brand {
+  padding: 0 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--a-line-soft);
+  margin-bottom: 0.5rem;
+}
+
+.a-brand b {
+  display: block;
+  font-size: 0.875rem;
+  letter-spacing: -0.01em;
+}
+
+.a-brand a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.125rem;
+  font-size: 0.75rem;
+  color: var(--a-accent);
+  text-decoration: none;
+}
+
+.a-brand a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* 페이지 탭 활성 표시를 사이드 내비와 같은 문법(틴트)으로 */
+.a-tab[data-active] {
+  background: var(--a-accent-soft);
+  border-color: var(--a-accent-soft);
+  color: var(--a-accent-ink);
+  font-weight: 500;
+}
+
+/* 대비 검사 */
+.a-contrast {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.a-contrast > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 0.75rem;
+  color: var(--a-ink-2);
+}
+
+.a-contrast .demo {
+  display: inline-flex;
+  align-items: center;
+  height: 1.375rem;
+  padding: 0 0.5rem;
+  font-size: 0.6875rem;
+  border-radius: 4px;
+  border: 1px solid var(--a-line-soft);
+}
+
+.a-contrast .ratio {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--a-ink);
+}
+
+.a-notice {
+  display: flex;
+  gap: 0.625rem;
+  align-items: flex-start;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--a-radius);
+  font-size: 0.8125rem;
+}
+
+.a-notice[data-tone="warn"] {
+  background: var(--a-warn-soft);
+  color: var(--a-warn);
+}
+
+.a-notice[data-tone="ok"] {
+  background: var(--a-ok-soft);
+  color: var(--a-ok);
+}

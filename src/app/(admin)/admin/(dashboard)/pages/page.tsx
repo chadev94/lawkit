@@ -12,9 +12,8 @@ export default async function PagesPage() {
       <div>
         <h1 className="a-title">페이지 관리</h1>
         <p className="a-lead mt-1">
-          페이지는 <code className="text-xs">/{`{slug}`}</code> 로 열리고,
-          &ldquo;메뉴 노출&rdquo;을 켜면 공개 사이트 상단에 표시됩니다. 섹션 배치는
-          페이지 구성에서 합니다.
+          사이트의 페이지 목록입니다. &ldquo;메뉴에 표시&rdquo;를 켜면 상단 메뉴에
+          나옵니다. 각 페이지 안의 내용은 화면 구성에서 고칩니다.
         </p>
       </div>
 
@@ -22,12 +21,17 @@ export default async function PagesPage() {
 
       {pages.length === 0 ? (
         <p className="a-empty">
-          등록된 페이지가 없습니다.
+          등록된 페이지가 없습니다. 위에서 첫 페이지를 추가하세요.
         </p>
       ) : (
         <ul className="a-list">
-          {pages.map((page) => (
-            <PageItem key={page.id} page={page} />
+          {pages.map((page, index) => (
+            <PageItem
+              key={page.id}
+              page={page}
+              position={index}
+              count={pages.length}
+            />
           ))}
         </ul>
       )}
