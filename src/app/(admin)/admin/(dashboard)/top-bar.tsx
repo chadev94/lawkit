@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { isDirty, UNSAVED_MESSAGE } from "@/app/(admin)/admin/unsaved";
 
 const TABS = [
   { href: "/admin/sections", label: "화면" },
@@ -40,6 +41,12 @@ export function AdminTopBar({
               href={tab.href}
               data-active={active || undefined}
               aria-current={active ? "page" : undefined}
+              onClick={(e) => {
+                // 편집 중이면 떠나기 전에 한 번 묻는다. 입력을 말없이 잃지 않게.
+                if (!active && isDirty() && !window.confirm(UNSAVED_MESSAGE)) {
+                  e.preventDefault();
+                }
+              }}
             >
               {tab.label}
             </Link>
@@ -48,7 +55,7 @@ export function AdminTopBar({
       </nav>
 
       <div className="a-topbar-right">
-        <a href="/" target="_blank" rel="noreferrer">
+        <a href="/" target="_blank" rel="noreferrer" className="a-topbar-link">
           사이트 열기 ↗
         </a>
         {email && (

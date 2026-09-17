@@ -35,7 +35,7 @@ export function Hero({ section }: { section: PageSection }) {
         </p>
         <h1
           data-field="title"
-          className="mt-4 text-3xl font-semibold leading-tight sm:text-4xl"
+          className="mt-4 line-clamp-3 text-3xl font-semibold leading-tight sm:text-4xl"
           style={{ color: "var(--hero-foreground)" }}
         >
           {section.title ?? "히어로 카피"}
@@ -43,7 +43,7 @@ export function Hero({ section }: { section: PageSection }) {
         {section.subtitle && (
           <p
             data-field="subtitle"
-            className="mt-4 max-w-md text-sm opacity-80"
+            className="mt-4 line-clamp-4 max-w-md text-sm opacity-80"
             style={{ color: "var(--hero-foreground)" }}
           >
             {section.subtitle}

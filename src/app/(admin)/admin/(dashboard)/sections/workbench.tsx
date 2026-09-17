@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import type { Section, PageSection, SitePage } from "@/lib/sections";
 import type { SiteSettings } from "@/lib/site-settings";
 import type { PreviewNavItem } from "@/app/(admin)/admin/site-preview";
+import { useUnsavedGuard } from "@/app/(admin)/admin/unsaved";
 import { PreviewPane } from "./preview-pane";
 import { SectionForm } from "./section-form";
 import { SectionItem } from "./section-item";
@@ -39,6 +40,7 @@ export function SectionsWorkbench({
   const [activeField, setActiveField] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [flashId, setFlashId] = useState<string | null>(null);
+  useUnsavedGuard("sections", draft !== null);
 
   // 저장된 행을 잠깐 빛내고 끈다.
   const onSaved = useCallback((id: string) => {

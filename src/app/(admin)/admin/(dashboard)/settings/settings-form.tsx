@@ -18,6 +18,7 @@ import {
   type PreviewNavItem,
 } from "@/app/(admin)/admin/site-preview";
 import { toast } from "@/app/(admin)/admin/toast";
+import { useUnsavedGuard } from "@/app/(admin)/admin/unsaved";
 import { updateSiteSettings, type ActionState } from "./actions";
 import { AddressSearchInput } from "./address-search-input";
 import { ThemeColorSection } from "./theme-color-section";
@@ -96,6 +97,7 @@ export function SettingsForm({
     JSON.stringify(draft.typography) !== JSON.stringify(settings.typography) ||
     JSON.stringify(draft.content) !== JSON.stringify(settings.content);
   const visibleHome = homeSections.filter((s) => s.is_active);
+  useUnsavedGuard("settings", dirty && !pending);
 
   function onFocusCapture(e: React.FocusEvent<HTMLFormElement>) {
     const target = e.target as unknown as { name?: string };

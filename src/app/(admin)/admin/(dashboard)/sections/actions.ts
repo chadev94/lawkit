@@ -3,6 +3,10 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 import { createClient } from "@/lib/supabase/server";
+import {
+  UNAUTHORIZED,
+  type ActionResult,
+} from "@/app/(admin)/admin/action-result";
 import { getSectionByKey } from "@/lib/queries/sections";
 import { getPageById } from "@/lib/queries/pages";
 import { HOME_PAGE_SLUG, pagePath } from "@/lib/sections";
@@ -88,7 +92,9 @@ export async function createSection(
   const items = itemsFromFormData(formData);
 
   if (!pageId) return { error: "페이지를 선택하세요." };
-  const hrefError = validateHref(String(formData.get("content_cta_href") ?? ""));
+  const hrefError = validateHref(
+    String(formData.get("content_cta_href") ?? ""),
+  );
   if (hrefError) return { error: hrefError, field: "content_cta_href" };
 
   const sectionKind = await getSectionByKey(kind);
@@ -148,7 +154,9 @@ export async function updateSection(
   if (Number.isNaN(sortOrder)) {
     return { error: "순서는 숫자여야 합니다." };
   }
-  const hrefError = validateHref(String(formData.get("content_cta_href") ?? ""));
+  const hrefError = validateHref(
+    String(formData.get("content_cta_href") ?? ""),
+  );
   if (hrefError) return { error: hrefError, field: "content_cta_href" };
 
   const sectionKind = await getSectionByKey(kind);
@@ -186,29 +194,45 @@ export async function updateSection(
   return { error: null };
 }
 
+/** 세션이 살아 있는지. 열어둔 채 한참 뒤 누르면 여기서 걸린다. */
+async function requireUser() {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  return data?.claims ? supabase : null;
+}
+
 export async function toggleSection(
   id: string,
   pageId: string,
   isActive: boolean,
-) {
-  const supabase = await createClient();
+): Promise<ActionResult> {
+  const supabase = await requireUser();
+  if (!supabase) return UNAUTHORIZED;
+
   const { error } = await supabase
     .from("page_sections")
     .update({ is_active: isActive })
     .eq("id", id);
-
-  if (error) throw error;
+  if (error)
+    return { ok: false, error: `변경에 실패했습니다: ${error.message}` };
 
   await revalidatePage(pageId);
+  return { ok: true };
 }
 
-export async function deleteSection(id: string, pageId: string) {
-  const supabase = await createClient();
-  const { error } = await supabase.from("page_sections").delete().eq("id", id);
+export async function deleteSection(
+  id: string,
+  pageId: string,
+): Promise<ActionResult> {
+  const supabase = await requireUser();
+  if (!supabase) return UNAUTHORIZED;
 
-  if (error) throw error;
+  const { error } = await supabase.from("page_sections").delete().eq("id", id);
+  if (error)
+    return { ok: false, error: `삭제에 실패했습니다: ${error.message}` };
 
   await revalidatePage(pageId);
+  return { ok: true };
 }
 
 /**
@@ -219,31 +243,43 @@ export async function moveSection(
   id: string,
   pageId: string,
   direction: "up" | "down",
-) {
-  const supabase = await createClient();
+): Promise<ActionResult> {
+  const supabase = await requireUser();
+  if (!supabase) return UNAUTHORIZED;
+
   const { data, error } = await supabase
     .from("page_sections")
     .select("id, sort_order")
     .eq("page_id", pageId)
     .order("sort_order")
     .order("created_at");
-  if (error) throw error;
+  if (error)
+    return { ok: false, error: `순서를 읽지 못했습니다: ${error.message}` };
 
   const ids = (data ?? []).map((row) => row.id);
   const index = ids.indexOf(id);
   const target = direction === "up" ? index - 1 : index + 1;
-  if (index === -1 || target < 0 || target >= ids.length) return;
+  if (index === -1 || target < 0 || target >= ids.length) return { ok: true };
 
   [ids[index], ids[target]] = [ids[target], ids[index]];
 
   const updates = ids.map((rowId, order) =>
-    supabase.from("page_sections").update({ sort_order: order }).eq("id", rowId),
+    supabase
+      .from("page_sections")
+      .update({ sort_order: order })
+      .eq("id", rowId),
   );
   const results = await Promise.all(updates);
   const failed = results.find((r) => r.error);
-  if (failed?.error) throw failed.error;
+  if (failed?.error) {
+    return {
+      ok: false,
+      error: `순서 변경에 실패했습니다: ${failed.error.message}`,
+    };
+  }
 
   await revalidatePage(pageId);
+  return { ok: true };
 }
 
 export async function resolveAdminPageId(

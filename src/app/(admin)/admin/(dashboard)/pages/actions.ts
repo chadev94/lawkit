@@ -3,6 +3,10 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 import { createClient } from "@/lib/supabase/server";
+import {
+  UNAUTHORIZED,
+  type ActionResult,
+} from "@/app/(admin)/admin/action-result";
 import { HOME_PAGE_SLUG, pagePath } from "@/lib/sections";
 
 /** field 가 있으면 그 입력칸 옆에 오류를 보여준다(name 속성값). */
@@ -59,7 +63,8 @@ export async function createPage(
   });
 
   if (error) {
-    if (error.code === "23505") return { error: "이미 사용 중인 주소입니다.", field: "slug" };
+    if (error.code === "23505")
+      return { error: "이미 사용 중인 주소입니다.", field: "slug" };
     return { error: error.message };
   }
 
@@ -106,7 +111,8 @@ export async function updatePage(
     .eq("id", id);
 
   if (error) {
-    if (error.code === "23505") return { error: "이미 사용 중인 주소입니다.", field: "slug" };
+    if (error.code === "23505")
+      return { error: "이미 사용 중인 주소입니다.", field: "slug" };
     return { error: error.message };
   }
 
@@ -114,33 +120,53 @@ export async function updatePage(
   return { error: null };
 }
 
-export async function togglePage(id: string, isActive: boolean) {
+/** 세션이 살아 있는지. 열어둔 채 한참 뒤 누르면 여기서 걸린다. */
+async function requireUser() {
   const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  return data?.claims ? supabase : null;
+}
+
+export async function togglePage(
+  id: string,
+  isActive: boolean,
+): Promise<ActionResult> {
+  const supabase = await requireUser();
+  if (!supabase) return UNAUTHORIZED;
+
   const { data, error } = await supabase
     .from("pages")
     .update({ is_active: isActive })
     .eq("id", id)
     .select("slug")
     .maybeSingle();
+  if (error)
+    return { ok: false, error: `변경에 실패했습니다: ${error.message}` };
 
-  if (error) throw error;
   revalidateAll(data?.slug ?? "");
+  return { ok: true };
 }
 
 /** 페이지를 한 칸 위/아래로. 전체를 다시 번호 매긴 뒤 이웃과 바꾼다. */
-export async function movePage(id: string, direction: "up" | "down") {
-  const supabase = await createClient();
+export async function movePage(
+  id: string,
+  direction: "up" | "down",
+): Promise<ActionResult> {
+  const supabase = await requireUser();
+  if (!supabase) return UNAUTHORIZED;
+
   const { data, error } = await supabase
     .from("pages")
     .select("id, slug")
     .order("sort_order")
     .order("created_at");
-  if (error) throw error;
+  if (error)
+    return { ok: false, error: `순서를 읽지 못했습니다: ${error.message}` };
 
   const rows = data ?? [];
   const index = rows.findIndex((row) => row.id === id);
   const target = direction === "up" ? index - 1 : index + 1;
-  if (index === -1 || target < 0 || target >= rows.length) return;
+  if (index === -1 || target < 0 || target >= rows.length) return { ok: true };
 
   [rows[index], rows[target]] = [rows[target], rows[index]];
 
@@ -150,9 +176,15 @@ export async function movePage(id: string, direction: "up" | "down") {
     ),
   );
   const failed = results.find((r) => r.error);
-  if (failed?.error) throw failed.error;
+  if (failed?.error) {
+    return {
+      ok: false,
+      error: `순서 변경에 실패했습니다: ${failed.error.message}`,
+    };
+  }
 
   revalidateAll(...rows.map((row) => row.slug));
+  return { ok: true };
 }
 
 /** 페이지에 딸린 블록 수. 삭제 확인 문구에 쓴다. */
@@ -165,8 +197,9 @@ export async function countPageSections(pageId: string): Promise<number> {
   return count ?? 0;
 }
 
-export async function deletePage(id: string) {
-  const supabase = await createClient();
+export async function deletePage(id: string): Promise<ActionResult> {
+  const supabase = await requireUser();
+  if (!supabase) return UNAUTHORIZED;
 
   // 홈은 지울 수 없다. 사이트 진입점이다.
   const { data: page } = await supabase
@@ -175,12 +208,14 @@ export async function deletePage(id: string) {
     .eq("id", id)
     .maybeSingle();
   if (page?.slug === HOME_PAGE_SLUG) {
-    throw new Error("홈 페이지는 삭제할 수 없습니다.");
+    return { ok: false, error: "홈 페이지는 삭제할 수 없습니다." };
   }
 
   // page_sections 는 page_id / source_page_id 모두 on delete cascade 로 정리된다.
   const { error } = await supabase.from("pages").delete().eq("id", id);
-  if (error) throw error;
+  if (error)
+    return { ok: false, error: `삭제에 실패했습니다: ${error.message}` };
 
   revalidateAll(page?.slug ?? "");
+  return { ok: true };
 }
