@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getPageSections } from "@/lib/queries/page-sections";
 import { getAllPages, getNavPages } from "@/lib/queries/pages";
 import { getActiveSectionsCatalog } from "@/lib/queries/sections";
@@ -57,7 +58,7 @@ export default async function SectionsPage({
             {pages.map((page) => {
               const active = page.id === selectedPage?.id;
               return (
-                <a
+                <Link
                   key={page.id}
                   href={`/admin/sections?page=${page.id}`}
                   className="a-tab"
@@ -66,7 +67,7 @@ export default async function SectionsPage({
                 >
                   {page.title}
                   {!page.is_active ? " · 숨김" : ""}
-                </a>
+                </Link>
               );
             })}
           </div>
