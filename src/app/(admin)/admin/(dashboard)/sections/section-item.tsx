@@ -16,8 +16,12 @@ import {
   type SectionLayout,
   type SitePage,
 } from "@/lib/sections";
+import { ConfirmDeleteButton } from "@/app/(admin)/admin/confirm-delete";
+import { OrderButtons } from "@/app/(admin)/admin/order-buttons";
+import { toast } from "@/app/(admin)/admin/toast";
 import {
   deleteSection,
+  moveSection,
   toggleSection,
   updateSection,
   type ActionState,
@@ -32,6 +36,22 @@ import {
 const initialState: ActionState = { error: null };
 
 const field = "a-input";
+
+/** 종류별 예시 문구. 빈 칸에 회색으로 보인다. */
+const PLACEHOLDER: Record<"title" | "subtitle", Record<string, string>> = {
+  title: {
+    hero: "예: 판사 옆에서 일한 변호사가, 이제 당신 옆에 섭니다",
+    page_link: "예: 주요 해결사례",
+    cta: "예: 체포·구속은 시간이 생명입니다",
+    contact: "예: 변호사에게 연락하는 게 맞을까, 고민되시죠?",
+  },
+  subtitle: {
+    hero: "예: 경찰에서 연락이 왔다면, 조사 전에 먼저 전화하세요",
+    page_link: "예: 같은 사건도 누가 변호하느냐에 따라 결과가 달라집니다",
+    cta: "예: 질문 4개에 답하면 지금 필요한 대응을 알려 드립니다",
+    contact: "예: 모든 상담은 비밀이 보장됩니다",
+  },
+};
 const fieldLabel = "a-label";
 
 /**
@@ -42,16 +62,29 @@ export function SectionItem({
   section,
   pages,
   editing,
+  position,
+  count,
+  pagePath,
+  flash,
   onEditToggle,
   onDraft,
   onFieldFocus,
+  onSaved,
 }: {
   section: PageSection;
   pages: SitePage[];
   editing: boolean;
+  /** 목록에서의 위치(0부터). ▲▼ 활성 판단 */
+  position: number;
+  count: number;
+  /** 공개 사이트 경로. 토스트의 "사이트에서 보기" */
+  pagePath: string;
+  /** 방금 저장돼 잠깐 빛나야 하는가 */
+  flash: boolean;
   onEditToggle: () => void;
   onDraft: (draft: PageSection | null) => void;
   onFieldFocus: (field: string | null) => void;
+  onSaved: (id: string) => void;
 }) {
   const [state, formAction, pending] = useActionState(
     updateSection,
@@ -60,19 +93,32 @@ export function SectionItem({
 
   const kindLabel = section.section?.name ?? section.kind;
   const requiresPage = section.section?.requires_page ?? false;
+  const displayName = section.title ?? section.source_page?.title ?? "—";
 
   return (
     <li className={editing ? "a-row-open" : undefined}>
       {/* 고정 격자. 제목 길이와 무관하게 상태·동작이 같은 자리에 온다. */}
-      <div className="a-row">
-        <span className="a-row-ord">{section.sort_order}</span>
+      <div className="a-row" data-flash={flash || undefined}>
+        <span className="a-row-ord">
+          <OrderButtons
+            canUp={position > 0}
+            canDown={position < count - 1}
+            label={`${displayName} 블록`}
+            onMove={async (direction) => {
+              await moveSection(section.id, section.page_id, direction);
+              toast({
+                message: "순서가 바뀌었습니다 · 사이트에 반영",
+                link: { href: pagePath, label: "사이트에서 보기" },
+              });
+            }}
+          />
+          <span>{position + 1}</span>
+        </span>
 
         <button type="button" onClick={onEditToggle} className="a-row-main">
           <span className="flex min-w-0 items-center gap-2">
             <span className="a-chip">{kindLabel}</span>
-            <span className="a-row-name">
-              {section.title ?? section.source_page?.title ?? "—"}
-            </span>
+            <span className="a-row-name">{displayName}</span>
           </span>
           <span className="a-row-sub">
             {requiresPage
@@ -84,6 +130,12 @@ export function SectionItem({
         <form
           action={async () => {
             await toggleSection(section.id, section.page_id, !section.is_active);
+            toast({
+              message: section.is_active
+                ? "숨겼습니다 · 사이트에서 사라집니다"
+                : "노출합니다 · 사이트에 나타납니다",
+              link: { href: pagePath, label: "사이트에서 보기" },
+            });
           }}
         >
           <button
@@ -102,18 +154,17 @@ export function SectionItem({
           >
             {editing ? "닫기" : "수정"}
           </button>
-          <form
-            action={async () => {
+          <ConfirmDeleteButton
+            note={
+              section.items.length > 0
+                ? `항목 ${section.items.length}개도 함께 삭제됩니다`
+                : undefined
+            }
+            onConfirm={async () => {
               await deleteSection(section.id, section.page_id);
+              toast({ message: `"${displayName}" 블록을 삭제했습니다` });
             }}
-          >
-            <button
-              type="submit"
-              className="a-btn a-btn-danger a-btn-sm"
-            >
-              삭제
-            </button>
-          </form>
+          />
         </div>
       </div>
 
@@ -129,6 +180,13 @@ export function SectionItem({
           onDraft={onDraft}
           onFieldFocus={onFieldFocus}
           onClose={onEditToggle}
+          onSaved={() => {
+            onSaved(section.id);
+            toast({
+              message: "저장됨 · 사이트에 반영되었습니다",
+              link: { href: pagePath, label: "사이트에서 보기" },
+            });
+          }}
         />
       )}
     </li>
@@ -145,6 +203,7 @@ function SectionEditForm({
   onDraft,
   onFieldFocus,
   onClose,
+  onSaved,
 }: {
   section: PageSection;
   pages: SitePage[];
@@ -155,10 +214,11 @@ function SectionEditForm({
   onDraft: (draft: PageSection | null) => void;
   onFieldFocus: (field: string | null) => void;
   onClose: () => void;
+  onSaved: () => void;
 }) {
   const [title, setTitle] = useState(section.title ?? "");
   const [subtitle, setSubtitle] = useState(section.subtitle ?? "");
-  const [sortOrder, setSortOrder] = useState(String(section.sort_order));
+  const [sortOrder] = useState(String(section.sort_order));
   const [isActive, setIsActive] = useState(section.is_active);
   const [layout, setLayout] = useState<SectionLayout>(section.layout);
   const [sourcePageId, setSourcePageId] = useState(
@@ -240,11 +300,22 @@ function SectionEditForm({
     }
     if (wasPendingRef.current && state.error === null) {
       wasPendingRef.current = false;
+      onSaved();
       onClose();
       return;
     }
     wasPendingRef.current = false;
-  }, [pending, state.error, onClose]);
+  }, [pending, state.error, onClose, onSaved]);
+
+  // 칸 단위 오류. 서버가 field 를 돌려주면 그 칸만 빨갛게, 문구는 그 아래.
+  const invalid = (name: string) =>
+    state.error && state.field === name
+      ? ({ "aria-invalid": true } as const)
+      : undefined;
+  const fieldError = (name: string) =>
+    state.error && state.field === name ? (
+      <span className="a-field-error">⚠ {state.error}</span>
+    ) : null;
 
   return (
     <form
@@ -293,38 +364,25 @@ function SectionEditForm({
         </div>
       )}
 
-      <div className="grid gap-3 sm:grid-cols-[1fr_1fr_5rem_6rem]">
+      {/* 순서는 목록의 ▲▼ 로 바꾼다. 값은 그대로 보내 서버가 덮어쓰지 않게 한다. */}
+      <input type="hidden" name="sort_order" value={sortOrder} />
+
+      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_7rem]">
         <label className="flex flex-col gap-1">
           <span className={fieldLabel}>
-            제목 <span className="">(비우면 메뉴명 사용)</span>
+            제목{" "}
+            {requiresPage && (
+              <span style={{ color: "var(--a-ink-3)" }}>
+                (비우면 연결한 페이지 이름)
+              </span>
+            )}
           </span>
           <input
             name="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            placeholder={PLACEHOLDER.title[section.kind] ?? "예: 업무분야"}
             {...focusProps("title")}
-            className={field}
-          />
-        </label>
-
-        <label className="flex flex-col gap-1">
-          <span className={fieldLabel}>부제</span>
-          <input
-            name="subtitle"
-            value={subtitle}
-            onChange={(e) => setSubtitle(e.target.value)}
-            {...focusProps("subtitle")}
-            className={field}
-          />
-        </label>
-
-        <label className="flex flex-col gap-1">
-          <span className={fieldLabel}>순서</span>
-          <input
-            name="sort_order"
-            type="number"
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
             className={field}
           />
         </label>
@@ -343,36 +401,77 @@ function SectionEditForm({
         </label>
       </div>
 
+      <label className="flex flex-col gap-1">
+        <span className={fieldLabel}>
+          부제 <span style={{ color: "var(--a-ink-3)" }}>(비우면 표시 안 함)</span>
+        </span>
+        <input
+          name="subtitle"
+          value={subtitle}
+          onChange={(e) => setSubtitle(e.target.value)}
+          placeholder={PLACEHOLDER.subtitle[section.kind] ?? ""}
+          {...focusProps("subtitle")}
+          className={field}
+        />
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className={fieldLabel}>
+          부제 <span style={{ color: "var(--a-ink-3)" }}>(비우면 표시 안 함)</span>
+        </span>
+        <input
+          name="subtitle"
+          value={subtitle}
+          onChange={(e) => setSubtitle(e.target.value)}
+          placeholder={PLACEHOLDER.subtitle[section.kind] ?? ""}
+          className={field}
+          {...focusProps("subtitle")}
+        />
+      </label>
+
       {section.kind === "hero" && (
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1">
-            <span className={fieldLabel}>아이브로우</span>
+            <span className={fieldLabel}>
+              작은 제목 (위){" "}
+              <span style={{ color: "var(--a-ink-3)" }}>제목 위에 작게</span>
+            </span>
             <input
               name="content_eyebrow"
               value={hero.eyebrow}
               onChange={(e) => setHero({ ...hero, eyebrow: e.target.value })}
+              placeholder="예: YOO & PARTNERS"
               {...focusProps("content.eyebrow")}
               className={field}
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className={fieldLabel}>CTA 라벨</span>
+            <span className={fieldLabel}>버튼 글자</span>
             <input
               name="content_cta_label"
               value={hero.cta_label}
               onChange={(e) => setHero({ ...hero, cta_label: e.target.value })}
+              placeholder="예: 무료 전화상담"
               {...focusProps("content.cta_label")}
               className={field}
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className={fieldLabel}>CTA 링크</span>
+            <span className={fieldLabel}>
+              버튼 누르면 가는 곳{" "}
+              <span style={{ color: "var(--a-ink-3)" }}>
+                전화는 tel:, 페이지는 /주소
+              </span>
+            </span>
             <input
               name="content_cta_href"
               value={hero.cta_href}
               onChange={(e) => setHero({ ...hero, cta_href: e.target.value })}
+              placeholder="예: tel:02-000-0000 또는 /contact"
               className={field}
+              {...invalid("content_cta_href")}
             />
+            {fieldError("content_cta_href")}
           </label>
           <ImageField
             label="배경 이미지"
@@ -388,20 +487,25 @@ function SectionEditForm({
         <div className="flex flex-col gap-3">
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="flex flex-col gap-1">
-              <span className={fieldLabel}>배지</span>
+              <span className={fieldLabel}>
+                작은 제목 (위){" "}
+                <span style={{ color: "var(--a-ink-3)" }}>제목 위에 작게</span>
+              </span>
               <input
                 name="content_badge"
                 value={cta.badge}
                 onChange={(e) => setCta({ ...cta, badge: e.target.value })}
+                placeholder="예: YOUR SITUATION"
                 {...focusProps("content.badge")}
                 className={field}
               />
             </label>
             <label className="flex flex-col gap-1">
-              <span className={fieldLabel}>버튼 라벨</span>
+              <span className={fieldLabel}>버튼 글자</span>
               <input
                 name="content_button_label"
                 value={cta.button_label}
+                placeholder="예: 지금 상담하기"
                 onChange={(e) =>
                   setCta({ ...cta, button_label: e.target.value })
                 }
@@ -427,6 +531,7 @@ function SectionEditForm({
             <input
               name="content_consent_label"
               value={contact.consent_label}
+              placeholder="예: 개인정보 수집·이용에 동의합니다"
               onChange={(e) =>
                 setContact({ ...contact, consent_label: e.target.value })
               }
@@ -439,6 +544,7 @@ function SectionEditForm({
             <input
               name="content_submit_label"
               value={contact.submit_label}
+              placeholder="예: 상담 신청"
               onChange={(e) =>
                 setContact({ ...contact, submit_label: e.target.value })
               }
@@ -451,6 +557,7 @@ function SectionEditForm({
             <input
               name="content_success_message"
               value={contact.success_message}
+              placeholder="예: 문의가 접수되었습니다. 변호사가 직접 연락드립니다"
               onChange={(e) =>
                 setContact({ ...contact, success_message: e.target.value })
               }
@@ -474,7 +581,9 @@ function SectionEditForm({
         <input type="hidden" name="items_json" value="[]" />
       )}
 
-      {state.error && <p className="a-error">{state.error}</p>}
+      {state.error && !state.field && (
+        <p className="a-error">⚠ {state.error}</p>
+      )}
 
       <div className="a-editor-actions">
         <button
@@ -492,7 +601,7 @@ function SectionEditForm({
           취소
         </button>
         <span className="a-hint">
-          입력칸을 누르면 오른쪽에서 그 부분이 표시됩니다. 저장해야 사이트에
+          고치는 동안 오른쪽에서 결과가 보입니다. 저장하면 사이트에 바로
           적용됩니다.
         </span>
       </div>

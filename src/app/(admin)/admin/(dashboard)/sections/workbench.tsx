@@ -14,6 +14,7 @@ import { SectionItem } from "./section-item";
  */
 export function SectionsWorkbench({
   pageId,
+  pagePath,
   sections,
   linkablePages,
   sectionKinds,
@@ -22,6 +23,8 @@ export function SectionsWorkbench({
   navTitles,
 }: {
   pageId: string;
+  /** 공개 사이트에서 이 페이지의 경로. 토스트 링크 */
+  pagePath: string;
   sections: PageSection[];
   linkablePages: SitePage[];
   sectionKinds: Section[];
@@ -33,6 +36,13 @@ export function SectionsWorkbench({
   const [draft, setDraft] = useState<PageSection | null>(null);
   const [activeField, setActiveField] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  const [flashId, setFlashId] = useState<string | null>(null);
+
+  // 저장된 행을 잠깐 빛내고 끈다.
+  const onSaved = useCallback((id: string) => {
+    setFlashId(id);
+    window.setTimeout(() => setFlashId((cur) => (cur === id ? null : cur)), 1800);
+  }, []);
 
   const onEditToggle = useCallback((id: string) => {
     setEditingId((current) => (current === id ? null : id));
@@ -76,15 +86,20 @@ export function SectionsWorkbench({
           </p>
         ) : (
           <ul className="a-list">
-            {sections.map((section) => (
+            {sections.map((section, index) => (
               <SectionItem
                 key={section.id}
                 section={section}
                 pages={linkablePages}
                 editing={editingId === section.id}
+                position={index}
+                count={sections.length}
+                pagePath={pagePath}
+                flash={flashId === section.id}
                 onEditToggle={() => onEditToggle(section.id)}
                 onDraft={setDraft}
                 onFieldFocus={setActiveField}
+                onSaved={onSaved}
               />
             ))}
           </ul>

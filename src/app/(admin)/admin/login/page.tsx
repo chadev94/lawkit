@@ -20,7 +20,7 @@ export default async function AdminLoginPage({
         >
           ADMIN
         </p>
-        <h1 className="a-title mt-2">로그인</h1>
+        <h1 className="a-title mt-2 text-2xl">로그인</h1>
         <p className="a-lead mt-1">
           Supabase Auth 계정으로 관리자 화면에 접속합니다.
         </p>

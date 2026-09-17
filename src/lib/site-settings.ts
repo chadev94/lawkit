@@ -113,15 +113,15 @@ export const DEFAULT_CONTENT: SiteContent = {
 
 export const COLOR_FIELDS: { key: keyof SiteColors; label: string }[] = [
   { key: "background", label: "배경" },
-  { key: "foreground", label: "본문 텍스트" },
-  { key: "muted", label: "보조 배경" },
-  { key: "muted_foreground", label: "보조 텍스트" },
-  { key: "primary", label: "포인트/버튼" },
-  { key: "primary_foreground", label: "포인트 위 텍스트" },
+  { key: "foreground", label: "본문 글자" },
+  { key: "muted", label: "연한 배경" },
+  { key: "muted_foreground", label: "보조 글자" },
+  { key: "primary", label: "버튼·강조 배경" },
+  { key: "primary_foreground", label: "버튼 글자" },
   { key: "border", label: "테두리" },
-  { key: "accent", label: "악센트" },
-  { key: "hero_background", label: "히어로 배경" },
-  { key: "hero_foreground", label: "히어로 텍스트" },
+  { key: "accent", label: "강조 글자 (작은 제목)" },
+  { key: "hero_background", label: "첫 화면 배경" },
+  { key: "hero_foreground", label: "첫 화면 글자" },
 ];
 
 function asRecord(value: unknown): Record<string, unknown> {

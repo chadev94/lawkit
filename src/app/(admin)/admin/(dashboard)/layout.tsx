@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getSiteSettings } from "@/lib/queries/site-settings";
 import { logout } from "@/app/(admin)/admin/login/actions";
 
 const NAV = [
   { href: "/admin/settings", label: "사이트 설정" },
   { href: "/admin/pages", label: "페이지 관리" },
-  { href: "/admin/sections", label: "페이지 구성" },
+  { href: "/admin/sections", label: "화면 구성" },
 ];
 
 export default async function AdminDashboardLayout({
@@ -23,6 +24,8 @@ export default async function AdminDashboardLayout({
 
   const email =
     typeof data.claims.email === "string" ? data.claims.email : null;
+  const settings = await getSiteSettings();
+  const siteName = settings.content.site_name?.trim() || "사이트";
 
   return (
     <div className="flex min-h-screen">
@@ -33,13 +36,13 @@ export default async function AdminDashboardLayout({
           borderRight: "1px solid var(--a-line)",
         }}
       >
-        <p
-          className="px-2.5 text-[11px] font-bold tracking-[0.14em]"
-          style={{ color: "var(--a-ink-3)" }}
-        >
-          ADMIN
-        </p>
-        <nav className="mt-5 flex flex-col gap-0.5">
+        <div className="a-brand">
+          <b>{siteName}</b>
+          <a href="/" target="_blank" rel="noreferrer">
+            사이트 열기 ↗
+          </a>
+        </div>
+        <nav className="flex flex-col gap-0.5">
           {NAV.map((item) => (
             <Link key={item.href} href={item.href} className="a-nav-link">
               {item.label}

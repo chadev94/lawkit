@@ -56,7 +56,7 @@ export function SectionForm({
 
       <div className="grid gap-3 sm:grid-cols-3">
         <label className="flex flex-col gap-1">
-          <span className="a-label">섹션 종류</span>
+          <span className="a-label">블록 종류</span>
           <select
             name="kind"
             value={kind}
@@ -112,7 +112,7 @@ export function SectionForm({
       <div className="grid gap-3 sm:grid-cols-[1fr_1fr_100px]">
         <label className="flex flex-col gap-1">
           <span className="a-label">
-            제목 <span style={{ color: "var(--a-ink-3)" }}>(비우면 메뉴명 사용)</span>
+            제목 <span style={{ color: "var(--a-ink-3)" }}>(비우면 연결한 페이지 이름)</span>
           </span>
           <input
             name="title"
@@ -142,9 +142,10 @@ export function SectionForm({
       {kind === "hero" && (
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1">
-            <span className="a-label">아이브로우</span>
+            <span className="a-label">작은 제목 (위)</span>
             <input
               name="content_eyebrow"
+            placeholder="예: YOO & PARTNERS"
               value={hero.eyebrow}
               onChange={(e) =>
                 setHero(parseHeroContent({ ...hero, eyebrow: e.target.value }))
@@ -153,9 +154,10 @@ export function SectionForm({
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="a-label">CTA 라벨</span>
+            <span className="a-label">버튼 글자</span>
             <input
               name="content_cta_label"
+            placeholder="예: 무료 전화상담"
               value={hero.cta_label}
               onChange={(e) =>
                 setHero(
@@ -166,9 +168,10 @@ export function SectionForm({
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="a-label">CTA 링크</span>
+            <span className="a-label">버튼 누르면 가는 곳</span>
             <input
               name="content_cta_href"
+            placeholder="예: tel:02-000-0000 또는 /contact"
               value={hero.cta_href}
               onChange={(e) =>
                 setHero(parseHeroContent({ ...hero, cta_href: e.target.value }))
@@ -192,7 +195,7 @@ export function SectionForm({
         <div className="flex flex-col gap-3">
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="flex flex-col gap-1">
-              <span className="a-label">배지</span>
+              <span className="a-label">작은 제목 (위)</span>
               <input
                 name="content_badge"
                 value={cta.badge}
@@ -203,9 +206,10 @@ export function SectionForm({
               />
             </label>
             <label className="flex flex-col gap-1">
-              <span className="a-label">버튼 라벨</span>
+              <span className="a-label">버튼 글자</span>
               <input
                 name="content_button_label"
+              placeholder="예: 지금 상담하기"
                 value={cta.button_label}
                 onChange={(e) =>
                   setCta(
@@ -298,7 +302,7 @@ export function SectionForm({
         disabled={pending}
         className="a-btn a-btn-primary self-start"
       >
-        {pending ? "추가 중..." : "섹션 추가"}
+        {pending ? "추가 중..." : "블록 추가"}
       </button>
     </form>
   );
