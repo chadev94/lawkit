@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { ConfirmDeleteButton } from "@/app/(admin)/admin/confirm-delete";
 import { OrderButtons } from "@/app/(admin)/admin/order-buttons";
+import { runAction } from "@/app/(admin)/admin/run-action";
 import { toast } from "@/app/(admin)/admin/toast";
 import { HOME_PAGE_SLUG, pagePath, type SitePage } from "@/lib/sections";
 import {
@@ -47,10 +48,11 @@ export function PageItem({
             canUp={position > 0}
             canDown={position < count - 1}
             label={`${page.title} 페이지`}
-            onMove={async (direction) => {
-              await movePage(page.id, direction);
-              toast({ message: "메뉴 순서가 바뀌었습니다 · 사이트에 반영" });
-            }}
+            onMove={(direction) =>
+              runAction(() => movePage(page.id, direction), {
+                message: "메뉴 순서가 바뀌었습니다 · 사이트에 반영",
+              }).then(() => undefined)
+            }
           />
           <span>{position + 1}</span>
         </span>
@@ -64,15 +66,14 @@ export function PageItem({
         </button>
 
         <form
-          action={async () => {
-            await togglePage(page.id, !page.is_active);
-            toast({
+          action={() =>
+            runAction(() => togglePage(page.id, !page.is_active), {
               message: page.is_active
                 ? "페이지를 숨겼습니다 · 주소로도 열리지 않습니다"
                 : "페이지를 사용합니다 · 사이트에 나타납니다",
               link: { href: path, label: "사이트에서 보기" },
-            });
-          }}
+            }).then(() => undefined)
+          }
         >
           <button
             type="submit"
@@ -142,10 +143,11 @@ function PageDeleteButton({ page }: { page: SitePage }) {
             ? `이 페이지의 블록 ${sectionCount}개도 함께 삭제됩니다`
             : "이 페이지의 블록도 함께 삭제됩니다"
         }
-        onConfirm={async () => {
-          await deletePage(page.id);
-          toast({ message: `"${page.title}" 페이지를 삭제했습니다` });
-        }}
+        onConfirm={() =>
+          runAction(() => deletePage(page.id), {
+            message: `"${page.title}" 페이지를 삭제했습니다`,
+          }).then(() => undefined)
+        }
       />
     </span>
   );

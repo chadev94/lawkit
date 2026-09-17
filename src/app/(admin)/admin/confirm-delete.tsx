@@ -14,7 +14,7 @@ export function ConfirmDeleteButton({
   label = "삭제",
   className = "a-btn a-btn-danger a-btn-sm",
 }: {
-  onConfirm: () => Promise<void> | void;
+  onConfirm: () => Promise<unknown> | void;
   /** 함께 사라지는 것이 있으면 말해 준다. "항목 3개도 함께 삭제됩니다" */
   note?: string;
   label?: string;
