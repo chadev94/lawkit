@@ -69,6 +69,8 @@ export function SitePreviewFrame({
   scrollToSelector,
   /** 이 색이 쓰이는 곳을 깜빡여 보여준다. 색 칸에 커서를 둔 동안 */
   pulseColor,
+  /** 미리보기 안을 클릭하면 어느 블록·어느 칸인지 알린다. 왼쪽 편집기가 그곳을 연다 */
+  onPick,
 }: {
   settings: SiteSettings;
   nav: PreviewNavItem[];
@@ -80,6 +82,7 @@ export function SitePreviewFrame({
   scopeSelector?: string | null;
   scrollToSelector?: string | null;
   pulseColor?: keyof SiteColors | null;
+  onPick?: (pick: { sectionId: string | null; field: string | null }) => void;
 }) {
   const [device, setDevice] = useState<DeviceKey>("desktop");
   const [pulseOn, setPulseOn] = useState(false);
@@ -212,7 +215,20 @@ export function SitePreviewFrame({
       >
         <div
           ref={contentRef}
-          className="admin-preview site-theme mx-auto overflow-hidden rounded-[7px] bg-white"
+          // 미리보기 안의 링크는 사이트로 이동시키지 않는다. 클릭은 "이 자리를 고치겠다"로 읽는다.
+          onClickCapture={(e) => {
+            const target = e.target as HTMLElement;
+            if (target.closest("a, button")) e.preventDefault();
+            if (!onPick) return;
+            const block = target.closest<HTMLElement>("[data-preview-section]");
+            const fieldEl = target.closest<HTMLElement>("[data-field]");
+            const field = fieldEl?.dataset.field ?? null;
+            onPick({
+              sectionId: block?.dataset.previewSection ?? null,
+              field: field === "header" || field === "footer" ? null : field,
+            });
+          }}
+          className="admin-preview site-theme mx-auto cursor-pointer overflow-hidden rounded-[7px] bg-white"
           style={{
             ...cssVars,
             width,

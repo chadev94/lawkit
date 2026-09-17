@@ -258,6 +258,8 @@ function SectionEditForm({
   const focusProps = (fieldName: string) => ({
     onFocus: () => onFieldFocus(fieldName),
     onBlur: () => onFieldFocus(null),
+    // 미리보기에서 그 자리를 클릭하면 이 속성으로 칸을 찾아 커서를 옮긴다
+    "data-focus-field": fieldName,
   });
 
   // 편집 중인 값을 미리보기로 올린다. 저장과 무관하게 입력 즉시 반영된다.
@@ -597,8 +599,8 @@ function SectionEditForm({
               checked={story}
               onChange={(e) => setStory(e.target.checked)}
             />
-            스크롤 스토리로 보이기 — 글은 고정, 항목 이미지가 스크롤에 따라 넘어감
-            (이미지가 있는 항목 3개 이상일 때)
+            스크롤 스토리로 보이기 — 글은 고정, 항목 이미지가 스크롤에 따라
+            넘어감 (이미지가 있는 항목 3개 이상일 때)
           </label>
           <ItemListEditor
             kind="page_link"

@@ -111,6 +111,7 @@ export function ItemListEditor({
   const focusProps = (index: number, name: string) => ({
     onFocus: () => onFieldFocus?.(`items.${index}.${name}`),
     onBlur: () => onFieldFocus?.(null),
+    "data-focus-field": `items.${index}.${name}`,
   });
   function updateAt(index: number, patch: Partial<DraftItem>) {
     onChange(
