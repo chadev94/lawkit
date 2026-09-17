@@ -183,20 +183,20 @@ function CardBody({
             <ResultText text={item.subtitle} />
           </p>
         )}
+        {item.body && (
+          <p
+            data-field={`items.${index}.body`}
+            className="mt-2 line-clamp-2 text-xs text-muted-foreground/80"
+          >
+            {item.body}
+          </p>
+        )}
       </div>
       {(item.body || item.subtitle) && (
-        <div className="m-card-veil">
-          {item.subtitle && (
-            <p className="text-xs font-semibold">{item.subtitle}</p>
-          )}
-          {item.body && (
-            <p
-              data-field={`items.${index}.body`}
-              className="mt-1 line-clamp-3 text-xs opacity-90"
-            >
-              {item.body}
-            </p>
-          )}
+        <div className="m-card-veil" aria-hidden="true">
+          <p className="m-veil-title">{item.title ?? ""}</p>
+          {item.subtitle && <p className="m-veil-result">{item.subtitle}</p>}
+          {item.body && <p className="m-veil-body line-clamp-4">{item.body}</p>}
         </div>
       )}
     </>
