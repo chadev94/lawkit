@@ -12,7 +12,8 @@ import {
   type SectionItemInput,
 } from "@/lib/section-content";
 
-export type ActionState = { error: string | null };
+/** field 가 있으면 그 입력칸 옆에 오류를 보여준다(name 속성값). */
+export type ActionState = { error: string | null; field?: string };
 
 async function revalidatePage(pageId: string) {
   const page = await getPageById(pageId);
@@ -25,6 +26,19 @@ async function revalidatePage(pageId: string) {
     revalidatePath(pagePath(page.slug));
     revalidatePath("/", "layout");
   }
+}
+
+/** 버튼 링크. 전화번호를 그대로 넣는 실수가 가장 잦다. */
+function validateHref(value: string): string | null {
+  const v = value.trim();
+  if (!v) return null;
+  if (/^\d/.test(v) || /^0\d[\d-]+$/.test(v)) {
+    return "전화번호는 tel: 로 시작해야 합니다. 예: tel:02-000-0000";
+  }
+  if (!/^(tel:|mailto:|https?:\/\/|\/|#)/.test(v)) {
+    return "주소는 / 로 시작하거나 https://, tel:, mailto: 로 시작해야 합니다.";
+  }
+  return null;
 }
 
 async function syncItems(
@@ -74,6 +88,8 @@ export async function createSection(
   const items = itemsFromFormData(formData);
 
   if (!pageId) return { error: "페이지를 선택하세요." };
+  const hrefError = validateHref(String(formData.get("content_cta_href") ?? ""));
+  if (hrefError) return { error: hrefError, field: "content_cta_href" };
 
   const sectionKind = await getSectionByKey(kind);
   if (!sectionKind || !sectionKind.is_active) {
@@ -132,6 +148,8 @@ export async function updateSection(
   if (Number.isNaN(sortOrder)) {
     return { error: "순서는 숫자여야 합니다." };
   }
+  const hrefError = validateHref(String(formData.get("content_cta_href") ?? ""));
+  if (hrefError) return { error: hrefError, field: "content_cta_href" };
 
   const sectionKind = await getSectionByKey(kind);
   if (!sectionKind) {
@@ -189,6 +207,41 @@ export async function deleteSection(id: string, pageId: string) {
   const { error } = await supabase.from("page_sections").delete().eq("id", id);
 
   if (error) throw error;
+
+  await revalidatePage(pageId);
+}
+
+/**
+ * 블록을 한 칸 위/아래로. 같은 페이지의 블록을 순서대로 다시 번호 매긴 뒤 이웃과 바꾼다.
+ * 그래서 sort_order 가 중복돼 있어도 한 번 누르면 정리된다.
+ */
+export async function moveSection(
+  id: string,
+  pageId: string,
+  direction: "up" | "down",
+) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("page_sections")
+    .select("id, sort_order")
+    .eq("page_id", pageId)
+    .order("sort_order")
+    .order("created_at");
+  if (error) throw error;
+
+  const ids = (data ?? []).map((row) => row.id);
+  const index = ids.indexOf(id);
+  const target = direction === "up" ? index - 1 : index + 1;
+  if (index === -1 || target < 0 || target >= ids.length) return;
+
+  [ids[index], ids[target]] = [ids[target], ids[index]];
+
+  const updates = ids.map((rowId, order) =>
+    supabase.from("page_sections").update({ sort_order: order }).eq("id", rowId),
+  );
+  const results = await Promise.all(updates);
+  const failed = results.find((r) => r.error);
+  if (failed?.error) throw failed.error;
 
   await revalidatePage(pageId);
 }

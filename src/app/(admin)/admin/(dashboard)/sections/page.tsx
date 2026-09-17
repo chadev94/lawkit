@@ -1,10 +1,10 @@
 import { getPageSections } from "@/lib/queries/page-sections";
-import { getAllPages } from "@/lib/queries/pages";
+import { getAllPages, getNavPages } from "@/lib/queries/pages";
 import { getActiveSectionsCatalog } from "@/lib/queries/sections";
+import { getSiteSettings } from "@/lib/queries/site-settings";
 import { HOME_PAGE_SLUG, pagePath } from "@/lib/sections";
 import { resolveAdminPageId } from "./actions";
-import { SectionForm } from "./section-form";
-import { SectionItem } from "./section-item";
+import { SectionsWorkbench } from "./workbench";
 
 export const dynamic = "force-dynamic";
 
@@ -14,9 +14,11 @@ export default async function SectionsPage({
   searchParams: Promise<{ page?: string }>;
 }) {
   const params = await searchParams;
-  const [pages, sectionKinds] = await Promise.all([
+  const [pages, sectionKinds, settings, navPages] = await Promise.all([
     getAllPages(),
     getActiveSectionsCatalog(),
+    getSiteSettings(),
+    getNavPages(),
   ]);
 
   const selectedPageId = await resolveAdminPageId(params.page);
@@ -36,18 +38,17 @@ export default async function SectionsPage({
   );
 
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-6 p-8">
+    <main className="mx-auto flex max-w-[1600px] flex-col gap-5 px-6 py-6">
       <div>
-        <h1 className="text-xl font-semibold">페이지 구성</h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          페이지를 고른 뒤 섹션을 배치합니다. 홈은{" "}
-          <code className="text-xs">/</code>, 그 외는{" "}
-          <code className="text-xs">/{`{slug}`}</code> 로 열립니다.
+        <h1 className="a-title">화면 구성</h1>
+        <p className="a-lead mt-1">
+          페이지를 고르면 그 화면의 블록이 위에서 아래로 보이는 순서대로 나옵니다.
+          행을 누르면 고칠 수 있고, 고치는 동안 오른쪽에서 결과가 보입니다.
         </p>
       </div>
 
       {pages.length === 0 ? (
-        <p className="rounded-lg border border-zinc-200 p-4 text-sm text-zinc-500">
+        <p className="a-card a-lead p-4">
           pages 테이블이 비어 있습니다. 마이그레이션을 적용하세요.
         </p>
       ) : (
@@ -59,11 +60,8 @@ export default async function SectionsPage({
                 <a
                   key={page.id}
                   href={`/admin/sections?page=${page.id}`}
-                  className={`rounded px-2.5 py-1 text-xs ${
-                    active
-                      ? "bg-zinc-900 text-white"
-                      : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
-                  }`}
+                  className="a-tab"
+                  data-active={active || undefined}
                   title={pagePath(page.slug)}
                 >
                   {page.title}
@@ -75,31 +73,20 @@ export default async function SectionsPage({
 
           {selectedPage && (
             <>
-              <p className="text-xs text-zinc-400">
-                선택: {selectedPage.title} → {pagePath(selectedPage.slug)}
+              <p className="a-hint">
+                {selectedPage.title} · 주소 {pagePath(selectedPage.slug)}
               </p>
 
-              <SectionForm
+              <SectionsWorkbench
                 pageId={selectedPage.id}
-                pages={linkablePages}
+                pagePath={pagePath(selectedPage.slug)}
+                sections={sections}
+                linkablePages={linkablePages}
                 sectionKinds={sectionKinds}
+                settings={settings}
+                nav={navPages.map((page) => ({ id: page.id, title: page.title }))}
+                pageTitle={selectedPage.title}
               />
-
-              {sections.length === 0 ? (
-                <p className="py-12 text-center text-sm text-zinc-400">
-                  이 페이지에 등록된 섹션이 없습니다.
-                </p>
-              ) : (
-                <ul className="divide-y divide-zinc-200 rounded-lg border border-zinc-200">
-                  {sections.map((section) => (
-                    <SectionItem
-                      key={section.id}
-                      section={section}
-                      pages={linkablePages}
-                    />
-                  ))}
-                </ul>
-              )}
             </>
           )}
         </>

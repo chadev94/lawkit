@@ -1,5 +1,6 @@
 "use client";
 
+import { checkSiteContrast, formatRatio } from "@/lib/contrast";
 import { COLOR_FIELDS, type SiteColors } from "@/lib/site-settings";
 import { colorsMatchPreset, type ThemePreset } from "@/lib/theme-presets";
 
@@ -9,24 +10,76 @@ import { colorsMatchPreset, type ThemePreset } from "@/lib/theme-presets";
  * 개별 색을 바꾸면 프리셋 선택 표시가 해제된다(사용자 지정 상태).
  * 색상 상태는 미리보기와 공유하기 위해 부모(SettingsForm)가 소유한다.
  */
+/** 색이 실제로 칠해지는 곳. 칸에 커서를 두면 이 문구와 함께 미리보기가 깜빡인다. */
+const COLOR_WHERE: Record<keyof SiteColors, string> = {
+  background: "페이지 바탕, 카드 안쪽",
+  foreground: "제목·본문·메뉴 글자",
+  muted: "상담 진단 구간, 꼬리말, 카드 이미지 자리",
+  muted_foreground: "설명 문장, 선택지, 꼬리말 글자",
+  primary: "상담 버튼 배경, 첫 화면 버튼 글자",
+  primary_foreground: "상담 버튼 글자, 첫 화면 버튼 배경",
+  border: "카드·구분선·머리말 아래 선",
+  accent: "구간 위 작은 영문 제목, 꼬리말 연락처",
+  hero_background: "맨 위 큰 배너 배경",
+  hero_foreground: "배너 제목·설명",
+};
+
 export function ThemeColorSection({
   presets,
   colors,
   onColorsChange,
+  onColorFocus,
+  focusedColor,
 }: {
   presets: ThemePreset[];
   colors: SiteColors;
   onColorsChange: (colors: SiteColors) => void;
+  /** 커서가 놓인 색. 미리보기가 그 색이 쓰이는 곳을 깜빡인다 */
+  onColorFocus?: (key: keyof SiteColors | null) => void;
+  focusedColor?: keyof SiteColors | null;
 }) {
   const activePreset = presets.find((p) => colorsMatchPreset(colors, p));
+  const checks = checkSiteContrast(colors);
+  const failing = checks.filter((c) => !c.pass);
+  const worst = failing.reduce<number | null>(
+    (min, c) =>
+      c.ratio !== null && (min === null || c.ratio < min) ? c.ratio : min,
+    null,
+  );
 
   return (
     <div className="flex flex-col gap-4">
+      {/* 글자가 읽히는지. 변호사가 접근성 기준을 몰라도 되게 여기서 검사한다. */}
+      {failing.length === 0 ? (
+        <div className="a-notice" data-tone="ok">
+          <span aria-hidden="true">✓</span>
+          <div>
+            <b>지금 색은 모두 잘 읽힙니다.</b> 글자와 배경의 대비가
+            기준(4.5:1)을 넘습니다.
+          </div>
+        </div>
+      ) : (
+        <div className="a-notice" data-tone="warn">
+          <span aria-hidden="true">⚠</span>
+          <div>
+            <b>
+              {failing.length}곳의 글자가 읽기 어렵습니다
+              {worst !== null ? ` (가장 낮은 곳 ${formatRatio(worst)})` : ""}.
+            </b>{" "}
+            기준은 4.5:1 입니다. 의뢰인 부모 세대에게는 흐리게 보입니다. 아래
+            &ldquo;미달&rdquo; 표시된 색을 조금 더 진하게 하거나, 통과하는
+            프리셋을 고르세요.
+          </div>
+        </div>
+      )}
       {presets.length > 0 && (
         <div className="grid gap-2 sm:grid-cols-2">
           {presets.map((preset) => {
             const c = preset.colors;
             const active = activePreset?.id === preset.id;
+            const presetFails = checkSiteContrast(c).filter(
+              (x) => !x.pass,
+            ).length;
             return (
               <button
                 key={preset.id}
@@ -34,24 +87,32 @@ export function ThemeColorSection({
                 onClick={() => onColorsChange(c)}
                 aria-pressed={active}
                 className={`flex items-center gap-3 rounded border px-3 py-2.5 text-left transition-colors ${
-                  active
-                    ? "border-zinc-900 ring-1 ring-zinc-900 ring-inset"
-                    : "border-zinc-300 hover:bg-zinc-50"
+                  active ? "a-swatch-on" : "a-swatch-off"
                 }`}
               >
                 <span
                   aria-hidden
-                  className="h-9 w-9 shrink-0 rounded-full border border-zinc-200"
+                  className="h-9 w-9 shrink-0 rounded-full"
                   style={{
                     background: `conic-gradient(${c.hero_background} 0 40%, ${c.primary} 40% 70%, ${c.accent} 70% 88%, ${c.muted} 88% 100%)`,
                   }}
                 />
                 <span className="min-w-0">
-                  <span className="block text-sm font-medium text-zinc-900">
+                  <span className="block text-sm font-medium">
                     {preset.label}
                   </span>
-                  <span className="block truncate text-xs text-zinc-500">
+                  <span className="a-hint block truncate">
                     {preset.description}
+                  </span>
+                  <span
+                    className="block text-[11px]"
+                    style={{
+                      color: presetFails ? "var(--a-warn)" : "var(--a-ok)",
+                    }}
+                  >
+                    {presetFails
+                      ? `읽기 어려운 조합 ${presetFails}곳`
+                      : "✓ 모두 잘 읽힘"}
                   </span>
                 </span>
               </button>
@@ -61,29 +122,62 @@ export function ThemeColorSection({
       )}
 
       {presets.length > 0 && !activePreset && (
-        <p className="text-xs text-zinc-500">
+        <p className="a-label">
           사용자 지정 색상을 사용 중입니다. 프리셋을 누르면 해당 세트로
           바뀝니다.
         </p>
       )}
 
-      <details open={presets.length === 0}>
-        <summary className="cursor-pointer text-xs font-medium text-zinc-600">
+      <div className="a-contrast">
+        {checks.map((c) => (
+          <div key={`${c.fg}-${c.bg}`}>
+            <span>{c.label}</span>
+            <span
+              className="demo"
+              style={{ color: colors[c.fg], background: colors[c.bg] }}
+            >
+              가나다 Aa
+            </span>
+            <span className="ratio">
+              {formatRatio(c.ratio)}
+              <span
+                className={`a-badge ${c.pass ? "a-badge-ok" : "a-badge-warn"}`}
+              >
+                {c.pass ? "통과" : "미달"}
+              </span>
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <details open={presets.length === 0 || failing.length > 0}>
+        <summary className="a-label cursor-pointer font-medium">
           세부 색상 조정
         </summary>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           {COLOR_FIELDS.map(({ key, label }) => (
             <label key={key} className="flex flex-col gap-1">
-              <span className="text-xs text-zinc-500">{label}</span>
-              <input
-                type="color"
-                name={`color_${key}`}
-                value={colors[key]}
-                onChange={(e) =>
-                  onColorsChange({ ...colors, [key]: e.target.value })
-                }
-                className="h-9 w-full max-w-[12rem] cursor-pointer rounded border border-zinc-300 bg-white p-1"
-              />
+              <span className="a-label">{label}</span>
+              <span
+                className="a-colorpick"
+                data-active={focusedColor === key || undefined}
+              >
+                <input
+                  type="color"
+                  name={`color_${key}`}
+                  value={colors[key]}
+                  onChange={(e) =>
+                    onColorsChange({ ...colors, [key]: e.target.value })
+                  }
+                  onFocus={() => onColorFocus?.(key)}
+                  onBlur={() => onColorFocus?.(null)}
+                  aria-label={label}
+                />
+                <code>{colors[key].toUpperCase()}</code>
+              </span>
+              <span className="a-color-where" aria-live="polite">
+                {focusedColor === key ? `→ ${COLOR_WHERE[key]}` : ""}
+              </span>
             </label>
           ))}
         </div>

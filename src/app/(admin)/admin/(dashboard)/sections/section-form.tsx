@@ -41,7 +41,7 @@ export function SectionForm({
 
   if (sectionKinds.length === 0) {
     return (
-      <p className="rounded-lg border border-zinc-200 p-4 text-sm text-zinc-500">
+      <p className="a-card a-lead p-4">
         등록 가능한 섹션 종류가 없습니다. sections 테이블에 종류를 추가하세요.
       </p>
     );
@@ -50,13 +50,13 @@ export function SectionForm({
   return (
     <form
       action={formAction}
-      className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-4"
+      className="a-panel flex flex-col gap-3 p-4"
     >
       <input type="hidden" name="page_id" value={pageId} />
 
       <div className="grid gap-3 sm:grid-cols-3">
         <label className="flex flex-col gap-1">
-          <span className="text-xs text-zinc-500">섹션 종류</span>
+          <span className="a-label">블록 종류</span>
           <select
             name="kind"
             value={kind}
@@ -64,7 +64,7 @@ export function SectionForm({
               setKind(e.target.value);
               setItems(toDraftItems([]));
             }}
-            className="rounded border border-zinc-300 px-3 py-2 text-sm"
+            className="a-input"
           >
             {sectionKinds.map((item) => (
               <option key={item.key} value={item.key}>
@@ -76,11 +76,11 @@ export function SectionForm({
 
         {requiresPage && (
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-zinc-500">연결할 페이지</span>
+            <span className="a-label">연결할 페이지</span>
             <select
               name="source_page_id"
               required
-              className="rounded border border-zinc-300 px-3 py-2 text-sm"
+              className="a-input"
             >
               <option value="">선택하세요</option>
               {pages.map((page) => (
@@ -94,10 +94,10 @@ export function SectionForm({
 
         {requiresPage && (
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-zinc-500">표시 방식</span>
+            <span className="a-label">표시 방식</span>
             <select
               name="layout"
-              className="rounded border border-zinc-300 px-3 py-2 text-sm"
+              className="a-input"
             >
               {Object.entries(SECTION_LAYOUT_LABEL).map(([value, label]) => (
                 <option key={value} value={value}>
@@ -111,30 +111,30 @@ export function SectionForm({
 
       <div className="grid gap-3 sm:grid-cols-[1fr_1fr_100px]">
         <label className="flex flex-col gap-1">
-          <span className="text-xs text-zinc-500">
-            제목 <span className="text-zinc-300">(비우면 메뉴명 사용)</span>
+          <span className="a-label">
+            제목 <span style={{ color: "var(--a-ink-3)" }}>(비우면 연결한 페이지 이름)</span>
           </span>
           <input
             name="title"
-            className="rounded border border-zinc-300 px-3 py-2 text-sm"
+            className="a-input"
           />
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-xs text-zinc-500">부제</span>
+          <span className="a-label">부제</span>
           <input
             name="subtitle"
-            className="rounded border border-zinc-300 px-3 py-2 text-sm"
+            className="a-input"
           />
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-xs text-zinc-500">순서</span>
+          <span className="a-label">순서</span>
           <input
             name="sort_order"
             type="number"
             defaultValue={0}
-            className="rounded border border-zinc-300 px-3 py-2 text-sm"
+            className="a-input"
           />
         </label>
       </div>
@@ -142,38 +142,41 @@ export function SectionForm({
       {kind === "hero" && (
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-zinc-500">아이브로우</span>
+            <span className="a-label">작은 제목 (위)</span>
             <input
               name="content_eyebrow"
+            placeholder="예: YOO & PARTNERS"
               value={hero.eyebrow}
               onChange={(e) =>
                 setHero(parseHeroContent({ ...hero, eyebrow: e.target.value }))
               }
-              className="rounded border border-zinc-300 px-3 py-2 text-sm"
+              className="a-input"
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-zinc-500">CTA 라벨</span>
+            <span className="a-label">버튼 글자</span>
             <input
               name="content_cta_label"
+            placeholder="예: 무료 전화상담"
               value={hero.cta_label}
               onChange={(e) =>
                 setHero(
                   parseHeroContent({ ...hero, cta_label: e.target.value }),
                 )
               }
-              className="rounded border border-zinc-300 px-3 py-2 text-sm"
+              className="a-input"
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-zinc-500">CTA 링크</span>
+            <span className="a-label">버튼 누르면 가는 곳</span>
             <input
               name="content_cta_href"
+            placeholder="예: tel:02-000-0000 또는 /contact"
               value={hero.cta_href}
               onChange={(e) =>
                 setHero(parseHeroContent({ ...hero, cta_href: e.target.value }))
               }
-              className="rounded border border-zinc-300 px-3 py-2 text-sm"
+              className="a-input"
             />
           </label>
           <ImageField
@@ -192,27 +195,28 @@ export function SectionForm({
         <div className="flex flex-col gap-3">
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="flex flex-col gap-1">
-              <span className="text-xs text-zinc-500">배지</span>
+              <span className="a-label">작은 제목 (위)</span>
               <input
                 name="content_badge"
                 value={cta.badge}
                 onChange={(e) =>
                   setCta(parseCtaContent({ ...cta, badge: e.target.value }))
                 }
-                className="rounded border border-zinc-300 px-3 py-2 text-sm"
+                className="a-input"
               />
             </label>
             <label className="flex flex-col gap-1">
-              <span className="text-xs text-zinc-500">버튼 라벨</span>
+              <span className="a-label">버튼 글자</span>
               <input
                 name="content_button_label"
+              placeholder="예: 지금 상담하기"
                 value={cta.button_label}
                 onChange={(e) =>
                   setCta(
                     parseCtaContent({ ...cta, button_label: e.target.value }),
                   )
                 }
-                className="rounded border border-zinc-300 px-3 py-2 text-sm"
+                className="a-input"
               />
             </label>
           </div>
@@ -228,7 +232,7 @@ export function SectionForm({
       {kind === "contact" && (
         <div className="grid gap-3 sm:grid-cols-3">
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-zinc-500">동의 문구</span>
+            <span className="a-label">동의 문구</span>
             <input
               name="content_consent_label"
               value={contact.consent_label}
@@ -240,11 +244,11 @@ export function SectionForm({
                   }),
                 )
               }
-              className="rounded border border-zinc-300 px-3 py-2 text-sm"
+              className="a-input"
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-zinc-500">제출 버튼</span>
+            <span className="a-label">제출 버튼</span>
             <input
               name="content_submit_label"
               value={contact.submit_label}
@@ -256,11 +260,11 @@ export function SectionForm({
                   }),
                 )
               }
-              className="rounded border border-zinc-300 px-3 py-2 text-sm"
+              className="a-input"
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-zinc-500">성공 메시지</span>
+            <span className="a-label">성공 메시지</span>
             <input
               name="content_success_message"
               value={contact.success_message}
@@ -272,7 +276,7 @@ export function SectionForm({
                   }),
                 )
               }
-              className="rounded border border-zinc-300 px-3 py-2 text-sm"
+              className="a-input"
             />
           </label>
         </div>
@@ -291,14 +295,14 @@ export function SectionForm({
         <input type="hidden" name="items_json" value="[]" />
       )}
 
-      {state.error && <p className="text-sm text-red-600">{state.error}</p>}
+      {state.error && <p className="a-error">{state.error}</p>}
 
       <button
         type="submit"
         disabled={pending}
-        className="self-start rounded bg-zinc-900 px-4 py-2 text-sm text-white disabled:opacity-50"
+        className="a-btn a-btn-primary self-start"
       >
-        {pending ? "추가 중..." : "섹션 추가"}
+        {pending ? "추가 중..." : "블록 추가"}
       </button>
     </form>
   );

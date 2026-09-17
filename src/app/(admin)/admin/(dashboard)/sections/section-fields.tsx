@@ -5,7 +5,7 @@ import { mediaPublicUrl } from "@/lib/section-content";
 import { uploadSectionMedia } from "@/lib/section-media";
 import type { SectionItemInput } from "@/lib/section-content";
 
-type DraftItem = SectionItemInput & { key: string };
+export type DraftItem = SectionItemInput & { key: string };
 
 function newKey() {
   return crypto.randomUUID();
@@ -54,20 +54,20 @@ export function ImageField({
 
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-xs text-zinc-500">{label}</span>
+      <span className="a-label">{label}</span>
       <input type="hidden" name={name} value={value} />
       {preview && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={preview}
           alt=""
-          className="h-28 w-full rounded border border-zinc-200 object-cover"
+          className="h-28 w-full rounded-[7px] object-cover"
         />
       )}
       <div className="flex items-center gap-2">
         <label
           htmlFor={inputId}
-          className="cursor-pointer rounded border border-zinc-300 bg-white px-3 py-1.5 text-xs text-zinc-700 hover:bg-zinc-50"
+          className="a-btn a-btn-default a-btn-sm cursor-pointer"
         >
           {uploading ? "업로드 중..." : value ? "이미지 교체" : "이미지 업로드"}
         </label>
@@ -83,13 +83,13 @@ export function ImageField({
           <button
             type="button"
             onClick={() => onChange("")}
-            className="text-xs text-zinc-400 hover:text-red-600"
+            className="a-btn a-btn-danger a-btn-sm"
           >
             제거
           </button>
         )}
       </div>
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="a-error">{error}</p>}
     </div>
   );
 }
@@ -99,12 +99,19 @@ export function ItemListEditor({
   items,
   onChange,
   folder,
+  onFieldFocus,
 }: {
   kind: "page_link" | "cta";
   items: DraftItem[];
   onChange: (items: DraftItem[]) => void;
   folder: string;
+  /** 커서가 놓인 칸을 미리보기에 알린다. 예: items.2.title */
+  onFieldFocus?: (field: string | null) => void;
 }) {
+  const focusProps = (index: number, name: string) => ({
+    onFocus: () => onFieldFocus?.(`items.${index}.${name}`),
+    onBlur: () => onFieldFocus?.(null),
+  });
   function updateAt(index: number, patch: Partial<DraftItem>) {
     onChange(
       items.map((item, i) => (i === index ? { ...item, ...patch } : item)),
@@ -135,77 +142,82 @@ export function ItemListEditor({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-zinc-600">
+        <p className="a-label font-medium">
           {kind === "page_link" ? "카드 / 리스트 항목" : "선택지"}
         </p>
         <button
           type="button"
           onClick={addItem}
-          className="text-xs text-zinc-600 hover:text-zinc-900"
+          className="a-btn a-btn-quiet a-btn-sm"
         >
           + 항목 추가
         </button>
       </div>
 
       {items.length === 0 && (
-        <p className="rounded border border-dashed border-zinc-200 px-3 py-4 text-center text-xs text-zinc-400">
+        <p className="a-empty px-3 py-4 text-xs">
           항목이 없습니다. 추가해 주세요.
         </p>
       )}
 
       {items.map((item, index) => (
-        <div
-          key={item.key}
-          className="flex flex-col gap-2 rounded border border-zinc-200 bg-white p-3"
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] text-zinc-400">#{index + 1}</span>
+        <div key={item.key} className="a-item">
+          <div className="a-item-head">
+            <span className="a-item-no">{index + 1}</span>
+            <span className="a-item-title">
+              {item.title?.trim() || "제목 없음"}
+            </span>
             <button
               type="button"
               onClick={() => removeAt(index)}
-              className="text-xs text-zinc-400 hover:text-red-600"
+              className="a-btn a-btn-danger a-btn-sm"
             >
               삭제
             </button>
           </div>
+          <div className="a-item-body">
 
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-zinc-500">제목</span>
+            <span className="a-label">제목</span>
             <input
               value={item.title ?? ""}
               onChange={(e) => updateAt(index, { title: e.target.value })}
-              className="rounded border border-zinc-300 px-3 py-2 text-sm"
+              className="a-input"
+              {...focusProps(index, "title")}
             />
           </label>
 
           {kind === "page_link" && (
             <>
               <label className="flex flex-col gap-1">
-                <span className="text-xs text-zinc-500">부제</span>
+                <span className="a-label">부제</span>
                 <input
                   value={item.subtitle ?? ""}
                   onChange={(e) =>
                     updateAt(index, { subtitle: e.target.value })
                   }
-                  className="rounded border border-zinc-300 px-3 py-2 text-sm"
+                  className="a-input"
+                  {...focusProps(index, "subtitle")}
                 />
               </label>
               <label className="flex flex-col gap-1">
-                <span className="text-xs text-zinc-500">본문</span>
+                <span className="a-label">본문</span>
                 <textarea
                   rows={2}
                   value={item.body ?? ""}
                   onChange={(e) => updateAt(index, { body: e.target.value })}
-                  className="rounded border border-zinc-300 px-3 py-2 text-sm"
+                  className="a-input"
+                  {...focusProps(index, "body")}
                 />
               </label>
               <label className="flex flex-col gap-1">
-                <span className="text-xs text-zinc-500">링크</span>
+                <span className="a-label">링크</span>
                 <input
                   value={item.href ?? ""}
                   onChange={(e) => updateAt(index, { href: e.target.value })}
                   placeholder="/practice-areas"
-                  className="rounded border border-zinc-300 px-3 py-2 text-sm"
+                  className="a-input"
+                  {...focusProps(index, "href")}
                 />
               </label>
               <ImageField
@@ -217,6 +229,7 @@ export function ItemListEditor({
               />
             </>
           )}
+          </div>
         </div>
       ))}
 
