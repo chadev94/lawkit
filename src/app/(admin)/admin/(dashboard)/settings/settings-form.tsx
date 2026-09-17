@@ -307,6 +307,17 @@ export function SettingsForm({
           dirty={dirty}
           activeField={activeField}
           pulseColor={pulseColor}
+          onPick={({ field }) => {
+            // 머리말·꼬리말의 글을 클릭하면 그 입력칸으로
+            if (!field?.startsWith("content.")) return;
+            const name = field.slice("content.".length);
+            const el = formRef.current?.querySelector<HTMLElement>(
+              `[name="${name}"]`,
+            );
+            if (!el) return;
+            el.scrollIntoView({ behavior: "smooth", block: "center" });
+            window.setTimeout(() => el.focus({ preventScroll: true }), 250);
+          }}
           scrollToSelector={
             activeField === "content.site_name" ? '[data-field="header"]' : null
           }

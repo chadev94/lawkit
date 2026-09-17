@@ -20,6 +20,7 @@ export function PreviewPane({
   highlightId,
   activeField,
   dirty,
+  onPick,
 }: {
   sections: PageSection[];
   settings: SiteSettings;
@@ -28,6 +29,7 @@ export function PreviewPane({
   highlightId: string | null;
   activeField: string | null;
   dirty: boolean;
+  onPick?: (pick: { sectionId: string | null; field: string | null }) => void;
 }) {
   const visible = sections.filter((section) => section.is_active);
   const hiddenEditing =
@@ -44,6 +46,7 @@ export function PreviewPane({
       label={pageTitle}
       dirty={dirty}
       activeField={activeField}
+      onPick={onPick}
       scopeSelector={blockSelector}
       scrollToSelector={blockSelector}
       notice={

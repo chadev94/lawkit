@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Section, PageSection, SitePage } from "@/lib/sections";
 import type { SiteSettings } from "@/lib/site-settings";
 import type { PreviewNavItem } from "@/app/(admin)/admin/site-preview";
@@ -40,6 +40,49 @@ export function SectionsWorkbench({
   const [activeField, setActiveField] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [flashId, setFlashId] = useState<string | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const pendingFocus = useRef<string | null>(null);
+
+  // 미리보기 클릭 → 그 블록을 열고, 해당 칸(있으면)에 커서를 둔다.
+  const onPick = useCallback(
+    ({
+      sectionId,
+      field,
+    }: {
+      sectionId: string | null;
+      field: string | null;
+    }) => {
+      if (!sectionId) return;
+      pendingFocus.current = field ?? "title";
+      setEditingId((cur) => {
+        if (cur !== sectionId) {
+          setDraft(null);
+          setActiveField(null);
+        }
+        return sectionId;
+      });
+    },
+    [],
+  );
+
+  // 편집기가 렌더된 뒤 칸을 찾아 커서를 옮긴다. 항목 칸(items.n.x)이 접혀 있으면 첫 칸으로.
+  useEffect(() => {
+    const want = pendingFocus.current;
+    if (!want || !editingId) return;
+    pendingFocus.current = null;
+    const root = listRef.current;
+    if (!root) return;
+    const sel = (f: string) => `[data-focus-field="${f}"]`;
+    const el =
+      root.querySelector<HTMLElement>(sel(want)) ??
+      root.querySelector<HTMLElement>(
+        sel(want.replace(/^(items\.\d+)\..*$/, "$1.title")),
+      ) ??
+      root.querySelector<HTMLElement>(sel("title"));
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    window.setTimeout(() => el.focus({ preventScroll: true }), 250);
+  }, [editingId]);
   useUnsavedGuard("sections", draft !== null);
 
   // 저장된 행을 잠깐 빛내고 끈다.
@@ -67,7 +110,7 @@ export function SectionsWorkbench({
 
   return (
     <div className="a-workbench">
-      <div className="flex min-w-0 flex-col gap-3">
+      <div ref={listRef} className="flex min-w-0 flex-col gap-3">
         <div className="flex items-center justify-between">
           <p className="a-label">블록 {sections.length}개</p>
           <button
@@ -122,6 +165,7 @@ export function SectionsWorkbench({
           highlightId={editingId}
           activeField={activeField}
           dirty={draft !== null}
+          onPick={onPick}
         />
       </div>
     </div>

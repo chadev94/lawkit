@@ -105,6 +105,13 @@ export function PagesWorkbench({
           label="상단 메뉴 · 홈"
           dirty={draft !== null}
           activeField={activeField}
+          onPick={({ field }) => {
+            const id = field?.startsWith("nav.") ? field.slice(4) : null;
+            if (!id) return;
+            setDraft(null);
+            setActiveField(null);
+            setEditingId(id);
+          }}
           scrollToSelector={editingId ? '[data-field="header"]' : null}
           notice={
             editingHiddenFromNav ? (
