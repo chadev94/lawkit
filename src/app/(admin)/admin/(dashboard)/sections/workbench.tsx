@@ -2,6 +2,8 @@
 
 import { useCallback, useMemo, useState } from "react";
 import type { Section, PageSection, SitePage } from "@/lib/sections";
+import type { SiteSettings } from "@/lib/site-settings";
+import type { PreviewNavItem } from "@/app/(admin)/admin/site-preview";
 import { PreviewPane } from "./preview-pane";
 import { SectionForm } from "./section-form";
 import { SectionItem } from "./section-item";
@@ -18,9 +20,9 @@ export function SectionsWorkbench({
   sections,
   linkablePages,
   sectionKinds,
-  cssVars,
-  siteName,
-  navTitles,
+  settings,
+  nav,
+  pageTitle,
 }: {
   pageId: string;
   /** 공개 사이트에서 이 페이지의 경로. 토스트 링크 */
@@ -28,9 +30,9 @@ export function SectionsWorkbench({
   sections: PageSection[];
   linkablePages: SitePage[];
   sectionKinds: Section[];
-  cssVars: Record<string, string>;
-  siteName: string;
-  navTitles: string[];
+  settings: SiteSettings;
+  nav: PreviewNavItem[];
+  pageTitle: string;
 }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<PageSection | null>(null);
@@ -41,7 +43,10 @@ export function SectionsWorkbench({
   // 저장된 행을 잠깐 빛내고 끈다.
   const onSaved = useCallback((id: string) => {
     setFlashId(id);
-    window.setTimeout(() => setFlashId((cur) => (cur === id ? null : cur)), 1800);
+    window.setTimeout(
+      () => setFlashId((cur) => (cur === id ? null : cur)),
+      1800,
+    );
   }, []);
 
   const onEditToggle = useCallback((id: string) => {
@@ -59,7 +64,7 @@ export function SectionsWorkbench({
   }, [sections, draft]);
 
   return (
-    <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+    <div className="a-workbench">
       <div className="flex min-w-0 flex-col gap-3">
         <div className="flex items-center justify-between">
           <p className="a-label">블록 {sections.length}개</p>
@@ -106,12 +111,12 @@ export function SectionsWorkbench({
         )}
       </div>
 
-      <div className="min-w-0 xl:sticky xl:top-6">
+      <div className="a-workbench-preview min-w-0">
         <PreviewPane
           sections={previewSections}
-          cssVars={cssVars}
-          siteName={siteName}
-          navTitles={navTitles}
+          settings={settings}
+          nav={nav}
+          pageTitle={pageTitle}
           highlightId={editingId}
           activeField={activeField}
           dirty={draft !== null}

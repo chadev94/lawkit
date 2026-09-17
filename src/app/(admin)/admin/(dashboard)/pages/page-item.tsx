@@ -20,12 +20,20 @@ export function PageItem({
   page,
   position,
   count,
+  editing,
+  onEditToggle,
+  onDraft,
+  onFieldFocus,
 }: {
   page: SitePage;
   position: number;
   count: number;
+  editing: boolean;
+  onEditToggle: () => void;
+  /** 편집 중 값. 미리보기의 상단 메뉴가 저장 전에 바뀐다 */
+  onDraft: (draft: SitePage | null) => void;
+  onFieldFocus: (field: string | null) => void;
 }) {
-  const [editing, setEditing] = useState(false);
   const [flash, setFlash] = useState(false);
   const [state, formAction, pending] = useActionState(updatePage, initialState);
   const isHome = page.slug === HOME_PAGE_SLUG;
@@ -47,11 +55,7 @@ export function PageItem({
           <span>{position + 1}</span>
         </span>
 
-        <button
-          type="button"
-          onClick={() => setEditing((v) => !v)}
-          className="a-row-main"
-        >
+        <button type="button" onClick={onEditToggle} className="a-row-main">
           <span className="flex min-w-0 items-center gap-2">
             <span className="a-row-name">{page.title}</span>
             {page.show_in_nav && <span className="a-chip">메뉴에 표시</span>}
@@ -79,17 +83,15 @@ export function PageItem({
         </form>
 
         <div className="a-row-acts">
-        <button
-          type="button"
-          onClick={() => setEditing((v) => !v)}
-          className="a-btn a-btn-default a-btn-sm"
-        >
-          {editing ? "닫기" : "수정"}
-        </button>
+          <button
+            type="button"
+            onClick={onEditToggle}
+            className="a-btn a-btn-default a-btn-sm"
+          >
+            {editing ? "닫기" : "수정"}
+          </button>
 
-        {!isHome && (
-          <PageDeleteButton page={page} />
-        )}
+          {!isHome && <PageDeleteButton page={page} />}
         </div>
       </div>
 
@@ -100,7 +102,9 @@ export function PageItem({
           state={state}
           formAction={formAction}
           pending={pending}
-          onClose={() => setEditing(false)}
+          onClose={onEditToggle}
+          onDraft={onDraft}
+          onFieldFocus={onFieldFocus}
           onSaved={() => {
             setFlash(true);
             window.setTimeout(() => setFlash(false), 1800);
@@ -126,7 +130,9 @@ function PageDeleteButton({ page }: { page: SitePage }) {
     <span
       onPointerEnter={() => {
         if (sectionCount === null) {
-          countPageSections(page.id).then(setSectionCount).catch(() => {});
+          countPageSections(page.id)
+            .then(setSectionCount)
+            .catch(() => {});
         }
       }}
     >
@@ -151,6 +157,8 @@ function PageEditForm({
   formAction,
   pending,
   onClose,
+  onDraft,
+  onFieldFocus,
   onSaved,
 }: {
   page: SitePage;
@@ -158,10 +166,21 @@ function PageEditForm({
   formAction: (payload: FormData) => void;
   pending: boolean;
   onClose: () => void;
+  onDraft: (draft: SitePage | null) => void;
+  onFieldFocus: (field: string | null) => void;
   onSaved: () => void;
 }) {
   const wasPendingRef = useRef(false);
   const isHome = page.slug === HOME_PAGE_SLUG;
+  const [title, setTitle] = useState(page.title);
+  const [showInNav, setShowInNav] = useState(page.show_in_nav);
+  const [isActive, setIsActive] = useState(page.is_active);
+
+  // 편집 중인 값을 미리보기로 올린다.
+  useEffect(() => {
+    onDraft({ ...page, title, show_in_nav: showInNav, is_active: isActive });
+  }, [page, title, showInNav, isActive, onDraft]);
+  useEffect(() => () => onDraft(null), [onDraft]);
 
   useEffect(() => {
     if (pending) {
@@ -178,10 +197,7 @@ function PageEditForm({
   }, [pending, state.error, onClose, onSaved]);
 
   return (
-    <form
-      action={formAction}
-      className="a-editor"
-    >
+    <form action={formAction} className="a-editor">
       <input type="hidden" name="id" value={page.id} />
       <input type="hidden" name="previous_slug" value={page.slug} />
 
@@ -194,7 +210,10 @@ function PageEditForm({
           <input
             name="title"
             required
-            defaultValue={page.title}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onFocus={() => onFieldFocus(`nav.${page.id}`)}
+            onBlur={() => onFieldFocus(null)}
             className="a-input"
             aria-invalid={state.field === "title" || undefined}
           />
@@ -230,7 +249,8 @@ function PageEditForm({
           <span className="a-label">상태</span>
           <select
             name="is_active"
-            defaultValue={page.is_active ? "true" : "false"}
+            value={isActive ? "true" : "false"}
+            onChange={(e) => setIsActive(e.target.value === "true")}
             className="a-input"
           >
             <option value="true">사용중</option>
@@ -240,11 +260,18 @@ function PageEditForm({
       </div>
 
       <label className="a-check">
-        <input type="checkbox" name="show_in_nav" defaultChecked={page.show_in_nav} />
+        <input
+          type="checkbox"
+          name="show_in_nav"
+          checked={showInNav}
+          onChange={(e) => setShowInNav(e.target.checked)}
+        />
         메뉴에 표시 — 사이트 상단 메뉴에 이 페이지가 나옵니다
       </label>
 
-      {state.error && !state.field && <p className="a-error">⚠ {state.error}</p>}
+      {state.error && !state.field && (
+        <p className="a-error">⚠ {state.error}</p>
+      )}
 
       <div className="flex gap-2">
         <button
@@ -254,11 +281,7 @@ function PageEditForm({
         >
           {pending ? "저장 중..." : "저장"}
         </button>
-        <button
-          type="button"
-          onClick={onClose}
-          className="a-btn a-btn-quiet"
-        >
+        <button type="button" onClick={onClose} className="a-btn a-btn-quiet">
           취소
         </button>
       </div>

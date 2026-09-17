@@ -21,6 +21,7 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
         <p
           className="text-sm font-semibold tracking-tight"
           style={{ fontFamily: "var(--font-site-heading)" }}
+          data-field="content.site_name"
         >
           {content.site_name}
         </p>
@@ -28,6 +29,7 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
           <p
             className="mt-2 text-xs"
             style={{ color: "var(--muted-foreground)" }}
+            data-field="content.tagline"
           >
             {content.tagline}
           </p>
@@ -40,7 +42,7 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
           <dl className="space-y-1">
             <div className="flex gap-2">
               <dt className="w-12 shrink-0">주소</dt>
-              <dd style={{ color: "var(--accent)" }}>
+              <dd style={{ color: "var(--accent)" }} data-field="content.address">
                 {display(
                   [content.address, content.address_detail]
                     .map((v) => v.trim())
@@ -51,19 +53,23 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
             </div>
             <div className="flex gap-2">
               <dt className="w-12 shrink-0">전화</dt>
-              <dd style={{ color: "var(--accent)" }}>{display(content.phone)}</dd>
+              <dd style={{ color: "var(--accent)" }} data-field="content.phone">
+                {display(content.phone)}
+              </dd>
             </div>
             <div className="flex gap-2">
               <dt className="w-12 shrink-0">이메일</dt>
-              <dd style={{ color: "var(--accent)" }}>{display(content.email)}</dd>
+              <dd style={{ color: "var(--accent)" }} data-field="content.email">
+                {display(content.email)}
+              </dd>
             </div>
           </dl>
 
           <div className="space-y-1">
-            <p style={{ color: "var(--accent)" }}>
+            <p style={{ color: "var(--accent)" }} data-field="content.business_number">
               사업자등록번호 {display(content.business_number)}
             </p>
-            <p style={{ color: "var(--accent)" }}>
+            <p style={{ color: "var(--accent)" }} data-field="content.representative">
               대표변호사 {display(content.representative)}
             </p>
           </div>
@@ -89,7 +95,11 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
           </div>
         )}
 
-        <p className="mt-8 text-xs" style={{ color: "var(--accent)" }}>
+        <p
+          className="mt-8 text-xs"
+          style={{ color: "var(--accent)" }}
+          data-field="content.footer_text"
+        >
           {content.footer_text ||
             `© ${new Date().getFullYear()} ${content.site_name}. All rights reserved.`}
         </p>
