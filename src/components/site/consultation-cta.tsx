@@ -1,5 +1,6 @@
 import type { PageSection } from "@/lib/sections";
 import { parseCtaContent } from "@/lib/section-content";
+import { Reveal } from "@/components/site/motion/reveal";
 
 /**
  * 상담 퍼널 진입 구간.
@@ -10,16 +11,21 @@ export function ConsultationCta({ section }: { section: PageSection }) {
   const options = section.items;
 
   return (
-    <section className="bg-muted py-20">
+    <Reveal as="section" className="bg-muted py-20">
       <div className="mx-auto max-w-xl px-6 text-center">
         <p
           data-field="content.badge"
-          className="text-xs font-medium tracking-[0.2em] text-accent"
+          className="m-up text-xs font-medium tracking-[0.2em] text-accent"
+          style={{ "--m-i": 0 } as React.CSSProperties}
         >
           {content.badge || "YOUR SITUATION"}
         </p>
-        <h2 data-field="title" className="mt-3 text-2xl font-semibold text-foreground">
-          {section.title ?? "내 상황, 1분이면 확인됩니다"}
+        <h2
+          data-field="title"
+          className="m-mask mt-3 text-2xl font-semibold text-foreground"
+          style={{ "--m-i": 1 } as React.CSSProperties}
+        >
+          <span>{section.title ?? "내 상황, 1분이면 확인됩니다"}</span>
         </h2>
         <p data-field="subtitle" className="mt-2 text-sm text-muted-foreground">
           {section.subtitle ??
@@ -28,7 +34,9 @@ export function ConsultationCta({ section }: { section: PageSection }) {
 
         <div className="mt-8 rounded-xl border border-border bg-background p-6 text-left">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">4단계 중 1번째</span>
+            <span className="text-xs text-muted-foreground">
+              4단계 중 1번째
+            </span>
           </div>
           <div className="mt-2 h-1 rounded-full bg-muted">
             <div className="h-1 w-1/4 rounded-full bg-primary" />
@@ -72,6 +80,6 @@ export function ConsultationCta({ section }: { section: PageSection }) {
           )}
         </div>
       </div>
-    </section>
+    </Reveal>
   );
 }

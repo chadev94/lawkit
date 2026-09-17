@@ -13,7 +13,7 @@ export function OrderButtons({
 }: {
   canUp: boolean;
   canDown: boolean;
-  onMove: (direction: "up" | "down") => Promise<void> | void;
+  onMove: (direction: "up" | "down") => Promise<unknown> | void;
   /** 접근성 이름에 붙일 대상. "업무분야 블록" */
   label: string;
 }) {

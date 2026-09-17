@@ -6,6 +6,7 @@ import type { PageSection, SitePage } from "@/lib/sections";
 import type { SiteSettings } from "@/lib/site-settings";
 import { HOME_PAGE_SLUG } from "@/lib/sections";
 import { SitePreviewFrame } from "@/app/(admin)/admin/site-preview";
+import { useUnsavedGuard } from "@/app/(admin)/admin/unsaved";
 import { PageForm } from "./page-form";
 import { PageItem } from "./page-item";
 
@@ -27,6 +28,7 @@ export function PagesWorkbench({
   const [draft, setDraft] = useState<SitePage | null>(null);
   const [activeField, setActiveField] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  useUnsavedGuard("pages", draft !== null);
 
   const onEditToggle = useCallback((id: string) => {
     setEditingId((cur) => (cur === id ? null : id));
@@ -103,6 +105,13 @@ export function PagesWorkbench({
           label="상단 메뉴 · 홈"
           dirty={draft !== null}
           activeField={activeField}
+          onPick={({ field }) => {
+            const id = field?.startsWith("nav.") ? field.slice(4) : null;
+            if (!id) return;
+            setDraft(null);
+            setActiveField(null);
+            setEditingId(id);
+          }}
           scrollToSelector={editingId ? '[data-field="header"]' : null}
           notice={
             editingHiddenFromNav ? (

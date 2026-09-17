@@ -18,6 +18,7 @@ import {
   type PreviewNavItem,
 } from "@/app/(admin)/admin/site-preview";
 import { toast } from "@/app/(admin)/admin/toast";
+import { useUnsavedGuard } from "@/app/(admin)/admin/unsaved";
 import { updateSiteSettings, type ActionState } from "./actions";
 import { AddressSearchInput } from "./address-search-input";
 import { ThemeColorSection } from "./theme-color-section";
@@ -96,6 +97,7 @@ export function SettingsForm({
     JSON.stringify(draft.typography) !== JSON.stringify(settings.typography) ||
     JSON.stringify(draft.content) !== JSON.stringify(settings.content);
   const visibleHome = homeSections.filter((s) => s.is_active);
+  useUnsavedGuard("settings", dirty && !pending);
 
   function onFocusCapture(e: React.FocusEvent<HTMLFormElement>) {
     const target = e.target as unknown as { name?: string };
@@ -305,6 +307,17 @@ export function SettingsForm({
           dirty={dirty}
           activeField={activeField}
           pulseColor={pulseColor}
+          onPick={({ field }) => {
+            // 머리말·꼬리말의 글을 클릭하면 그 입력칸으로
+            if (!field?.startsWith("content.")) return;
+            const name = field.slice("content.".length);
+            const el = formRef.current?.querySelector<HTMLElement>(
+              `[name="${name}"]`,
+            );
+            if (!el) return;
+            el.scrollIntoView({ behavior: "smooth", block: "center" });
+            window.setTimeout(() => el.focus({ preventScroll: true }), 250);
+          }}
           scrollToSelector={
             activeField === "content.site_name" ? '[data-field="header"]' : null
           }

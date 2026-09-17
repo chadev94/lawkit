@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
@@ -68,6 +69,8 @@ export function SitePreviewFrame({
   scrollToSelector,
   /** 이 색이 쓰이는 곳을 깜빡여 보여준다. 색 칸에 커서를 둔 동안 */
   pulseColor,
+  /** 미리보기 안을 클릭하면 어느 블록·어느 칸인지 알린다. 왼쪽 편집기가 그곳을 연다 */
+  onPick,
 }: {
   settings: SiteSettings;
   nav: PreviewNavItem[];
@@ -79,10 +82,12 @@ export function SitePreviewFrame({
   scopeSelector?: string | null;
   scrollToSelector?: string | null;
   pulseColor?: keyof SiteColors | null;
+  onPick?: (pick: { sectionId: string | null; field: string | null }) => void;
 }) {
   const [device, setDevice] = useState<DeviceKey>("desktop");
   const [pulseOn, setPulseOn] = useState(false);
-  const [zoom, setZoom] = useState(1);
+  // null = 아직 칸 너비를 재지 않았다. 그동안은 그리지 않아 원본 크기로 번쩍이지 않는다.
+  const [zoom, setZoom] = useState<number | null>(null);
   const slotRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const width = DEVICE[device].width;
@@ -94,10 +99,12 @@ export function SitePreviewFrame({
     setZoom(Math.min(1, (slot.clientWidth - 24 - 1) / width));
   }, [width]);
 
+  // 첫 측정은 페인트 전에. 그래야 1280px 원본이 한 프레임 보이다 줄어드는 일이 없다.
+  useLayoutEffect(measure, [measure]);
+
   useEffect(() => {
     const slot = slotRef.current;
     if (!slot) return;
-    measure();
     const observer = new ResizeObserver(measure);
     observer.observe(slot);
     return () => observer.disconnect();
@@ -208,8 +215,27 @@ export function SitePreviewFrame({
       >
         <div
           ref={contentRef}
-          className="admin-preview site-theme mx-auto overflow-hidden rounded-[7px] bg-white"
-          style={{ ...cssVars, width, zoom, border: "1px solid var(--a-line)" }}
+          // 미리보기 안의 링크는 사이트로 이동시키지 않는다. 클릭은 "이 자리를 고치겠다"로 읽는다.
+          onClickCapture={(e) => {
+            const target = e.target as HTMLElement;
+            if (target.closest("a, button")) e.preventDefault();
+            if (!onPick) return;
+            const block = target.closest<HTMLElement>("[data-preview-section]");
+            const fieldEl = target.closest<HTMLElement>("[data-field]");
+            const field = fieldEl?.dataset.field ?? null;
+            onPick({
+              sectionId: block?.dataset.previewSection ?? null,
+              field: field === "header" || field === "footer" ? null : field,
+            });
+          }}
+          className="admin-preview site-theme mx-auto cursor-pointer overflow-hidden rounded-[7px] bg-white"
+          style={{
+            ...cssVars,
+            width,
+            zoom: zoom ?? 1,
+            visibility: zoom === null ? "hidden" : undefined,
+            border: "1px solid var(--a-line)",
+          }}
         >
           {/* 공개 사이트 헤더는 서버 컴포넌트라 여기서는 같은 모양으로 그린다. */}
           <header

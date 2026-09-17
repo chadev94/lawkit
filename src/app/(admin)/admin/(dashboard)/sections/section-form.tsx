@@ -283,12 +283,18 @@ export function SectionForm({
       )}
 
       {kind === "page_link" && (
-        <ItemListEditor
-          kind="page_link"
-          items={items}
-          onChange={setItems}
-          folder={mediaFolder}
-        />
+        <>
+          <label className="a-check">
+            <input type="checkbox" name="content_variant" value="story" />
+            스크롤 스토리로 보이기 — 글은 고정, 항목 이미지가 스크롤에 따라 넘어감
+          </label>
+          <ItemListEditor
+            kind="page_link"
+            items={items}
+            onChange={setItems}
+            folder={mediaFolder}
+          />
+        </>
       )}
 
       {kind !== "page_link" && kind !== "cta" && (

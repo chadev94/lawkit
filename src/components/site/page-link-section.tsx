@@ -1,28 +1,51 @@
 import type { PageSection } from "@/lib/sections";
-import { mediaPublicUrl } from "@/lib/section-content";
+import { mediaPublicUrl, parsePageLinkContent } from "@/lib/section-content";
+import { Carousel } from "@/components/site/motion/carousel";
+import { ResultText, splitResult } from "@/components/site/motion/result";
+import { Reveal } from "@/components/site/motion/reveal";
+import { StoryScroller } from "@/components/site/motion/story";
+import { caseMeta } from "@/components/site/motion/case-meta";
 
 /**
  * 다른 페이지에 연결된 콘텐츠 섹션. 제목·경로는 연결된 페이지에서 온다.
  * 카드/리스트 항목은 page_section_items 에서 온다.
+ *
+ * 움직임(globals.css .m-*):
+ *   리스트  — 행이 순서대로 올라오고 결과("→ 뒤")에 밑줄이 그려진다
+ *   카드    — 호버 시 사진이 어두워지며 결과가 올라온다
+ *   캐러셀  — 손으로 끌어 넘긴다
+ *   스토리  — content.variant === "story": 글 고정 · 이미지 넘김 (리스트 대신)
  */
 export function PageLinkSection({ section }: { section: PageSection }) {
   const title = section.title ?? section.source_page?.title ?? "";
   const slug = section.source_page?.slug ?? "";
   const items = section.items;
+  const { variant } = parsePageLinkContent(section.content);
 
   return (
-    <section className="border-b border-border/60 py-20">
+    <Reveal as="section" className="border-b border-border/60 py-20">
       <div className="mx-auto max-w-5xl px-6">
         <div className="flex items-end justify-between">
           <div>
-            <p className="text-xs tracking-[0.2em] text-accent">
+            <p
+              className="m-up text-xs tracking-[0.2em] text-accent"
+              style={mi(0)}
+            >
               {slug.toUpperCase()}
             </p>
-            <h2 data-field="title" className="mt-2 text-2xl font-semibold text-foreground">
-              {title}
+            <h2
+              data-field="title"
+              className="m-mask mt-2 text-2xl font-semibold text-foreground"
+              style={mi(1)}
+            >
+              <span>{title}</span>
             </h2>
             {section.subtitle && (
-              <p data-field="subtitle" className="mt-2 text-sm text-muted-foreground">
+              <p
+                data-field="subtitle"
+                className="m-up mt-2 text-sm text-muted-foreground"
+                style={mi(2)}
+              >
                 {section.subtitle}
               </p>
             )}
@@ -31,7 +54,8 @@ export function PageLinkSection({ section }: { section: PageSection }) {
           {slug && (
             <a
               href={`/${slug}`}
-              className="text-xs text-muted-foreground hover:text-foreground"
+              className="m-up text-xs text-muted-foreground hover:text-foreground"
+              style={mi(2)}
             >
               더보기 →
             </a>
@@ -39,7 +63,11 @@ export function PageLinkSection({ section }: { section: PageSection }) {
         </div>
 
         {items.length === 0 ? (
-          <p className="mt-8 text-sm text-muted-foreground">등록된 항목이 없습니다.</p>
+          <p className="mt-8 text-sm text-muted-foreground">
+            등록된 항목이 없습니다.
+          </p>
+        ) : variant === "story" ? (
+          <StoryScroller items={items} />
         ) : section.layout === "list" ? (
           <ul className="mt-8 divide-y divide-border/60 border-y border-border/60">
             {items.map((item, index) => (
@@ -47,7 +75,8 @@ export function PageLinkSection({ section }: { section: PageSection }) {
                 key={item.id}
                 data-field={`items.${index}`}
                 data-item-no={index + 1}
-                className="relative"
+                className="m-row relative"
+                style={mi(index)}
               >
                 <ItemLink href={item.href} className="flex gap-4 py-4">
                   {item.image_path && (
@@ -68,9 +97,9 @@ export function PageLinkSection({ section }: { section: PageSection }) {
                     {item.subtitle && (
                       <p
                         data-field={`items.${index}.subtitle`}
-                        className="mt-1 text-xs text-muted-foreground"
+                        className="mt-1 text-xs"
                       >
-                        {item.subtitle}
+                        <ResultText text={item.subtitle} />
                       </p>
                     )}
                     {item.body && (
@@ -86,6 +115,20 @@ export function PageLinkSection({ section }: { section: PageSection }) {
               </li>
             ))}
           </ul>
+        ) : section.layout === "carousel" ? (
+          <Carousel ariaLabel={title}>
+            {items.map((item, index) => (
+              <ItemLink
+                key={item.id}
+                href={item.href}
+                data-field={`items.${index}`}
+                data-item-no={index + 1}
+                className="m-card"
+              >
+                <CardBody item={item} index={index} />
+              </ItemLink>
+            ))}
+          </Carousel>
         ) : (
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
             {items.map((item, index) => (
@@ -94,51 +137,68 @@ export function PageLinkSection({ section }: { section: PageSection }) {
                 href={item.href}
                 data-field={`items.${index}`}
                 data-item-no={index + 1}
-                className="relative overflow-hidden rounded-lg border border-border"
+                className="m-card m-up"
+                style={mi(index + 2)}
               >
-                {item.image_path ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={mediaPublicUrl(item.image_path) ?? ""}
-                    alt=""
-                    className="h-40 w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-40 items-center justify-center bg-muted text-xs text-muted-foreground/60">
-                    No image
-                  </div>
-                )}
-                <div className="p-4">
-                  <p
-                    data-field={`items.${index}.title`}
-                    className="text-sm font-medium text-foreground"
-                  >
-                    {item.title ?? "제목 없음"}
-                  </p>
-                  {item.subtitle && (
-                    <p
-                      data-field={`items.${index}.subtitle`}
-                      className="mt-1 text-xs text-muted-foreground"
-                    >
-                      {item.subtitle}
-                    </p>
-                  )}
-                  {item.body && (
-                    <p
-                      data-field={`items.${index}.body`}
-                      className="mt-2 text-xs text-muted-foreground/80 line-clamp-3"
-                    >
-                      {item.body}
-                    </p>
-                  )}
-                </div>
+                <CardBody item={item} index={index} />
               </ItemLink>
             ))}
           </div>
         )}
       </div>
-    </section>
+    </Reveal>
   );
+}
+
+/**
+ * 카드 한 장 — 결과 스탬프.
+ * 사진(4:3) 왼쪽 위에 붉은 스탬프("1심 유죄 → 무죄"), 오른쪽 아래에 법원·선고일.
+ * 사건명·설명은 사진 아래 흰 판에. 사진을 거의 가리지 않고, 글은 흰 바탕 위라 대비 문제가 없다.
+ */
+function CardBody({
+  item,
+  index,
+}: {
+  item: PageSection["items"][number];
+  index: number;
+}) {
+  const { court, date, body } = caseMeta(item);
+  const res = splitResult(item.subtitle);
+  const metaLine = [court, date].filter(Boolean).join(" · ");
+  return (
+    <>
+      <div className="m-card-pic">
+        {item.image_path ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={mediaPublicUrl(item.image_path) ?? ""} alt="" />
+        ) : (
+          <div className="m-card-noimg">{item.title ?? ""}</div>
+        )}
+        {res && (
+          <span data-field={`items.${index}.subtitle`} className="m-stamp">
+            {res.from && <small>{res.from}</small>}
+            <b>→ {res.to}</b>
+          </span>
+        )}
+        {metaLine && <span className="m-court">{metaLine}</span>}
+      </div>
+      <div className="m-card-txt">
+        <p data-field={`items.${index}.title`} className="m-card-title">
+          {item.title ?? "제목 없음"}
+        </p>
+        {body && (
+          <p data-field={`items.${index}.body`} className="m-card-body">
+            {body}
+          </p>
+        )}
+      </div>
+    </>
+  );
+}
+
+/** 형제 순서(--m-i). CSS 가 이 값으로 지연을 준다. */
+function mi(i: number): React.CSSProperties {
+  return { "--m-i": i } as React.CSSProperties;
 }
 
 function ItemLink({

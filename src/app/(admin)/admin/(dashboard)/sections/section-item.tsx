@@ -5,6 +5,7 @@ import {
   parseContactContent,
   parseCtaContent,
   parseHeroContent,
+  parsePageLinkContent,
   type ContactContent,
   type CtaContent,
   type HeroContent,
@@ -18,6 +19,7 @@ import {
 } from "@/lib/sections";
 import { ConfirmDeleteButton } from "@/app/(admin)/admin/confirm-delete";
 import { OrderButtons } from "@/app/(admin)/admin/order-buttons";
+import { runAction } from "@/app/(admin)/admin/run-action";
 import { toast } from "@/app/(admin)/admin/toast";
 import {
   deleteSection,
@@ -36,6 +38,10 @@ import {
 const initialState: ActionState = { error: null };
 
 const field = "a-input";
+
+/** 권장 길이. 넘으면 사이트에서 줄이 잘리거나(배너 3줄) 카드가 늘어난다. */
+const MAX_TITLE = 60;
+const MAX_SUBTITLE = 120;
 
 /** 종류별 예시 문구. 빈 칸에 회색으로 보인다. */
 const PLACEHOLDER: Record<"title" | "subtitle", Record<string, string>> = {
@@ -104,13 +110,15 @@ export function SectionItem({
             canUp={position > 0}
             canDown={position < count - 1}
             label={`${displayName} 블록`}
-            onMove={async (direction) => {
-              await moveSection(section.id, section.page_id, direction);
-              toast({
-                message: "순서가 바뀌었습니다 · 사이트에 반영",
-                link: { href: pagePath, label: "사이트에서 보기" },
-              });
-            }}
+            onMove={(direction) =>
+              runAction(
+                () => moveSection(section.id, section.page_id, direction),
+                {
+                  message: "순서가 바뀌었습니다 · 사이트에 반영",
+                  link: { href: pagePath, label: "사이트에서 보기" },
+                },
+              )
+            }
           />
           <span>{position + 1}</span>
         </span>
@@ -128,19 +136,18 @@ export function SectionItem({
         </button>
 
         <form
-          action={async () => {
-            await toggleSection(
-              section.id,
-              section.page_id,
-              !section.is_active,
-            );
-            toast({
-              message: section.is_active
-                ? "숨겼습니다 · 사이트에서 사라집니다"
-                : "노출합니다 · 사이트에 나타납니다",
-              link: { href: pagePath, label: "사이트에서 보기" },
-            });
-          }}
+          action={() =>
+            runAction(
+              () =>
+                toggleSection(section.id, section.page_id, !section.is_active),
+              {
+                message: section.is_active
+                  ? "숨겼습니다 · 사이트에서 사라집니다"
+                  : "노출합니다 · 사이트에 나타납니다",
+                link: { href: pagePath, label: "사이트에서 보기" },
+              },
+            ).then(() => undefined)
+          }
         >
           <button
             type="submit"
@@ -164,10 +171,11 @@ export function SectionItem({
                 ? `항목 ${section.items.length}개도 함께 삭제됩니다`
                 : undefined
             }
-            onConfirm={async () => {
-              await deleteSection(section.id, section.page_id);
-              toast({ message: `"${displayName}" 블록을 삭제했습니다` });
-            }}
+            onConfirm={() =>
+              runAction(() => deleteSection(section.id, section.page_id), {
+                message: `"${displayName}" 블록을 삭제했습니다`,
+              }).then(() => undefined)
+            }
           />
         </div>
       </div>
@@ -240,6 +248,9 @@ function SectionEditForm({
   const [items, setItems] = useState<DraftItem[]>(() =>
     toDraftItems(section.items),
   );
+  const [story, setStory] = useState(
+    () => parsePageLinkContent(section.content).variant === "story",
+  );
   const mediaFolder = section.id;
   const wasPendingRef = useRef(false);
 
@@ -247,6 +258,8 @@ function SectionEditForm({
   const focusProps = (fieldName: string) => ({
     onFocus: () => onFieldFocus(fieldName),
     onBlur: () => onFieldFocus(null),
+    // 미리보기에서 그 자리를 클릭하면 이 속성으로 칸을 찾아 커서를 옮긴다
+    "data-focus-field": fieldName,
   });
 
   // 편집 중인 값을 미리보기로 올린다. 저장과 무관하게 입력 즉시 반영된다.
@@ -258,7 +271,9 @@ function SectionEditForm({
           ? { ...cta }
           : section.kind === "contact"
             ? { ...contact }
-            : {};
+            : section.kind === "page_link"
+              ? { variant: story ? "story" : "" }
+              : {};
     const linked = pages.find((page) => page.id === sourcePageId) ?? null;
 
     onDraft({
@@ -291,6 +306,7 @@ function SectionEditForm({
     cta,
     contact,
     items,
+    story,
     onDraft,
   ]);
 
@@ -371,16 +387,25 @@ function SectionEditForm({
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_7rem]">
         <label className="flex flex-col gap-1">
           <span className={fieldLabel}>
-            제목{" "}
-            {requiresPage && (
-              <span style={{ color: "var(--a-ink-3)" }}>
-                (비우면 연결한 페이지 이름)
-              </span>
-            )}
+            <span>
+              제목{" "}
+              {requiresPage && (
+                <span style={{ color: "var(--a-ink-3)" }}>
+                  (비우면 연결한 페이지 이름)
+                </span>
+              )}
+            </span>
+            <span
+              className="a-count"
+              data-over={title.length > MAX_TITLE || undefined}
+            >
+              {title.length}/{MAX_TITLE}
+            </span>
           </span>
           <input
             name="title"
             value={title}
+            maxLength={MAX_TITLE * 2}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={PLACEHOLDER.title[section.kind] ?? "예: 업무분야"}
             {...focusProps("title")}
@@ -404,27 +429,21 @@ function SectionEditForm({
 
       <label className="flex flex-col gap-1">
         <span className={fieldLabel}>
-          부제{" "}
-          <span style={{ color: "var(--a-ink-3)" }}>(비우면 표시 안 함)</span>
+          <span>
+            부제{" "}
+            <span style={{ color: "var(--a-ink-3)" }}>(비우면 표시 안 함)</span>
+          </span>
+          <span
+            className="a-count"
+            data-over={subtitle.length > MAX_SUBTITLE || undefined}
+          >
+            {subtitle.length}/{MAX_SUBTITLE}
+          </span>
         </span>
         <input
           name="subtitle"
           value={subtitle}
-          onChange={(e) => setSubtitle(e.target.value)}
-          placeholder={PLACEHOLDER.subtitle[section.kind] ?? ""}
-          {...focusProps("subtitle")}
-          className={field}
-        />
-      </label>
-
-      <label className="flex flex-col gap-1">
-        <span className={fieldLabel}>
-          부제{" "}
-          <span style={{ color: "var(--a-ink-3)" }}>(비우면 표시 안 함)</span>
-        </span>
-        <input
-          name="subtitle"
-          value={subtitle}
+          maxLength={MAX_SUBTITLE * 2}
           onChange={(e) => setSubtitle(e.target.value)}
           placeholder={PLACEHOLDER.subtitle[section.kind] ?? ""}
           className={field}
@@ -571,13 +590,26 @@ function SectionEditForm({
       )}
 
       {section.kind === "page_link" && (
-        <ItemListEditor
-          kind="page_link"
-          items={items}
-          onChange={setItems}
-          folder={mediaFolder}
-          onFieldFocus={onFieldFocus}
-        />
+        <>
+          <label className="a-check">
+            <input
+              type="checkbox"
+              name="content_variant"
+              value="story"
+              checked={story}
+              onChange={(e) => setStory(e.target.checked)}
+            />
+            스크롤 스토리로 보이기 — 글은 고정, 항목 이미지가 스크롤에 따라
+            넘어감 (이미지가 있는 항목 3개 이상일 때)
+          </label>
+          <ItemListEditor
+            kind="page_link"
+            items={items}
+            onChange={setItems}
+            folder={mediaFolder}
+            onFieldFocus={onFieldFocus}
+          />
+        </>
       )}
 
       {section.kind !== "page_link" && section.kind !== "cta" && (
