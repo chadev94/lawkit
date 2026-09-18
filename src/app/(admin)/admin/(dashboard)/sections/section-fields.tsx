@@ -101,7 +101,14 @@ export function ItemListEditor({
   folder,
   onFieldFocus,
 }: {
-  kind: "page_link" | "cta";
+  kind:
+    | "page_link"
+    | "cta"
+    | "youtube_gallery"
+    | "news_room"
+    | "image_gallery"
+    | "client_reviews"
+    | "hero";
   items: DraftItem[];
   onChange: (items: DraftItem[]) => void;
   folder: string;
@@ -134,18 +141,31 @@ export function ItemListEditor({
         body: null,
         href: null,
         image_path: null,
-        meta: kind === "cta" ? { step: 1 } : {},
+        meta: kind === "cta" ? { step: 1 } : kind === "client_reviews" ? { role: "grid" } : {},
         is_active: true,
       },
     ]);
   }
 
+  const listLabel =
+    kind === "page_link"
+      ? "카드 / 리스트 항목"
+      : kind === "youtube_gallery"
+        ? "유튜브 영상"
+        : kind === "news_room"
+          ? "뉴스 기사"
+          : kind === "image_gallery"
+            ? "사진"
+            : kind === "client_reviews"
+              ? "후기 캡처"
+              : kind === "hero"
+              ? "경력 / 약력 줄"
+              : "선택지";
+
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <p className="a-label font-medium">
-          {kind === "page_link" ? "카드 / 리스트 항목" : "선택지"}
-        </p>
+        <p className="a-label font-medium">{listLabel}</p>
         <button
           type="button"
           onClick={addItem}
@@ -186,6 +206,153 @@ export function ItemListEditor({
                 {...focusProps(index, "title")}
               />
             </label>
+
+            {kind === "youtube_gallery" && (
+              <label className="flex flex-col gap-1">
+                <span className="a-label">유튜브 링크</span>
+                <input
+                  value={item.href ?? ""}
+                  onChange={(e) => updateAt(index, { href: e.target.value })}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  className="a-input"
+                  {...focusProps(index, "href")}
+                />
+              </label>
+            )}
+
+            {kind === "news_room" && (
+              <>
+                <label className="flex flex-col gap-1">
+                  <span className="a-label">카테고리</span>
+                  <input
+                    value={item.subtitle ?? ""}
+                    onChange={(e) =>
+                      updateAt(index, { subtitle: e.target.value })
+                    }
+                    placeholder="예: 법률뉴스"
+                    className="a-input"
+                    {...focusProps(index, "subtitle")}
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="a-label">기사 링크</span>
+                  <input
+                    value={item.href ?? ""}
+                    onChange={(e) => updateAt(index, { href: e.target.value })}
+                    placeholder="https://..."
+                    className="a-input"
+                    {...focusProps(index, "href")}
+                  />
+                </label>
+                <ImageField
+                  label="썸네일 (선택)"
+                  name={`item_image_${item.key}`}
+                  value={item.image_path ?? ""}
+                  folder={folder}
+                  onChange={(path) => updateAt(index, { image_path: path })}
+                />
+              </>
+            )}
+
+            {kind === "image_gallery" && (
+              <>
+                <ImageField
+                  label="사진"
+                  name={`item_image_${item.key}`}
+                  value={item.image_path ?? ""}
+                  folder={folder}
+                  onChange={(path) => updateAt(index, { image_path: path })}
+                />
+                <label className="flex flex-col gap-1">
+                  <span className="a-label">
+                    사진 경로{" "}
+                    <span style={{ color: "var(--a-ink-3)" }}>
+                      /gallery/… 또는 업로드
+                    </span>
+                  </span>
+                  <input
+                    value={item.image_path ?? ""}
+                    onChange={(e) =>
+                      updateAt(index, { image_path: e.target.value })
+                    }
+                    placeholder="/gallery/office-01.jpg"
+                    className="a-input"
+                    {...focusProps(index, "image_path")}
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="a-label">링크 (선택)</span>
+                  <input
+                    value={item.href ?? ""}
+                    onChange={(e) => updateAt(index, { href: e.target.value })}
+                    placeholder="https://… 또는 /경로"
+                    className="a-input"
+                    {...focusProps(index, "href")}
+                  />
+                </label>
+              </>
+            )}
+
+            {kind === "client_reviews" && (
+              <>
+                <ImageField
+                  label="캡처 이미지"
+                  name={`item_image_${item.key}`}
+                  value={item.image_path ?? ""}
+                  folder={folder}
+                  onChange={(path) => updateAt(index, { image_path: path })}
+                />
+                <label className="flex flex-col gap-1">
+                  <span className="a-label">이미지 경로</span>
+                  <input
+                    value={item.image_path ?? ""}
+                    onChange={(e) =>
+                      updateAt(index, { image_path: e.target.value })
+                    }
+                    placeholder="/reviews/featured/01.png"
+                    className="a-input"
+                    {...focusProps(index, "image_path")}
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="a-label">
+                    결과 한 줄{" "}
+                    <span style={{ color: "var(--a-ink-3)" }}>
+                      강조 카드용
+                    </span>
+                  </span>
+                  <input
+                    value={item.subtitle ?? ""}
+                    onChange={(e) =>
+                      updateAt(index, { subtitle: e.target.value })
+                    }
+                    placeholder="예: 1심 유죄 → 항소심 무죄"
+                    className="a-input"
+                    {...focusProps(index, "subtitle")}
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="a-label">역할</span>
+                  <select
+                    value={
+                      item.meta?.role === "grid" ? "grid" : "featured"
+                    }
+                    onChange={(e) =>
+                      updateAt(index, {
+                        meta: {
+                          ...(item.meta ?? {}),
+                          role: e.target.value,
+                        },
+                      })
+                    }
+                    className="a-input"
+                  >
+                    <option value="featured">강조 카드 (상단)</option>
+                    <option value="grid">모자이크 (하단)</option>
+                  </select>
+                </label>
+              </>
+            )}
 
             {kind === "page_link" && (
               <>
@@ -229,9 +396,10 @@ export function ItemListEditor({
                 </div>
                 <label className="flex flex-col gap-1">
                   <span className="a-label">
-                    결과{" "}
+                    부제{" "}
                     <span style={{ color: "var(--a-ink-3)" }}>
-                      &ldquo;→&rdquo; 뒤가 강조됨. 예: 1심 유죄 → 항소심 무죄
+                      밴드: 영문 라벨 (Criminal Defense). 사례: &ldquo;→&rdquo;
+                      뒤가 강조됨
                     </span>
                   </span>
                   <input
@@ -239,6 +407,7 @@ export function ItemListEditor({
                     onChange={(e) =>
                       updateAt(index, { subtitle: e.target.value })
                     }
+                    placeholder="예: Criminal Defense"
                     className="a-input"
                     {...focusProps(index, "subtitle")}
                   />
@@ -270,6 +439,51 @@ export function ItemListEditor({
                   folder={folder}
                   onChange={(path) => updateAt(index, { image_path: path })}
                 />
+              </>
+            )}
+
+            {kind === "hero" && (
+              <>
+                <label className="flex flex-col gap-1">
+                  <span className="a-label">기간 / 보조 문구</span>
+                  <input
+                    value={item.subtitle ?? ""}
+                    onChange={(e) =>
+                      updateAt(index, { subtitle: e.target.value })
+                    }
+                    placeholder="예: 2022–2025"
+                    className="a-input"
+                    {...focusProps(index, "subtitle")}
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="a-label">설명 (선택)</span>
+                  <textarea
+                    value={item.body ?? ""}
+                    onChange={(e) => updateAt(index, { body: e.target.value })}
+                    rows={2}
+                    className="a-input"
+                    {...focusProps(index, "body")}
+                  />
+                </label>
+                <label className="a-check">
+                  <input
+                    type="checkbox"
+                    checked={
+                      item.meta?.highlight === true ||
+                      item.meta?.highlight === "true"
+                    }
+                    onChange={(e) =>
+                      updateAt(index, {
+                        meta: {
+                          ...(item.meta ?? {}),
+                          highlight: e.target.checked,
+                        },
+                      })
+                    }
+                  />
+                  강조 줄 — 주황 배경으로 표시
+                </label>
               </>
             )}
           </div>

@@ -51,7 +51,7 @@ export async function getActivePageSections(
 ): Promise<PageSection[]> {
   return unstable_cache(
     () => fetchActivePageSections(pageId),
-    ["active-page-sections", pageId],
+    ["active-page-sections", pageId, "practice-bands-v1"],
     {
       revalidate: PUBLIC_REVALIDATE_SECONDS,
       tags: [CACHE_TAGS.pageSections, `${CACHE_TAGS.pageSections}:${pageId}`],
