@@ -45,6 +45,15 @@ function validateHref(value: string): string | null {
   return null;
 }
 
+/** 여러 content href 필드 중 첫 오류. */
+function validateContentHrefs(formData: FormData): ActionState | null {
+  for (const field of ["content_cta_href", "content_more_href"] as const) {
+    const err = validateHref(String(formData.get(field) ?? ""));
+    if (err) return { error: err, field };
+  }
+  return null;
+}
+
 async function syncItems(
   pageSectionId: string,
   items: SectionItemInput[],
@@ -92,10 +101,8 @@ export async function createSection(
   const items = itemsFromFormData(formData);
 
   if (!pageId) return { error: "페이지를 선택하세요." };
-  const hrefError = validateHref(
-    String(formData.get("content_cta_href") ?? ""),
-  );
-  if (hrefError) return { error: hrefError, field: "content_cta_href" };
+  const hrefState = validateContentHrefs(formData);
+  if (hrefState) return hrefState;
 
   const sectionKind = await getSectionByKey(kind);
   if (!sectionKind || !sectionKind.is_active) {
@@ -124,7 +131,15 @@ export async function createSection(
   if (error) return { error: error.message };
   if (!data) return { error: "섹션 생성에 실패했습니다." };
 
-  if (kind === "page_link" || kind === "cta") {
+  if (
+    kind === "page_link" ||
+    kind === "cta" ||
+    kind === "youtube_gallery" ||
+    kind === "news_room" ||
+    kind === "image_gallery" ||
+    kind === "client_reviews" ||
+    (kind === "hero" && String((content as { variant?: string }).variant ?? "") === "bio")
+  ) {
     const itemsError = await syncItems(data.id, items);
     if (itemsError) return { error: itemsError };
   }
@@ -154,10 +169,8 @@ export async function updateSection(
   if (Number.isNaN(sortOrder)) {
     return { error: "순서는 숫자여야 합니다." };
   }
-  const hrefError = validateHref(
-    String(formData.get("content_cta_href") ?? ""),
-  );
-  if (hrefError) return { error: hrefError, field: "content_cta_href" };
+  const hrefState = validateContentHrefs(formData);
+  if (hrefState) return hrefState;
 
   const sectionKind = await getSectionByKey(kind);
   if (!sectionKind) {
@@ -183,7 +196,15 @@ export async function updateSection(
 
   if (error) return { error: error.message };
 
-  if (kind === "page_link" || kind === "cta") {
+  if (
+    kind === "page_link" ||
+    kind === "cta" ||
+    kind === "youtube_gallery" ||
+    kind === "news_room" ||
+    kind === "image_gallery" ||
+    kind === "client_reviews" ||
+    (kind === "hero" && String((content as { variant?: string }).variant ?? "") === "bio")
+  ) {
     const itemsError = await syncItems(id, items);
     if (itemsError) return { error: itemsError };
   } else {

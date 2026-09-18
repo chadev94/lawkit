@@ -5,7 +5,7 @@
  * 레이아웃 라벨만 코드에 남긴다.
  */
 
-export type SectionLayout = "cards" | "carousel" | "list";
+export type SectionLayout = "cards" | "carousel" | "list" | "bands";
 
 export type Section = {
   id: string;
@@ -63,6 +63,7 @@ export const SECTION_LAYOUT_LABEL: Record<SectionLayout, string> = {
   cards: "카드",
   carousel: "캐러셀",
   list: "리스트",
+  bands: "가로 밴드",
 };
 
 export function pagePath(slug: string): string {
