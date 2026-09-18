@@ -81,16 +81,16 @@ export const FONT_OPTIONS: FontOption[] = [
 ];
 
 export const DEFAULT_COLORS: SiteColors = {
-  background: "#ffffff",
-  foreground: "#171717",
-  muted: "#f4f4f5",
-  muted_foreground: "#71717a",
-  primary: "#18181b",
-  primary_foreground: "#fafafa",
-  border: "#e4e4e7",
-  accent: "#a1a1aa",
-  hero_background: "#18181b",
-  hero_foreground: "#fafafa",
+  background: "#FFFFFF",
+  foreground: "#1A1A1A",
+  muted: "#FAFAF8",
+  muted_foreground: "#4A4A4A",
+  primary: "#D85A30",
+  primary_foreground: "#FFFFFF",
+  border: "#E8E4DF",
+  accent: "#F0997B",
+  hero_background: "#2C1A0C",
+  hero_foreground: "#FFFFFF",
 };
 
 export const DEFAULT_TYPOGRAPHY: SiteTypography = {

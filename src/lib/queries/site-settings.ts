@@ -33,7 +33,7 @@ async function fetchSiteSettings(): Promise<SiteSettings> {
 
 const getSiteSettingsCached = unstable_cache(
   fetchSiteSettings,
-  ["site-settings"],
+  ["site-settings", "yoopartners-terracotta-v1"],
   {
     revalidate: PUBLIC_REVALIDATE_SECONDS,
     tags: [CACHE_TAGS.siteSettings],

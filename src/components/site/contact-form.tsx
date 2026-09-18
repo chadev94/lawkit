@@ -6,7 +6,7 @@ export function ContactForm({ section }: { section: PageSection }) {
   const content = parseContactContent(section.content);
 
   return (
-    <section className="py-20">
+    <section id="contact" className="py-20 scroll-mt-[var(--site-nav-h)]">
       <div className="mx-auto max-w-3xl px-6">
         <h2 data-field="title" className="text-2xl font-semibold text-foreground">
           {section.title ?? "상담 문의"}

@@ -10,15 +10,15 @@
  */
 :root {
   --background: #ffffff;
-  --foreground: #171717;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --primary: #18181b;
-  --primary-foreground: #fafafa;
-  --border: #e4e4e7;
-  --accent: #a1a1aa;
-  --hero-background: #18181b;
-  --hero-foreground: #fafafa;
+  --foreground: #1a1a1a;
+  --muted: #fafaf8;
+  --muted-foreground: #4a4a4a;
+  --primary: #d85a30;
+  --primary-foreground: #ffffff;
+  --border: #e8e4df;
+  --accent: #f0997b;
+  --hero-background: #2c1a0c;
+  --hero-foreground: #ffffff;
   --font-site-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-site-heading: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
@@ -57,6 +57,37 @@ body {
 .site-theme h3 {
   font-family: var(--font-site-heading);
 }
+
+/* 고정 헤더 아래 본문 여백. 히어로가 첫 블록이면 뷰포트 전체를 쓰도록 패딩을 제거한다. */
+.site-theme {
+  --site-nav-h: 4.75rem;
+}
+.site-main {
+  padding-top: var(--site-nav-h);
+}
+.site-main:has(> main > :first-child [data-hero]) {
+  padding-top: 0;
+}
+.admin-preview {
+  position: relative;
+  --site-nav-h: 4.75rem;
+}
+/* 미리보기에서도 히어로가 틀 높이를 채우게 — 헤더는 위에 겹친다 */
+.admin-preview:has([data-hero]) > header {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: 20;
+  border-bottom-color: transparent !important;
+  background: transparent;
+}
+.admin-preview:has([data-hero]) > header [data-field="content.site_name"] {
+  color: var(--hero-foreground);
+}
+.admin-preview:has([data-hero]) > header nav span {
+  color: color-mix(in srgb, var(--hero-foreground) 70%, transparent);
+}
+
 
 /*
  * ─────────────────────────── 공개 사이트 움직임 (.m-*) ───────────────────────────
@@ -221,35 +252,12 @@ body {
   color: var(--muted-foreground);
   font-size: 0.875rem;
 }
-/* 붉은 결과 스탬프. 사이트 테마의 강조 배경(primary)을 쓴다 */
-.m-stamp {
-  position: absolute;
-  top: 0.875rem;
-  left: 0.875rem;
-  z-index: 1;
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.4em;
-  padding: 0.375rem 0.75rem;
-  border-radius: 6px;
-  background: var(--primary);
-  color: var(--primary-foreground);
-  font-size: 0.875rem;
-  font-weight: 700;
-  line-height: 1.3;
-  letter-spacing: 0.01em;
-}
-.m-stamp small {
-  font-size: 0.75rem;
-  font-weight: 500;
-  opacity: 0.85;
-  text-decoration: line-through;
-}
 .m-court {
   position: absolute;
   right: 0.75rem;
   bottom: 0.625rem;
   z-index: 1;
+  pointer-events: none;
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
   background: rgba(0, 0, 0, 0.5);
@@ -259,6 +267,7 @@ body {
 }
 .m-card-txt {
   padding: 1rem 1.125rem 1.125rem;
+  background: var(--background);
 }
 .m-card-title {
   margin: 0 0 0.375rem;
@@ -278,6 +287,90 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* 해결사례 캐러셀 카드 — 헤더 바 + 결과 패널(글 배경) + 판결문 */
+.m-card-case {
+  background: color-mix(in srgb, var(--foreground) 88%, #000);
+  border: none;
+  color: #fff;
+}
+.m-card-head {
+  padding: 0.7rem 1rem;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+}
+.m-card-result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1rem 0.875rem;
+  background: color-mix(in srgb, var(--foreground) 78%, #111);
+}
+.m-card-result-line {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #fff;
+}
+.m-card-result-line .m-from {
+  opacity: 0.75;
+  font-weight: 500;
+  text-decoration: line-through;
+}
+.m-card-result-line .m-to {
+  color: #fff;
+}
+.m-card-result-line .m-to::after {
+  background: color-mix(in srgb, var(--accent) 80%, #fff);
+}
+.m-card-badge {
+  align-self: flex-start;
+  padding: 0.3rem 0.65rem;
+  border-radius: 4px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.m-card-result-meta {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.72);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.m-card-case .m-card-pic-doc {
+  aspect-ratio: 3 / 4;
+}
+.m-card-case .m-card-pic-doc::after {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.25), transparent 40%);
+}
+
+/* 해결사례 통계 배지 */
+.m-stats {
+  word-break: keep-all;
+}
+.m-stat-badge {
+  display: inline;
+  margin: 0 0.1em;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-weight: 700;
+  font-style: normal;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
 @media (hover: hover) {
   .m-card:hover,
   .m-card:focus-within {
@@ -286,6 +379,165 @@ body {
   }
   .m-card:hover .m-card-pic img,
   .m-card:focus-within .m-card-pic img {
+    transform: scale(1.05);
+  }
+}
+
+/* 업무분야 가로 밴드 — 사진은 은은한 배경, 글은 그라데이션 위 */
+.m-bands-head {
+  margin-bottom: 2.25rem;
+}
+.m-bands-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  color: color-mix(in srgb, var(--primary) 80%, var(--foreground));
+}
+.m-bands-eyebrow-rule {
+  display: block;
+  height: 1px;
+  width: 2.5rem;
+  background: color-mix(in srgb, var(--primary) 45%, transparent);
+}
+.m-bands-title {
+  margin: 0.75rem 0 0;
+  font-family: var(--font-site-heading);
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+.m-bands-underline {
+  display: block;
+  margin-top: 0.75rem;
+  width: 2.75rem;
+  height: 2px;
+  background: var(--primary);
+}
+.m-bands-lead {
+  margin: 1rem 0 0;
+  max-width: 36rem;
+  font-size: 0.975rem;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+}
+.m-bands-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+.m-bands-row {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  min-height: 10rem;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+  isolation: isolate;
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s ease;
+}
+.m-bands-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.38;
+  transform: scale(1.02);
+  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.m-bands-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    color-mix(in srgb, var(--background) 96%, var(--primary) 4%) 0%,
+    color-mix(in srgb, var(--background) 88%, transparent) 38%,
+    color-mix(in srgb, var(--background) 58%, transparent) 70%,
+    color-mix(in srgb, var(--foreground) 14%, transparent) 100%
+  );
+}
+.m-bands-accent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  width: 3px;
+  background: color-mix(in srgb, var(--primary) 82%, #8a3a1c);
+}
+.m-bands-body {
+  position: relative;
+  z-index: 3;
+  max-width: 38rem;
+  padding: 1.4rem 1.5rem 1.45rem 1.7rem;
+}
+.m-bands-index {
+  display: block;
+  margin: 0 0 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: color-mix(in srgb, var(--primary) 70%, var(--muted-foreground));
+  font-variant-numeric: tabular-nums;
+}
+.m-bands-label {
+  margin: 0 0 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: color-mix(in srgb, var(--primary) 75%, var(--foreground));
+}
+.m-bands-name {
+  margin: 0;
+  font-family: var(--font-site-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+.m-bands-desc {
+  margin: 0.5rem 0 0;
+  font-size: 0.925rem;
+  line-height: 1.55;
+  color: var(--muted-foreground);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.m-bands-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+}
+.m-bands-cta:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (hover: hover) {
+  .m-bands-row:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 32px -28px rgba(0, 0, 0, 0.32);
+  }
+  .m-bands-row:hover .m-bands-bg {
     transform: scale(1.05);
   }
 }
@@ -396,19 +648,138 @@ body {
   }
 }
 
+/* 의뢰인 후기 마퀴
+ * 트랙 = group × 2. 각 group 너비(+ trailing gap)가 정확히 절반이라
+ * translateX(-50%) 루프 때 이음새에 빈 칸이 생기지 않는다.
+ */
+@keyframes reviews-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.reviews-marquee {
+  overflow: hidden;
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 4%,
+    #000 96%,
+    transparent
+  );
+}
+.reviews-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: reviews-marquee linear infinite;
+}
+.reviews-marquee-track--cols {
+  align-items: flex-start;
+}
+.reviews-marquee-group {
+  display: flex;
+  flex-shrink: 0;
+  gap: 1rem;
+  /* 세트 사이 간격 = 카드 gap. 절반 이동과 맞춤 */
+  padding-right: 1rem;
+}
+.reviews-marquee-group--cols {
+  align-items: flex-start;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reviews-marquee-track {
+    animation: none;
+    flex-wrap: wrap;
+    width: auto;
+    max-width: 72rem;
+    margin-inline: auto;
+    justify-content: center;
+  }
+  .reviews-marquee-group[aria-hidden] {
+    display: none;
+  }
+  .reviews-marquee-group {
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-right: 0;
+  }
+}
+.reviews-featured-card {
+  display: flex;
+  width: min(18rem, 78vw);
+  flex-shrink: 0;
+  flex-direction: column;
+  overflow: hidden;
+  background: #111;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.reviews-case-label {
+  background: #c62828;
+  padding: 0.65rem 0.85rem;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+.reviews-shot {
+  flex: 1;
+  background: #1a1a1a;
+  padding: 0.75rem;
+}
+.reviews-result {
+  padding: 0.75rem 0.85rem 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+}
+.reviews-mcol {
+  display: flex;
+  width: min(16rem, 70vw);
+  flex-shrink: 0;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.reviews-mitem {
+  position: relative;
+  overflow: hidden;
+  background: #111;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.reviews-mlabel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1;
+  background: #c62828;
+  padding: 0.4rem 0.6rem;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+}
+
 /* 6 · 드래그 캐러셀 */
 .m-carousel {
   position: relative;
-  margin-top: 2rem;
+  margin-top: 1.75rem;
+}
+.m-carousel-bleed {
+  margin-inline: -1.5rem;
 }
 .m-carousel-track {
   display: flex;
-  gap: 1rem;
+  gap: 0.875rem;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   cursor: grab;
-  padding-bottom: 0.5rem;
+  padding: 0.25rem 1.5rem 0.75rem;
 }
 .m-carousel-track::-webkit-scrollbar {
   display: none;
@@ -419,14 +790,14 @@ body {
   user-select: none;
 }
 .m-carousel-track > * {
-  flex: 0 0 min(300px, 78vw);
+  flex: 0 0 min(260px, 78vw);
   scroll-snap-align: start;
 }
 .m-carousel-nav {
   display: flex;
   gap: 0.5rem;
   justify-content: flex-end;
-  margin-top: 0.75rem;
+  margin: 0.25rem 1.5rem 0;
 }
 .m-carousel-nav button {
   width: 2.5rem;
@@ -440,6 +811,144 @@ body {
 }
 .m-carousel-nav button:hover {
   border-color: var(--foreground);
+}
+
+/* 7 · 업무분야 가로 밴드 */
+.m-bands {
+  background: var(--background);
+}
+.m-bands-head {
+  max-width: 36rem;
+}
+.m-bands-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: Georgia, "Times New Roman", "Noto Serif KR", serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  color: var(--muted-foreground);
+}
+.m-bands-eyebrow-rule {
+  display: block;
+  width: 2.5rem;
+  height: 1px;
+  background: color-mix(in srgb, var(--foreground) 28%, transparent);
+}
+.m-bands-title {
+  margin-top: 0.85rem;
+  font-size: clamp(1.75rem, 3.5vw, 2.35rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+.m-bands-underline {
+  display: block;
+  width: 2.75rem;
+  height: 4px;
+  margin-top: 0.85rem;
+  background: var(--primary);
+}
+.m-bands-lead {
+  margin-top: 1.25rem;
+  max-width: 28rem;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--muted-foreground);
+}
+.m-bands-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 3.5rem;
+}
+.m-bands-row {
+  position: relative;
+  display: flex;
+  gap: 1.5rem;
+  padding: 2.75rem 0 2.75rem 0.25rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+}
+.m-bands-row:first-child {
+  border-top: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+}
+.m-bands-accent {
+  position: absolute;
+  top: 2.75rem;
+  bottom: 2.75rem;
+  left: 0;
+  width: 3px;
+  background: var(--primary);
+}
+.m-bands-body {
+  position: relative;
+  min-width: 0;
+  flex: 1;
+  padding-left: 1.25rem;
+}
+.m-bands-index {
+  position: absolute;
+  top: -0.35rem;
+  right: 0;
+  font-family: Georgia, "Times New Roman", "Noto Serif KR", serif;
+  font-size: clamp(3.5rem, 8vw, 5.5rem);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: color-mix(in srgb, var(--foreground) 8%, transparent);
+  pointer-events: none;
+  user-select: none;
+}
+.m-bands-label {
+  font-family: Georgia, "Times New Roman", "Noto Serif KR", serif;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: var(--primary);
+}
+.m-bands-name {
+  margin-top: 0.55rem;
+  max-width: 28rem;
+  font-size: clamp(1.35rem, 2.8vw, 1.75rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+.m-bands-desc {
+  margin-top: 1rem;
+  max-width: 36rem;
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: var(--muted-foreground);
+  white-space: pre-line;
+}
+.m-bands-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+.m-bands-cta:hover {
+  opacity: 0.75;
+}
+@media (min-width: 640px) {
+  .m-bands-body {
+    padding-left: 1.75rem;
+    padding-right: 5rem;
+  }
+  .m-bands-row {
+    padding-block: 3.25rem;
+  }
+  .m-bands-accent {
+    top: 3.25rem;
+    bottom: 3.25rem;
+  }
 }
 
 /* 움직임 줄이기: 전부 즉시 보이는 상태로 */

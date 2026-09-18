@@ -2,6 +2,10 @@ import { Hero } from "@/components/site/hero";
 import { PageLinkSection } from "@/components/site/page-link-section";
 import { ConsultationCta } from "@/components/site/consultation-cta";
 import { ContactForm } from "@/components/site/contact-form";
+import { YoutubeGallery } from "@/components/site/youtube-gallery";
+import { NewsRoom } from "@/components/site/news-room";
+import { ImageGallery } from "@/components/site/image-gallery";
+import { ClientReviews } from "@/components/site/client-reviews";
 import type { PageSection } from "@/lib/sections";
 
 /**
@@ -59,6 +63,14 @@ function renderSection(section: PageSection) {
       return <ConsultationCta section={section} />;
     case "contact":
       return <ContactForm section={section} />;
+    case "youtube_gallery":
+      return <YoutubeGallery section={section} />;
+    case "news_room":
+      return <NewsRoom section={section} />;
+    case "image_gallery":
+      return <ImageGallery section={section} />;
+    case "client_reviews":
+      return <ClientReviews section={section} />;
     default:
       return null;
   }

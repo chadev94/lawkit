@@ -4,10 +4,14 @@ import { useActionState, useState } from "react";
 import {
   DEFAULT_CONTACT_CONTENT,
   DEFAULT_CTA_CONTENT,
+  DEFAULT_CLIENT_REVIEWS_CONTENT,
   DEFAULT_HERO_CONTENT,
+  DEFAULT_YOUTUBE_GALLERY_CONTENT,
   parseContactContent,
   parseCtaContent,
+  parseClientReviewsContent,
   parseHeroContent,
+  parseYoutubeGalleryContent,
 } from "@/lib/section-content";
 import { SECTION_LAYOUT_LABEL, type Section, type SitePage } from "@/lib/sections";
 import { createSection, type ActionState } from "./actions";
@@ -29,6 +33,8 @@ export function SectionForm({
   const [hero, setHero] = useState(DEFAULT_HERO_CONTENT);
   const [cta, setCta] = useState(DEFAULT_CTA_CONTENT);
   const [contact, setContact] = useState(DEFAULT_CONTACT_CONTENT);
+  const [youtube, setYoutube] = useState(DEFAULT_YOUTUBE_GALLERY_CONTENT);
+  const [reviews, setReviews] = useState(DEFAULT_CLIENT_REVIEWS_CONTENT);
   const [items, setItems] = useState(toDraftItems([]));
   const [state, formAction, pending] = useActionState(
     createSection,
@@ -188,6 +194,131 @@ export function SectionForm({
               setHero(parseHeroContent({ ...hero, background_image: path }))
             }
           />
+          <label className="flex flex-col gap-1 sm:col-span-2">
+            <span className="a-label">배경 영상 경로</span>
+            <input
+              name="content_background_video"
+              placeholder="예: /hero/background.mp4"
+              value={hero.background_video}
+              onChange={(e) =>
+                setHero(
+                  parseHeroContent({
+                    ...hero,
+                    background_video: e.target.value,
+                  }),
+                )
+              }
+              className="a-input"
+            />
+            <span className="text-xs text-muted-foreground">
+              값이 있으면 배경 이미지 대신 영상을 재생합니다. 이미지는
+              poster(첫 프레임 대체)로 쓰입니다.
+            </span>
+          </label>
+          <label className="a-check sm:col-span-2">
+            <input
+              type="checkbox"
+              name="content_text_align"
+              value="left"
+              checked={hero.text_align === "left"}
+              onChange={(e) =>
+                setHero(
+                  parseHeroContent({
+                    ...hero,
+                    text_align: e.target.checked ? "left" : "",
+                  }),
+                )
+              }
+            />
+            카피를 왼쪽에 두기 — 인물 배너(오른쪽)와 맞출 때
+          </label>
+          <label className="a-check sm:col-span-2">
+            <input
+              type="checkbox"
+              name="content_variant"
+              value="bio"
+              checked={hero.variant === "bio"}
+              onChange={(e) =>
+                setHero(
+                  parseHeroContent({
+                    ...hero,
+                    variant: e.target.checked ? "bio" : "",
+                    text_align: e.target.checked ? "left" : hero.text_align,
+                  }),
+                )
+              }
+            />
+            약력(바이오) 레이아웃 — 배지·경력·안내 박스
+          </label>
+          {hero.variant === "bio" && (
+            <>
+              <label className="flex flex-col gap-1">
+                <span className="a-label">직함 (이름 옆)</span>
+                <input
+                  name="content_role"
+                  value={hero.role}
+                  onChange={(e) =>
+                    setHero(parseHeroContent({ ...hero, role: e.target.value }))
+                  }
+                  placeholder="예: 대표변호사"
+                  className="a-input"
+                />
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="a-label">배지 (| 로 여러 개)</span>
+                <input
+                  name="content_badges"
+                  value={hero.badges}
+                  onChange={(e) =>
+                    setHero(
+                      parseHeroContent({ ...hero, badges: e.target.value }),
+                    )
+                  }
+                  placeholder="예: 형사재판센터|서울고등법원 재판연구원 출신"
+                  className="a-input"
+                />
+              </label>
+              <label className="flex flex-col gap-1 sm:col-span-2">
+                <span className="a-label">안내 박스</span>
+                <input
+                  name="content_info_box"
+                  value={hero.info_box}
+                  onChange={(e) =>
+                    setHero(
+                      parseHeroContent({ ...hero, info_box: e.target.value }),
+                    )
+                  }
+                  placeholder="예: 구속·영장심사 당일 대응 · 가족 대리 상담 가능"
+                  className="a-input"
+                />
+              </label>
+              <label className="a-check sm:col-span-2">
+                <input
+                  type="checkbox"
+                  name="content_density"
+                  value="section"
+                  checked={hero.density === "section"}
+                  onChange={(e) =>
+                    setHero(
+                      parseHeroContent({
+                        ...hero,
+                        density: e.target.checked ? "section" : "",
+                      }),
+                    )
+                  }
+                />
+                본문 블록 높이 — 홈 2번째처럼 풀스크린이 아닐 때
+              </label>
+              <div className="sm:col-span-2">
+                <ItemListEditor
+                  kind="hero"
+                  items={items}
+                  onChange={setItems}
+                  folder={mediaFolder}
+                />
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -288,6 +419,25 @@ export function SectionForm({
             <input type="checkbox" name="content_variant" value="story" />
             스크롤 스토리로 보이기 — 글은 고정, 항목 이미지가 스크롤에 따라 넘어감
           </label>
+          <label className="flex flex-col gap-1">
+            <span className="a-label">통계 한 줄</span>
+            <input
+              name="content_stats"
+              placeholder="예: 무죄 4건, 항소심 원심 파기 3건. 전부 2026년 선고입니다."
+              className="a-input"
+            />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="a-label">
+              강조 구절{" "}
+              <span style={{ color: "var(--a-ink-3)" }}>| 로 구분</span>
+            </span>
+            <input
+              name="content_stats_marks"
+              placeholder="예: 무죄 4건|항소심 원심 파기 3건"
+              className="a-input"
+            />
+          </label>
           <ItemListEditor
             kind="page_link"
             items={items}
@@ -297,9 +447,108 @@ export function SectionForm({
         </>
       )}
 
-      {kind !== "page_link" && kind !== "cta" && (
-        <input type="hidden" name="items_json" value="[]" />
+      {kind === "youtube_gallery" && (
+        <div className="flex flex-col gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="flex flex-col gap-1">
+              <span className="a-label">더보기 버튼 글자</span>
+              <input
+                name="content_more_label"
+                placeholder="예: 더보기 →"
+                value={youtube.more_label}
+                onChange={(e) =>
+                  setYoutube(
+                    parseYoutubeGalleryContent({
+                      ...youtube,
+                      more_label: e.target.value,
+                    }),
+                  )
+                }
+                className="a-input"
+              />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="a-label">더보기 링크</span>
+              <input
+                name="content_more_href"
+                placeholder="예: https://www.youtube.com/@channel"
+                value={youtube.more_href}
+                onChange={(e) =>
+                  setYoutube(
+                    parseYoutubeGalleryContent({
+                      ...youtube,
+                      more_href: e.target.value,
+                    }),
+                  )
+                }
+                className="a-input"
+              />
+            </label>
+          </div>
+          <ItemListEditor
+            kind="youtube_gallery"
+            items={items}
+            onChange={setItems}
+            folder={mediaFolder}
+          />
+        </div>
       )}
+
+      {kind === "news_room" && (
+        <ItemListEditor
+          kind="news_room"
+          items={items}
+          onChange={setItems}
+          folder={mediaFolder}
+        />
+      )}
+
+      {kind === "image_gallery" && (
+        <ItemListEditor
+          kind="image_gallery"
+          items={items}
+          onChange={setItems}
+          folder={mediaFolder}
+        />
+      )}
+
+      {kind === "client_reviews" && (
+        <div className="flex flex-col gap-3">
+          <label className="flex flex-col gap-1">
+            <span className="a-label">하단 고지</span>
+            <input
+              name="content_note"
+              value={reviews.note}
+              onChange={(e) =>
+                setReviews(
+                  parseClientReviewsContent({
+                    ...reviews,
+                    note: e.target.value,
+                  }),
+                )
+              }
+              placeholder="예: 의뢰인 동의를 받아 게재했습니다."
+              className="a-input"
+            />
+          </label>
+          <ItemListEditor
+            kind="client_reviews"
+            items={items}
+            onChange={setItems}
+            folder={mediaFolder}
+          />
+        </div>
+      )}
+
+      {kind !== "page_link" &&
+        kind !== "cta" &&
+        kind !== "youtube_gallery" &&
+        kind !== "news_room" &&
+        kind !== "image_gallery" &&
+        kind !== "client_reviews" &&
+        !(kind === "hero" && hero.variant === "bio") && (
+          <input type="hidden" name="items_json" value="[]" />
+        )}
 
       {state.error && <p className="a-error">{state.error}</p>}
 
