@@ -398,8 +398,8 @@ function CaseCardBody({
 }
 
 /**
- * 카드 한 장 — 결과 스탬프(그리드용).
- * 사진(4:3) 왼쪽 위에 붉은 스탬프, 오른쪽 아래에 법원·선고일.
+ * 카드 한 장(그리드용).
+ * 사진(4:3) 위에 법원·선고일 오버레이만 둔다.
  */
 function CardBody({
   item,
@@ -409,7 +409,6 @@ function CardBody({
   index: number;
 }) {
   const { court, date, body } = caseMeta(item);
-  const res = splitResult(item.subtitle);
   const metaLine = [court, date].filter(Boolean).join(" · ");
   const src = mediaPublicUrl(item.image_path);
   const text = (
@@ -436,12 +435,6 @@ function CardBody({
           />
         ) : (
           <div className="m-card-noimg">{item.title ?? ""}</div>
-        )}
-        {res && (
-          <span data-field={`items.${index}.subtitle`} className="m-stamp">
-            {res.from && <small>{res.from}</small>}
-            <b>→ {res.to}</b>
-          </span>
         )}
         {metaLine && <span className="m-court">{metaLine}</span>}
       </div>
