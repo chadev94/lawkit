@@ -22,7 +22,8 @@ export default async function SiteLayout({
   return (
     <div className="site-theme flex min-h-screen flex-col" style={cssVars}>
       <SiteHeader settings={settings} />
-      <div className="flex-1">{children}</div>
+      {/* 고정 헤더 높이만큼 본문을 내린다. 히어로가 첫 자식이면 CSS :has 로 패딩을 없앤다. */}
+      <div className="site-main flex-1">{children}</div>
       <SiteFooter settings={settings} />
     </div>
   );

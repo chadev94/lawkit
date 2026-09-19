@@ -13,28 +13,44 @@ export function Reveal({
   style,
   as: Tag = "div",
   threshold = 0.2,
+  ...rest
 }: {
   children: ReactNode;
   className?: string;
   style?: CSSProperties;
   as?: "div" | "section" | "ul" | "li" | "header";
   threshold?: number;
-}) {
+} & Omit<
+  React.HTMLAttributes<HTMLElement>,
+  "children" | "className" | "style"
+>) {
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+
+    const markIn = () => {
+      el.setAttribute("data-in", "");
+    };
+
+    // 뷰포트 안이면 data-js 보다 먼저 data-in 을 걸어, 첫 페인트에서 안 보이게 되는 걸 막는다.
+    const rect = el.getBoundingClientRect();
+    const aboveFold = rect.top < window.innerHeight && rect.bottom > 0;
+    if (aboveFold) markIn();
+
     el.closest(".site-theme")?.setAttribute("data-js", "");
     if (typeof IntersectionObserver === "undefined") {
-      el.setAttribute("data-in", "");
+      markIn();
       return;
     }
+    if (aboveFold) return;
+
     const io = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            el.setAttribute("data-in", "");
+            markIn();
             io.disconnect();
           }
         }
@@ -48,7 +64,7 @@ export function Reveal({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const Comp = Tag as any;
   return (
-    <Comp ref={ref} className={className} style={style}>
+    <Comp ref={ref} className={className} style={style} {...rest}>
       {children}
     </Comp>
   );

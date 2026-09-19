@@ -4,11 +4,15 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import {
   parseContactContent,
   parseCtaContent,
+  parseClientReviewsContent,
   parseHeroContent,
   parsePageLinkContent,
+  parseYoutubeGalleryContent,
   type ContactContent,
   type CtaContent,
+  type ClientReviewsContent,
   type HeroContent,
+  type YoutubeGalleryContent,
 } from "@/lib/section-content";
 import {
   SECTION_LAYOUT_LABEL,
@@ -47,15 +51,23 @@ const MAX_SUBTITLE = 120;
 const PLACEHOLDER: Record<"title" | "subtitle", Record<string, string>> = {
   title: {
     hero: "예: 판사 옆에서 일한 변호사가, 이제 당신 옆에 섭니다",
-    page_link: "예: 주요 해결사례",
+    page_link: "예: 결과로 보여드립니다",
     cta: "예: 체포·구속은 시간이 생명입니다",
     contact: "예: 변호사에게 연락하는 게 맞을까, 고민되시죠?",
+    youtube_gallery: "예: 유앤파트너스의 변호사들",
+    news_room: "예: 유앤파트너스 뉴스룸",
+    image_gallery: "예: 사무실 · 구성원",
+    client_reviews: "예: 의뢰인께서 직접 남기신 후기",
   },
   subtitle: {
     hero: "예: 경찰에서 연락이 왔다면, 조사 전에 먼저 전화하세요",
-    page_link: "예: 같은 사건도 누가 변호하느냐에 따라 결과가 달라집니다",
+    page_link: "예: 어려운 사건도 결과를 바꿉니다",
     cta: "예: 질문 4개에 답하면 지금 필요한 대응을 알려 드립니다",
     contact: "예: 모든 상담은 비밀이 보장됩니다",
+    youtube_gallery: "",
+    news_room: "",
+    image_gallery: "예: 의뢰인과 함께하는 공간입니다",
+    client_reviews: "예: 판결 직후 의뢰인께서 보내주신 메시지입니다.",
   },
 };
 const fieldLabel = "a-label";
@@ -245,11 +257,26 @@ function SectionEditForm({
   const [contact, setContact] = useState<ContactContent>(() =>
     parseContactContent(section.content),
   );
+  const [youtube, setYoutube] = useState<YoutubeGalleryContent>(() =>
+    parseYoutubeGalleryContent(section.content),
+  );
+  const [reviews, setReviews] = useState<ClientReviewsContent>(() =>
+    parseClientReviewsContent(section.content),
+  );
   const [items, setItems] = useState<DraftItem[]>(() =>
     toDraftItems(section.items),
   );
   const [story, setStory] = useState(
     () => parsePageLinkContent(section.content).variant === "story",
+  );
+  const [showSource, setShowSource] = useState(
+    () => parsePageLinkContent(section.content).show_source,
+  );
+  const [stats, setStats] = useState(
+    () => parsePageLinkContent(section.content).stats,
+  );
+  const [statsMarks, setStatsMarks] = useState(
+    () => parsePageLinkContent(section.content).stats_marks,
   );
   const mediaFolder = section.id;
   const wasPendingRef = useRef(false);
@@ -272,8 +299,17 @@ function SectionEditForm({
           : section.kind === "contact"
             ? { ...contact }
             : section.kind === "page_link"
-              ? { variant: story ? "story" : "" }
-              : {};
+              ? {
+                  variant: story ? "story" : "",
+                  show_source: showSource,
+                  stats,
+                  stats_marks: statsMarks,
+                }
+              : section.kind === "youtube_gallery"
+                ? { ...youtube }
+                : section.kind === "client_reviews"
+                  ? { ...reviews }
+                  : {};
     const linked = pages.find((page) => page.id === sourcePageId) ?? null;
 
     onDraft({
@@ -305,8 +341,13 @@ function SectionEditForm({
     hero,
     cta,
     contact,
+    youtube,
+    reviews,
     items,
     story,
+    showSource,
+    stats,
+    statsMarks,
     onDraft,
   ]);
 
@@ -377,6 +418,10 @@ function SectionEditForm({
                 </option>
               ))}
             </select>
+            <span className="text-xs" style={{ color: "var(--a-ink-3)" }}>
+              가로 밴드 = 업무분야형 넓은 행. 연결 페이지가 practice-areas
+              이면 카드여도 밴드로 보입니다.
+            </span>
           </label>
         </div>
       )}
@@ -502,6 +547,133 @@ function SectionEditForm({
             folder={mediaFolder}
             onChange={(path) => setHero({ ...hero, background_image: path })}
           />
+          <label className="flex flex-col gap-1 sm:col-span-2">
+            <span className={fieldLabel}>
+              배경 영상 경로{" "}
+              <span style={{ color: "var(--a-ink-3)" }}>
+                있으면 이미지 대신 재생
+              </span>
+            </span>
+            <input
+              name="content_background_video"
+              value={hero.background_video}
+              onChange={(e) =>
+                setHero({ ...hero, background_video: e.target.value })
+              }
+              placeholder="예: /hero/background.mp4"
+              className={field}
+            />
+          </label>
+          <label className="a-check sm:col-span-2">
+            <input
+              type="hidden"
+              name="content_text_align"
+              value={hero.text_align === "left" ? "left" : ""}
+            />
+            <input
+              type="checkbox"
+              checked={hero.text_align === "left"}
+              onChange={(e) =>
+                setHero({
+                  ...hero,
+                  text_align: e.target.checked ? "left" : "",
+                })
+              }
+            />
+            카피를 왼쪽에 두기 — 인물 배너(오른쪽)와 맞출 때
+          </label>
+          <label className="a-check sm:col-span-2">
+            <input
+              type="hidden"
+              name="content_variant"
+              value={hero.variant === "bio" ? "bio" : ""}
+            />
+            <input
+              type="checkbox"
+              checked={hero.variant === "bio"}
+              onChange={(e) =>
+                setHero({
+                  ...hero,
+                  variant: e.target.checked ? "bio" : "",
+                  text_align: e.target.checked ? "left" : hero.text_align,
+                })
+              }
+            />
+            약력(바이오) 레이아웃 — 배지·경력·안내 박스
+          </label>
+          {hero.variant === "bio" && (
+            <>
+              <label className="flex flex-col gap-1">
+                <span className={fieldLabel}>직함 (이름 옆)</span>
+                <input
+                  name="content_role"
+                  value={hero.role}
+                  onChange={(e) => setHero({ ...hero, role: e.target.value })}
+                  placeholder="예: 대표변호사"
+                  className={field}
+                  {...focusProps("content.role")}
+                />
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className={fieldLabel}>
+                  배지{" "}
+                  <span style={{ color: "var(--a-ink-3)" }}>
+                    | 로 여러 개
+                  </span>
+                </span>
+                <input
+                  name="content_badges"
+                  value={hero.badges}
+                  onChange={(e) =>
+                    setHero({ ...hero, badges: e.target.value })
+                  }
+                  placeholder="예: 형사재판센터|서울고등법원 재판연구원 출신"
+                  className={field}
+                  {...focusProps("content.badges")}
+                />
+              </label>
+              <label className="flex flex-col gap-1 sm:col-span-2">
+                <span className={fieldLabel}>안내 박스</span>
+                <input
+                  name="content_info_box"
+                  value={hero.info_box}
+                  onChange={(e) =>
+                    setHero({ ...hero, info_box: e.target.value })
+                  }
+                  placeholder="예: 구속·영장심사 당일 대응 · 가족 대리 상담 가능"
+                  className={field}
+                  {...focusProps("content.info_box")}
+                />
+              </label>
+              <label className="a-check sm:col-span-2">
+                <input
+                  type="hidden"
+                  name="content_density"
+                  value={hero.density === "section" ? "section" : ""}
+                />
+                <input
+                  type="checkbox"
+                  checked={hero.density === "section"}
+                  onChange={(e) =>
+                    setHero({
+                      ...hero,
+                      density: e.target.checked ? "section" : "",
+                    })
+                  }
+                />
+                본문 블록 높이 — 홈 2번째처럼 풀스크린이 아닐 때
+              </label>
+              <div className="sm:col-span-2">
+                <ItemListEditor
+                  kind="hero"
+                  items={items}
+                  onChange={setItems}
+                  folder={mediaFolder}
+                  onFieldFocus={onFieldFocus}
+                />
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -602,6 +774,46 @@ function SectionEditForm({
             스크롤 스토리로 보이기 — 글은 고정, 항목 이미지가 스크롤에 따라
             넘어감 (이미지가 있는 항목 3개 이상일 때)
           </label>
+          <label className="a-check">
+            <input
+              type="checkbox"
+              name="content_show_source"
+              value="true"
+              checked={showSource}
+              onChange={(e) => setShowSource(e.target.checked)}
+            />
+            연결 페이지 슬러그·더보기 링크 보이기
+          </label>
+          {!showSource && (
+            <input type="hidden" name="content_show_source" value="false" />
+          )}
+          <div className="flex flex-col gap-3">
+            <label className="flex flex-col gap-1">
+              <span className={fieldLabel}>통계 한 줄</span>
+              <input
+                name="content_stats"
+                value={stats}
+                onChange={(e) => setStats(e.target.value)}
+                placeholder="예: 무죄 4건, 항소심 원심 파기 3건. 전부 2026년 선고입니다."
+                className={field}
+                {...focusProps("content.stats")}
+              />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className={fieldLabel}>
+                강조 구절{" "}
+                <span style={{ color: "var(--a-ink-3)" }}>| 로 구분</span>
+              </span>
+              <input
+                name="content_stats_marks"
+                value={statsMarks}
+                onChange={(e) => setStatsMarks(e.target.value)}
+                placeholder="예: 무죄 4건|항소심 원심 파기 3건"
+                className={field}
+                {...focusProps("content.stats_marks")}
+              />
+            </label>
+          </div>
           <ItemListEditor
             kind="page_link"
             items={items}
@@ -612,9 +824,101 @@ function SectionEditForm({
         </>
       )}
 
-      {section.kind !== "page_link" && section.kind !== "cta" && (
-        <input type="hidden" name="items_json" value="[]" />
+      {section.kind === "youtube_gallery" && (
+        <div className="flex flex-col gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="flex flex-col gap-1">
+              <span className={fieldLabel}>더보기 버튼 글자</span>
+              <input
+                name="content_more_label"
+                value={youtube.more_label}
+                onChange={(e) =>
+                  setYoutube({ ...youtube, more_label: e.target.value })
+                }
+                placeholder="예: 더보기 →"
+                {...focusProps("content.more_label")}
+                className={field}
+              />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className={fieldLabel}>더보기 링크</span>
+              <input
+                name="content_more_href"
+                value={youtube.more_href}
+                onChange={(e) =>
+                  setYoutube({ ...youtube, more_href: e.target.value })
+                }
+                placeholder="예: https://www.youtube.com/@channel"
+                className={field}
+                {...invalid("content_more_href")}
+              />
+              {fieldError("content_more_href")}
+            </label>
+          </div>
+          <ItemListEditor
+            kind="youtube_gallery"
+            items={items}
+            onChange={setItems}
+            folder={mediaFolder}
+            onFieldFocus={onFieldFocus}
+          />
+        </div>
       )}
+
+      {section.kind === "news_room" && (
+        <ItemListEditor
+          kind="news_room"
+          items={items}
+          onChange={setItems}
+          folder={mediaFolder}
+          onFieldFocus={onFieldFocus}
+        />
+      )}
+
+      {section.kind === "image_gallery" && (
+        <ItemListEditor
+          kind="image_gallery"
+          items={items}
+          onChange={setItems}
+          folder={mediaFolder}
+          onFieldFocus={onFieldFocus}
+        />
+      )}
+
+      {section.kind === "client_reviews" && (
+        <div className="flex flex-col gap-3">
+          <label className="flex flex-col gap-1">
+            <span className={fieldLabel}>하단 고지</span>
+            <input
+              name="content_note"
+              value={reviews.note}
+              onChange={(e) =>
+                setReviews({ ...reviews, note: e.target.value })
+              }
+              placeholder="예: 의뢰인 동의를 받아 게재했습니다."
+              {...focusProps("content.note")}
+              className={field}
+            />
+          </label>
+          <ItemListEditor
+            kind="client_reviews"
+            items={items}
+            onChange={setItems}
+            folder={mediaFolder}
+            onFieldFocus={onFieldFocus}
+          />
+        </div>
+      )}
+
+      {section.kind !== "page_link" &&
+        section.kind !== "cta" &&
+        section.kind !== "youtube_gallery" &&
+        section.kind !== "news_room" &&
+        section.kind !== "image_gallery" &&
+        section.kind !== "client_reviews" &&
+        !(section.kind === "hero" && hero.variant === "bio") && (
+          <input type="hidden" name="items_json" value="[]" />
+        )}
 
       {state.error && !state.field && (
         <p className="a-error">⚠ {state.error}</p>

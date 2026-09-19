@@ -240,12 +240,15 @@ export function SitePreviewFrame({
           {/* 공개 사이트 헤더는 서버 컴포넌트라 여기서는 같은 모양으로 그린다. */}
           <header
             className="border-b"
-            style={{ borderColor: "var(--border)" }}
+            style={{
+              borderColor: "var(--border)",
+              color: "var(--foreground)",
+            }}
             data-field="header"
           >
-            <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+            <div className="mx-auto flex h-[var(--site-nav-h,4.75rem)] max-w-6xl items-center justify-between px-6">
               <span
-                className="text-sm font-semibold tracking-tight"
+                className="text-sm font-semibold tracking-[0.12em]"
                 style={{ fontFamily: "var(--font-site-heading)" }}
                 data-field="content.site_name"
               >
@@ -257,6 +260,7 @@ export function SitePreviewFrame({
                     key={item.id}
                     data-field={`nav.${item.id}`}
                     data-field-active={item.active || undefined}
+                    style={{ color: "var(--muted-foreground)" }}
                   >
                     {item.title}
                   </span>
