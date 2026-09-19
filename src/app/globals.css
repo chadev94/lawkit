@@ -105,11 +105,11 @@ body {
 }
 .site-theme[data-js] [data-in] > .m-clip,
 .site-theme[data-js] .m-clip[data-in] {
-  animation: m-clip 1.1s cubic-bezier(0.77, 0, 0.18, 1) forwards;
+  animation: m-clip 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 .site-theme[data-js] [data-in] > .m-clip img,
 .site-theme[data-js] .m-clip[data-in] img {
-  animation: m-zoom 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: m-zoom 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 @keyframes m-clip {
   to {
@@ -129,8 +129,8 @@ body {
 }
 .site-theme[data-js] [data-in] .m-up,
 .site-theme[data-js] .m-up[data-in] {
-  animation: m-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  animation-delay: calc(var(--m-i, 0) * 0.12s + var(--m-base, 0s));
+  animation: m-up 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  animation-delay: calc(var(--m-i, 0) * 0.06s + var(--m-base, 0s));
 }
 @keyframes m-up {
   to {
@@ -149,8 +149,8 @@ body {
   transform: translateY(110%);
 }
 .site-theme[data-js] [data-in] .m-mask > span {
-  animation: m-mask 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  animation-delay: calc(var(--m-i, 0) * 0.12s);
+  animation: m-mask 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  animation-delay: calc(var(--m-i, 0) * 0.06s);
 }
 @keyframes m-mask {
   to {
@@ -163,9 +163,9 @@ body {
   opacity: 0;
   transform: translateY(14px);
   transition:
-    opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-  transition-delay: calc(min(var(--m-i, 0), 8) * 0.08s);
+    opacity 0.45s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+  transition-delay: calc(min(var(--m-i, 0), 8) * 0.06s);
 }
 .site-theme[data-js] [data-in] .m-row {
   opacity: 1;
@@ -197,8 +197,8 @@ body {
   background: var(--accent);
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-  transition-delay: calc(min(var(--m-i, 0), 8) * 0.08s + 0.35s);
+  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  transition-delay: calc(min(var(--m-i, 0), 8) * 0.06s + 0.2s);
 }
 .site-theme[data-js] [data-in] .m-to::after {
   transform: scaleX(1);
@@ -218,9 +218,18 @@ body {
   background: var(--background);
   color: var(--foreground);
   text-decoration: none;
-  transition:
-    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.35s ease;
+  transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+/* 그림자는 미리 그려 두고 투명도만 바꾼다. box-shadow 전환은 매 프레임 다시 그린다 */
+.m-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 26px 40px -28px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
 }
 .m-card-pic {
   position: relative;
@@ -234,7 +243,6 @@ body {
   object-fit: cover;
   object-position: top;
   display: block;
-  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .m-card-pic::after {
   content: "";
@@ -377,15 +385,14 @@ body {
   -webkit-box-decoration-break: clone;
 }
 
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   .m-card:hover,
   .m-card:focus-within {
     transform: translateY(-4px);
-    box-shadow: 0 26px 40px -28px rgba(0, 0, 0, 0.4);
   }
-  .m-card:hover .m-card-pic img,
-  .m-card:focus-within .m-card-pic img {
-    transform: scale(1.05);
+  .m-card:hover::after,
+  .m-card:focus-within::after {
+    opacity: 1;
   }
 }
 
@@ -619,8 +626,8 @@ body {
   opacity: 0.35;
   transform: scale(0.96);
   transition:
-    opacity 0.5s ease,
-    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 0.4s ease-out,
+    transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
 }
 .m-story-empty {
   aspect-ratio: 3 / 4;
@@ -957,21 +964,40 @@ body {
   }
 }
 
-/* 움직임 줄이기: 전부 즉시 보이는 상태로 */
+/* 움직임 줄이기: 이동·확대·리빌은 끄고, 짧은 페이드만 남긴다 */
 @media (prefers-reduced-motion: reduce) {
-  .site-theme[data-js] .m-clip,
+  .site-theme[data-js] .m-clip {
+    clip-path: none;
+    animation: none;
+  }
+  .site-theme[data-js] .m-clip img {
+    transform: none;
+    animation: none;
+  }
   .site-theme[data-js] .m-up,
-  .site-theme[data-js] .m-mask > span,
-  .site-theme[data-js] .m-row,
-  .m-story-step img,
-  .m-story-empty {
-    animation: none !important;
-    transition: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-    clip-path: none !important;
+  .site-theme[data-js] .m-row {
+    transform: none;
+    animation: none;
+    transition: opacity 0.2s ease-out;
+  }
+  .site-theme[data-js] [data-in] .m-up {
+    opacity: 1;
+  }
+  .site-theme[data-js] .m-mask > span {
+    transform: none;
+    animation: none;
   }
   .m-to::after {
-    transform: scaleX(1) !important;
+    transform: scaleX(1);
+    transition: none;
+  }
+  .m-story-step img,
+  .m-story-empty {
+    transform: none;
+    transition: opacity 0.2s ease-out;
+  }
+  .m-card,
+  .m-card::after {
+    transition: none;
   }
 }

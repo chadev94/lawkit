@@ -21,6 +21,18 @@ export function Carousel({
   const [dragging, setDragging] = useState(false);
   const start = useRef({ x: 0, left: 0 });
 
+  // 손을 떼면 가장 가까운 카드 시작점으로 부드럽게. 스냅을 바로 켜면 그 자리로 점프한다.
+  function settle() {
+    if (!dragging) return;
+    setDragging(false);
+    const el = track.current;
+    if (!el) return;
+    const first = el.firstElementChild as HTMLElement | null;
+    const w = first ? first.offsetWidth + 16 : el.clientWidth * 0.8;
+    const target = Math.round(el.scrollLeft / w) * w;
+    el.scrollTo({ left: target, behavior: "smooth" });
+  }
+
   function step(dir: 1 | -1) {
     const el = track.current;
     if (!el) return;
@@ -58,8 +70,8 @@ export function Carousel({
           track.current!.scrollLeft =
             start.current.left - (e.clientX - start.current.x);
         }}
-        onPointerUp={() => setDragging(false)}
-        onPointerCancel={() => setDragging(false)}
+        onPointerUp={settle}
+        onPointerCancel={settle}
       >
         {children}
       </div>
