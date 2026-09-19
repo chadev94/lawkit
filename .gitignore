@@ -338,3 +338,6 @@ $RECYCLE.BIN/
 
 # 시드용 다운로드 이미지 (업로드 스크립트가 Storage로 보냄)
 scripts/seed-assets/
+
+# impeccable 크리틱 스냅샷 — 작업 메모. 로컬에만 둔다
+.impeccable/
