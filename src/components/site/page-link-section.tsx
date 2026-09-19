@@ -416,6 +416,12 @@ function CardBody({
       <p data-field={`items.${index}.title`} className="m-card-title">
         {item.title ?? "제목 없음"}
       </p>
+      {/* 결과(부제)는 사례 카드의 핵심 정보. 스탬프는 두지 않되 글로는 보인다 */}
+      {item.subtitle && (
+        <p data-field={`items.${index}.subtitle`} className="m-card-sub">
+          <ResultText text={item.subtitle} />
+        </p>
+      )}
       {body && (
         <p data-field={`items.${index}.body`} className="m-card-body">
           {body}
