@@ -341,3 +341,8 @@ scripts/seed-assets/
 
 # impeccable 크리틱 스냅샷 — 작업 메모. 로컬에만 둔다
 .impeccable/
+
+# QA (Playwright)
+test-results/
+qa/playwright-report/
+qa/.auth/
