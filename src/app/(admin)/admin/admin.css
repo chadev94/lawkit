@@ -700,7 +700,12 @@
 }
 
 /* 편집 중인 블록에서는 항목마다 번호를 띄운다.
- * 왼쪽 편집 목록의 1·2·3 과 같은 번호라, 어느 카드를 고치는지 바로 안다. */
+ * 왼쪽 편집 목록의 1·2·3 과 같은 번호라, 어느 카드를 고치는지 바로 안다.
+ * 기준점은 여기서 잡는다. 항목 요소가 position 을 안 주면 번호가 블록 구석에 전부 겹쳐 쌓인다. */
+.admin-preview [data-block-active] [data-item-no] {
+  position: relative;
+}
+
 .admin-preview [data-block-active] [data-item-no]::before {
   content: attr(data-item-no);
   position: absolute;
@@ -720,6 +725,13 @@
   border: 2px solid #fff;
   border-radius: 999px;
   pointer-events: none;
+}
+
+/* 한 줄짜리 항목(약력 등)은 안쪽에 두면 첫 글자를 덮는다. 줄 왼쪽 바깥, 세로 가운데. */
+.admin-preview [data-block-active] .m-row-item[data-item-no]::before {
+  top: 50%;
+  left: -28px;
+  transform: translateY(-50%);
 }
 
 /* 폼 입력 칸: 배지를 칸 이름 왼쪽에 둔다. 편집 중인 동안만 칸을 배지 폭만큼 오른쪽으로 민다. */
