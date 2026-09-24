@@ -131,6 +131,40 @@ test.describe("사이트 설정 → 전체 미리보기", () => {
   });
 });
 
+test.describe("미리보기 표식", () => {
+  test("항목 번호 배지가 각 항목 위에 하나씩 놓인다 (한 구석에 겹쳐 쌓이지 않는다)", async ({
+    admin,
+  }) => {
+    await admin.goto("/admin/sections");
+    const rows = admin.locator(".a-list > li");
+    const n = await rows.count();
+    let checked = 0;
+    for (let i = 0; i < n; i++) {
+      await rows.nth(i).locator(".a-row-main").click();
+      const blockId = await admin.locator('input[name="id"]').inputValue();
+      const items = preview(admin).locator(
+        `[data-preview-section="${blockId}"] [data-item-no]`,
+      );
+      const count = await items.count();
+      if (count < 2) {
+        await rows.nth(i).locator(".a-row-main").click();
+        continue;
+      }
+      // 배지는 position:absolute 인 ::before 라 항목 자신이 기준점이어야 한다.
+      // static 이면 블록 구석으로 떠서 전부 한 자리에 겹친다.
+      const loose = await items.evaluateAll((els) =>
+        els
+          .filter((el) => getComputedStyle(el).position === "static")
+          .map((el) => el.getAttribute("data-item-no")),
+      );
+      expect(loose, `블록 ${i} 기준점 없는 항목`).toEqual([]);
+      checked++;
+      await rows.nth(i).locator(".a-row-main").click();
+    }
+    expect(checked, "항목 2개 이상인 블록이 하나는 있어야 한다").toBeGreaterThan(0);
+  });
+});
+
 test.afterEach(async ({ blocked }) => {
   // 차단된 쓰기가 있다면 검사 코드가 저장을 시도한 것이다. 검사가 잘못된 것이니 알린다.
   expect(blocked, "쓰기 요청이 시도됨 — 이 검사는 읽기 전용이어야 한다").toEqual([]);
