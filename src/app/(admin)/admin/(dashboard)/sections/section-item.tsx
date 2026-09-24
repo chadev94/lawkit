@@ -925,6 +925,7 @@ function SectionEditForm({
         section.kind !== "news_room" &&
         section.kind !== "image_gallery" &&
         section.kind !== "client_reviews" &&
+        section.kind !== "contact" &&
         !(section.kind === "hero" && hero.variant === "bio") && (
           <input type="hidden" name="items_json" value="[]" />
         )}

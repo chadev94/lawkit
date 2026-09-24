@@ -138,6 +138,7 @@ export async function createSection(
     kind === "news_room" ||
     kind === "image_gallery" ||
     kind === "client_reviews" ||
+    kind === "contact" ||
     (kind === "hero" && String((content as { variant?: string }).variant ?? "") === "bio")
   ) {
     const itemsError = await syncItems(data.id, items);
@@ -203,6 +204,7 @@ export async function updateSection(
     kind === "news_room" ||
     kind === "image_gallery" ||
     kind === "client_reviews" ||
+    kind === "contact" ||
     (kind === "hero" && String((content as { variant?: string }).variant ?? "") === "bio")
   ) {
     const itemsError = await syncItems(id, items);
