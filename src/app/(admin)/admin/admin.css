@@ -734,6 +734,16 @@
   transform: translateY(-50%);
 }
 
+/* 폼 입력 칸: 배지를 칸 이름 왼쪽에 둔다. 편집 중인 동안만 칸을 배지 폭만큼 오른쪽으로 민다. */
+.admin-preview [data-block-active] .m-field-item[data-item-no] {
+  padding-left: 30px;
+}
+
+.admin-preview [data-block-active] .m-field-item[data-item-no]::before {
+  top: -3px;
+  left: 0;
+}
+
 /* 지금 입력 중인 칸에 해당하는 요소.
  * 사이트 색과 겹치지 않는 보라 3px + 번짐. 얇은 파랑은 흰 배경에서 묻혔다. */
 .admin-preview [data-field-active],

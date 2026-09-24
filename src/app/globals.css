@@ -1001,3 +1001,91 @@ body {
     transition: none;
   }
 }
+
+/* ─────────── 상담 접수 완료 대화창 ───────────
+ * 뒤를 살짝 어둡게 하고 창 하나만 띄운다. 체크 표시는 선을 그리듯 나타난다.
+ * 사이트 변수(--background 등)를 써서 어드민 색 설정을 따른다. */
+.m-dialog-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(0 0 0 / 0.32);
+  backdrop-filter: blur(2px);
+  animation: m-fade 0.25s ease both;
+}
+
+/* 어드민 미리보기: 화면이 아니라 섹션 위에 덮는다. 미리보기 틀 밖으로 나가지 않는다. */
+.m-dialog-scrim[data-inline] {
+  position: absolute;
+  z-index: 3;
+  animation: none;
+}
+
+.m-dialog-scrim[data-inline] .m-dialog {
+  animation: none;
+}
+
+.m-dialog {
+  width: min(100%, 25rem);
+  padding: 1.75rem 1.75rem 1.375rem;
+  text-align: center;
+  color: var(--foreground);
+  background: var(--background);
+  border-radius: 0.875rem;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.06),
+    0 24px 60px -24px rgb(0 0 0 / 0.35);
+  animation: m-dialog-in 0.35s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.m-dialog-check {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: 0 auto 0.875rem;
+  color: #2f7d4f;
+  background: #e8f4ec;
+  border-radius: 999px;
+}
+
+.m-dialog-check path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: m-draw 0.45s cubic-bezier(0.23, 1, 0.32, 1) 0.12s forwards;
+}
+
+@keyframes m-fade {
+  from { opacity: 0; }
+}
+
+@keyframes m-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+}
+
+@keyframes m-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .m-dialog-scrim,
+  .m-dialog {
+    animation-duration: 0.15s;
+  }
+
+  .m-dialog-check path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}

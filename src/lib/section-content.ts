@@ -65,7 +65,12 @@ export type CtaContent = {
 export type ContactContent = {
   consent_label: string;
   submit_label: string;
+  /** 접수 완료 대화창 제목 */
   success_message: string;
+  /** 대화창 안내 한 줄. 예: 보통 영업일 기준 하루 안에 답합니다 */
+  success_detail: string;
+  /** 대화창 전화 버튼 번호. 비우면 버튼 없음 */
+  success_phone: string;
 };
 
 export type YoutubeGalleryContent = {
@@ -79,6 +84,26 @@ export type ClientReviewsContent = {
   /** 하단 고지. 예: 의뢰인 동의를 받아 게재했습니다. */
   note: string;
 };
+
+/**
+ * page_section_items 를 쓰는 종류. 저장 액션·편집기 예비 입력이 이 목록을 본다.
+ * (hero 는 variant=bio 일 때만 — 호출하는 쪽에서 따로 본다)
+ * 새 종류에 항목을 붙이면 여기 한 줄만 추가한다. 빠지면 저장 때 항목이 지워진다.
+ */
+export const KINDS_WITH_ITEMS = [
+  "page_link",
+  "cta",
+  "youtube_gallery",
+  "news_room",
+  "image_gallery",
+  "client_reviews",
+  "contact",
+] as const;
+
+export function kindHasItems(kind: string, content: Record<string, unknown> = {}): boolean {
+  if (kind === "hero") return String(content.variant ?? "") === "bio";
+  return (KINDS_WITH_ITEMS as readonly string[]).includes(kind);
+}
 
 export type SectionContentMap = {
   hero: HeroContent;
@@ -112,6 +137,8 @@ export const DEFAULT_CONTACT_CONTENT: ContactContent = {
   consent_label: "개인정보 수집·이용에 동의합니다",
   submit_label: "제출",
   success_message: "문의가 접수되었습니다.",
+  success_detail: "변호사가 직접 연락드립니다. 보통 영업일 기준 하루 안에 답합니다.",
+  success_phone: "",
 };
 
 export const DEFAULT_YOUTUBE_GALLERY_CONTENT: YoutubeGalleryContent = {
@@ -186,6 +213,11 @@ export function parseContactContent(raw: unknown): ContactContent {
       o.success_message,
       DEFAULT_CONTACT_CONTENT.success_message,
     ),
+    success_detail: asString(
+      o.success_detail,
+      DEFAULT_CONTACT_CONTENT.success_detail,
+    ),
+    success_phone: asString(o.success_phone).trim(),
   };
 }
 
@@ -272,6 +304,8 @@ export function contentFromFormData(
         consent_label: formData.get("content_consent_label"),
         submit_label: formData.get("content_submit_label"),
         success_message: formData.get("content_success_message"),
+        success_detail: formData.get("content_success_detail"),
+        success_phone: formData.get("content_success_phone"),
       });
     case "page_link":
       return parsePageLinkContent({

@@ -4,6 +4,10 @@ import { useId, useState } from "react";
 import { mediaPublicUrl } from "@/lib/section-content";
 import { uploadSectionMedia } from "@/lib/section-media";
 import type { SectionItemInput } from "@/lib/section-content";
+import {
+  CONSULTATION_FIELD_TYPES,
+  CONSULTATION_FIELD_TYPE_LABEL,
+} from "@/lib/consultation";
 
 export type DraftItem = SectionItemInput & { key: string };
 
@@ -108,7 +112,8 @@ export function ItemListEditor({
     | "news_room"
     | "image_gallery"
     | "client_reviews"
-    | "hero";
+    | "hero"
+    | "contact";
   items: DraftItem[];
   onChange: (items: DraftItem[]) => void;
   folder: string;
@@ -141,7 +146,15 @@ export function ItemListEditor({
         body: null,
         href: null,
         image_path: null,
-        meta: kind === "cta" ? { step: 1 } : kind === "client_reviews" ? { role: "grid" } : {},
+        meta:
+          kind === "cta"
+            ? { step: 1 }
+            : kind === "client_reviews"
+              ? { role: "grid" }
+              : kind === "contact"
+                ? // field_key: 답과 칸을 잇는 고정 열쇠. 저장 때 id 가 바뀌어도 이 값은 남는다.
+                  { field_key: newKey(), type: "text", required: false }
+                : {},
         is_active: true,
       },
     ]);
@@ -159,8 +172,10 @@ export function ItemListEditor({
             : kind === "client_reviews"
               ? "후기 캡처"
               : kind === "hero"
-              ? "경력 / 약력 줄"
-              : "선택지";
+                ? "경력 / 약력 줄"
+                : kind === "contact"
+                  ? "입력 칸"
+                  : "선택지";
 
   return (
     <div className="flex flex-col gap-3">
@@ -442,6 +457,86 @@ export function ItemListEditor({
               </>
             )}
 
+            {kind === "contact" && (
+              <>
+                <label className="flex flex-col gap-1">
+                  <span className="a-label">안내 문구 (선택)</span>
+                  <input
+                    value={item.subtitle ?? ""}
+                    onChange={(e) =>
+                      updateAt(index, { subtitle: e.target.value })
+                    }
+                    placeholder="예: 답변 받으실 주소"
+                    className="a-input"
+                    {...focusProps(index, "subtitle")}
+                  />
+                </label>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="flex flex-col gap-1">
+                    <span className="a-label">종류</span>
+                    <select
+                      value={
+                        typeof item.meta?.type === "string"
+                          ? item.meta.type
+                          : "text"
+                      }
+                      onChange={(e) =>
+                        updateAt(index, {
+                          meta: { ...(item.meta ?? {}), type: e.target.value },
+                        })
+                      }
+                      className="a-select"
+                    >
+                      {CONSULTATION_FIELD_TYPES.map((type) => (
+                        <option key={type} value={type}>
+                          {CONSULTATION_FIELD_TYPE_LABEL[type]}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="a-check self-end">
+                    <input
+                      type="checkbox"
+                      checked={
+                        item.meta?.required === true ||
+                        item.meta?.required === "true"
+                      }
+                      onChange={(e) =>
+                        updateAt(index, {
+                          meta: {
+                            ...(item.meta ?? {}),
+                            required: e.target.checked,
+                          },
+                        })
+                      }
+                    />
+                    필수 — 비우면 신청할 수 없음
+                  </label>
+                </div>
+                {item.meta?.type === "select" && (
+                  <label className="flex flex-col gap-1">
+                    <span className="a-label">선택지 — | 로 구분</span>
+                    <input
+                      value={
+                        Array.isArray(item.meta?.options)
+                          ? item.meta.options.join(" | ")
+                          : typeof item.meta?.options === "string"
+                            ? item.meta.options
+                            : ""
+                      }
+                      onChange={(e) =>
+                        updateAt(index, {
+                          meta: { ...(item.meta ?? {}), options: e.target.value },
+                        })
+                      }
+                      placeholder="예: 형사 | 민사 | 가사"
+                      className="a-input"
+                    />
+                  </label>
+                )}
+              </>
+            )}
+
             {kind === "hero" && (
               <>
                 <label className="flex flex-col gap-1">
@@ -502,7 +597,11 @@ export function ItemListEditor({
             body: item.body,
             href: item.href,
             image_path: item.image_path,
-            meta: item.meta ?? {},
+            // 상담 칸: field_key 가 없는 옛 항목도 저장 때 고정 열쇠를 갖게 한다.
+            meta:
+              kind === "contact" && !item.meta?.field_key
+                ? { ...(item.meta ?? {}), field_key: item.key }
+                : (item.meta ?? {}),
             is_active: item.is_active !== false,
           })),
         )}

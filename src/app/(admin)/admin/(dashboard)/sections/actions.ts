@@ -13,6 +13,7 @@ import { HOME_PAGE_SLUG, pagePath } from "@/lib/sections";
 import {
   contentFromFormData,
   itemsFromFormData,
+  kindHasItems,
   type SectionItemInput,
 } from "@/lib/section-content";
 
@@ -131,15 +132,7 @@ export async function createSection(
   if (error) return { error: error.message };
   if (!data) return { error: "섹션 생성에 실패했습니다." };
 
-  if (
-    kind === "page_link" ||
-    kind === "cta" ||
-    kind === "youtube_gallery" ||
-    kind === "news_room" ||
-    kind === "image_gallery" ||
-    kind === "client_reviews" ||
-    (kind === "hero" && String((content as { variant?: string }).variant ?? "") === "bio")
-  ) {
+  if (kindHasItems(kind, content)) {
     const itemsError = await syncItems(data.id, items);
     if (itemsError) return { error: itemsError };
   }
@@ -196,15 +189,7 @@ export async function updateSection(
 
   if (error) return { error: error.message };
 
-  if (
-    kind === "page_link" ||
-    kind === "cta" ||
-    kind === "youtube_gallery" ||
-    kind === "news_room" ||
-    kind === "image_gallery" ||
-    kind === "client_reviews" ||
-    (kind === "hero" && String((content as { variant?: string }).variant ?? "") === "bio")
-  ) {
+  if (kindHasItems(kind, content)) {
     const itemsError = await syncItems(id, items);
     if (itemsError) return { error: itemsError };
   } else {
