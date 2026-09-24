@@ -758,6 +758,15 @@ function SectionEditForm({
               className={field}
             />
           </label>
+          <div className="sm:col-span-3">
+            <ItemListEditor
+              kind="contact"
+              items={items}
+              onChange={setItems}
+              folder={mediaFolder}
+              onFieldFocus={onFieldFocus}
+            />
+          </div>
         </div>
       )}
 
