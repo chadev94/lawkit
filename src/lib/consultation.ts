@@ -107,7 +107,8 @@ export type ValidationResult =
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /** 전화번호 허용 문자·길이. 브라우저 pattern 과 서버 검사가 같은 규칙을 쓴다. */
-export const CONSULTATION_TEL_PATTERN = "[0-9+\\-\\s().]{7,40}";
+// 브라우저의 pattern 은 정규식 v 모드로 읽는다. 문자 집합 안의 ( ) . 는 이스케이프해야 한다.
+export const CONSULTATION_TEL_PATTERN = "[0-9+\\-\\s\\(\\)\\.]{7,40}";
 const TEL = new RegExp(`^${CONSULTATION_TEL_PATTERN}$`);
 
 /**
