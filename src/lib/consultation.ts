@@ -106,7 +106,9 @@ export type ValidationResult =
   | { ok: false; errors: Record<string, string> };
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const TEL = /^[0-9+\-\s().]{7,40}$/;
+/** 전화번호 허용 문자·길이. 브라우저 pattern 과 서버 검사가 같은 규칙을 쓴다. */
+export const CONSULTATION_TEL_PATTERN = "[0-9+\\-\\s().]{7,40}";
+const TEL = new RegExp(`^${CONSULTATION_TEL_PATTERN}$`);
 
 /**
  * 답을 칸 정의로 검사한다. 통과하면 정리된 답(문자열, 빈 값 제외)을 돌려준다.

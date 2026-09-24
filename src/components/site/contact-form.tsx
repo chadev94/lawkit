@@ -7,6 +7,7 @@ import {
   CONSULTATION_HONEYPOT,
   CONSULTATION_IDLE,
   CONSULTATION_MAX_LENGTH,
+  CONSULTATION_TEL_PATTERN,
   fieldsFromSection,
   type ConsultationField,
 } from "@/lib/consultation";
@@ -167,6 +168,13 @@ function FieldInput({
           name={name}
           type={field.type === "text" ? "text" : field.type}
           inputMode={field.type === "tel" ? "tel" : undefined}
+          // 전화번호는 type=tel 만으로는 형식을 막지 않는다. 서버와 같은 규칙을 브라우저에도 준다.
+          pattern={field.type === "tel" ? CONSULTATION_TEL_PATTERN : undefined}
+          title={
+            field.type === "tel"
+              ? "숫자, +, -, 괄호, 공백만 7자 이상 (예: 010-1234-5678)"
+              : undefined
+          }
           required={field.required}
           maxLength={CONSULTATION_MAX_LENGTH[field.type]}
           className={inputClass}
