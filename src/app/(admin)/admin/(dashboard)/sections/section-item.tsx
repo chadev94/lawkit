@@ -13,6 +13,7 @@ import {
   type ClientReviewsContent,
   type HeroContent,
   type YoutubeGalleryContent,
+  kindHasItems,
 } from "@/lib/section-content";
 import {
   SECTION_LAYOUT_LABEL,
@@ -919,14 +920,7 @@ function SectionEditForm({
         </div>
       )}
 
-      {section.kind !== "page_link" &&
-        section.kind !== "cta" &&
-        section.kind !== "youtube_gallery" &&
-        section.kind !== "news_room" &&
-        section.kind !== "image_gallery" &&
-        section.kind !== "client_reviews" &&
-        section.kind !== "contact" &&
-        !(section.kind === "hero" && hero.variant === "bio") && (
+      {!kindHasItems(section.kind, { variant: hero.variant }) && (
           <input type="hidden" name="items_json" value="[]" />
         )}
 

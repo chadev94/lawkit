@@ -80,6 +80,26 @@ export type ClientReviewsContent = {
   note: string;
 };
 
+/**
+ * page_section_items 를 쓰는 종류. 저장 액션·편집기 예비 입력이 이 목록을 본다.
+ * (hero 는 variant=bio 일 때만 — 호출하는 쪽에서 따로 본다)
+ * 새 종류에 항목을 붙이면 여기 한 줄만 추가한다. 빠지면 저장 때 항목이 지워진다.
+ */
+export const KINDS_WITH_ITEMS = [
+  "page_link",
+  "cta",
+  "youtube_gallery",
+  "news_room",
+  "image_gallery",
+  "client_reviews",
+  "contact",
+] as const;
+
+export function kindHasItems(kind: string, content: Record<string, unknown> = {}): boolean {
+  if (kind === "hero") return String(content.variant ?? "") === "bio";
+  return (KINDS_WITH_ITEMS as readonly string[]).includes(kind);
+}
+
 export type SectionContentMap = {
   hero: HeroContent;
   page_link: PageLinkContent;

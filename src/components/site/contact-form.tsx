@@ -131,7 +131,7 @@ function FieldInput({
       htmlFor={id}
       data-field={`items.${index}`}
       data-item-no={index + 1}
-      className={`flex flex-col gap-1 ${wide ? "sm:col-span-2" : ""}`}
+      className={`m-field-item relative flex flex-col gap-1 ${wide ? "sm:col-span-2" : ""}`}
     >
       <span className="text-xs text-muted-foreground">
         <span data-field={`items.${index}.title`}>{field.label}</span>
