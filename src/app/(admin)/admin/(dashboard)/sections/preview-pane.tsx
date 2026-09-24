@@ -69,7 +69,11 @@ export function PreviewPane({
           노출 중인 블록이 없습니다.
         </p>
       ) : (
-        <PageSections sections={visible} highlightId={highlightId} />
+        <PageSections
+          sections={visible}
+          highlightId={highlightId}
+          previewField={activeField}
+        />
       )}
     </SitePreviewFrame>
   );

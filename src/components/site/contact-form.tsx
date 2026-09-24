@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import type { PageSection } from "@/lib/sections";
 import { parseContactContent } from "@/lib/section-content";
 import {
@@ -10,6 +10,7 @@ import {
   CONSULTATION_TEL_PATTERN,
   fieldsFromSection,
   type ConsultationField,
+  type ConsultationState,
 } from "@/lib/consultation";
 import { submitConsultation } from "@/lib/actions/consultation";
 
@@ -21,16 +22,32 @@ const inputClass =
  * 어드민에서 항목을 추가하면 여기 input 이 하나 늘어난다.
  * 진짜 검사는 서버 액션이 한다. 여기 required·type 은 제출 전에 빨리 알려주는 용도.
  */
-export function ContactForm({ section }: { section: PageSection }) {
+export function ContactForm({
+  section,
+  /** 어드민 미리보기 전용. 성공 창 관련 칸을 편집 중이면 창을 그 자리에 보여준다 */
+  previewSuccess = false,
+}: {
+  section: PageSection;
+  previewSuccess?: boolean;
+}) {
   const content = parseContactContent(section.content);
   const fields = fieldsFromSection(section);
   const [state, action, pending] = useActionState(
     submitConsultation,
     CONSULTATION_IDLE,
   );
+  const formRef = useRef<HTMLFormElement>(null);
+  // 닫은 성공 상태를 기억한다. state 객체가 새로 오면(다음 접수) 다시 열린다.
+  const [dismissed, setDismissed] = useState<ConsultationState | null>(null);
+  const open = state.status === "ok" && dismissed !== state;
+
+  // 접수되면 폼을 비운다. 창을 닫은 뒤 바로 다른 문의를 쓸 수 있게.
+  useEffect(() => {
+    if (state.status === "ok") formRef.current?.reset();
+  }, [state]);
 
   return (
-    <section id="contact" className="py-20 scroll-mt-[var(--site-nav-h)]">
+    <section id="contact" className="relative py-20 scroll-mt-[var(--site-nav-h)]">
       <div className="mx-auto max-w-3xl px-6">
         <h2 data-field="title" className="text-2xl font-semibold text-foreground">
           {section.title ?? "상담 문의"}
@@ -41,16 +58,17 @@ export function ContactForm({ section }: { section: PageSection }) {
           </p>
         )}
 
-        {state.status === "ok" ? (
-          <p
-            role="status"
-            data-field="content.success_message"
-            className="mt-8 rounded border border-border bg-muted px-4 py-6 text-center text-sm text-foreground"
-          >
-            {content.success_message}
-          </p>
-        ) : (
-          <form action={action} noValidate={false} className="mt-8">
+        {(open || previewSuccess) && (
+          <SuccessDialog
+            title={content.success_message}
+            detail={content.success_detail}
+            phone={content.success_phone}
+            preview={!open}
+            onClose={() => setDismissed(state)}
+          />
+        )}
+
+          <form ref={formRef} action={action} className="mt-8">
             <input type="hidden" name="section_id" value={section.id} />
             {/* 봇용. 사람은 보지 못하고 채우지 않는다. */}
             <input
@@ -108,7 +126,6 @@ export function ContactForm({ section }: { section: PageSection }) {
               </button>
             </div>
           </form>
-        )}
       </div>
     </section>
   );
@@ -183,5 +200,93 @@ function FieldInput({
 
       {error && <span className="text-xs text-red-600">{error}</span>}
     </label>
+  );
+}
+
+/**
+ * 접수 완료 대화창. 화면 이동 없이 그 자리에서 알린다.
+ * ESC · 바깥 클릭 · 닫기로 닫힌다. 열리면 닫기 버튼에 포커스가 간다.
+ */
+function SuccessDialog({
+  title,
+  detail,
+  phone,
+  preview,
+  onClose,
+}: {
+  title: string;
+  detail: string;
+  phone: string;
+  /** 미리보기: 섹션 안에 고정하고, 포커스·키 입력을 가로채지 않는다 */
+  preview: boolean;
+  onClose: () => void;
+}) {
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (preview) return;
+    closeRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose, preview]);
+
+  return (
+    <div
+      className="m-dialog-scrim"
+      data-inline={preview || undefined}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="consult-done-title"
+        className="m-dialog"
+      >
+        <div className="m-dialog-check" aria-hidden>
+          <svg viewBox="0 0 24 24" width="22" height="22">
+            <path d="M5 12.5l4.5 4.5L19 7.5" />
+          </svg>
+        </div>
+        <h3
+          id="consult-done-title"
+          data-field="content.success_message"
+          className="text-[1.0625rem] font-semibold"
+        >
+          {title}
+        </h3>
+        {detail && (
+          <p
+            data-field="content.success_detail"
+            className="mt-2 text-[0.85rem] leading-relaxed text-muted-foreground"
+          >
+            {detail}
+          </p>
+        )}
+        <div className="mt-5 flex justify-center gap-2">
+          <button
+            ref={closeRef}
+            type="button"
+            onClick={onClose}
+            className="rounded border border-border px-4 py-2 text-sm text-foreground"
+          >
+            닫기
+          </button>
+          {phone && (
+            <a
+              href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
+              data-field="content.success_phone"
+              className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground"
+            >
+              {phone} 전화
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
