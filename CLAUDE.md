@@ -81,6 +81,8 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 | `ai-behavior.mdc` | 추측 금지, 검증, 실수 대응, 읽는 사람 눈높이의 글쓰기 |
 | `design.mdc` | 어드민 토큰·컴포넌트 어휘, 사이트와의 분리 (상세: 루트 `DESIGN.md`) |
 
+모듈별 정책은 `docs/` 에 있다. 상담 접수(칸·봉투·RLS·상태·개인정보): `docs/consultation.md`. 이 모듈을 건드리면 먼저 읽는다.
+
 규칙은 문서로만 두지 않고 기계가 막는다.
 
 - **CI** (`.github/workflows/ci.yml`): `pnpm check:migrations` → lint → typecheck → build. 하나라도 실패하면 머지 불가.

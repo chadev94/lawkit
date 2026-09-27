@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSiteSettings } from "@/lib/queries/site-settings";
+import { countNewConsultations } from "@/lib/queries/consultations";
 import { logout } from "@/app/(admin)/admin/login/actions";
 import { AdminTopBar } from "./top-bar";
 
@@ -18,12 +19,20 @@ export default async function AdminDashboardLayout({
 
   const email =
     typeof data.claims.email === "string" ? data.claims.email : null;
-  const settings = await getSiteSettings();
+  const [settings, newConsultations] = await Promise.all([
+    getSiteSettings(),
+    countNewConsultations(),
+  ]);
   const siteName = settings.content.site_name?.trim() || "사이트";
 
   return (
     <div className="flex min-h-screen flex-col">
-      <AdminTopBar siteName={siteName} email={email} logout={logout} />
+      <AdminTopBar
+        siteName={siteName}
+        email={email}
+        newConsultations={newConsultations}
+        logout={logout}
+      />
       <div className="min-w-0 flex-1">{children}</div>
     </div>
   );
