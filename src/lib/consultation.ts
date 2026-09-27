@@ -170,3 +170,43 @@ export const CONSULTATION_IDLE: ConsultationState = {
   message: null,
   errors: {},
 };
+
+/* ── 접수 상태. 관리자 접수함이 쓴다. DB check 제약과 같은 세 값. ── */
+export const CONSULTATION_STATUSES = ["new", "read", "done"] as const;
+export type ConsultationStatus = (typeof CONSULTATION_STATUSES)[number];
+
+export const CONSULTATION_STATUS_LABEL: Record<ConsultationStatus, string> = {
+  new: "새 문의",
+  read: "확인함",
+  done: "처리 완료",
+};
+
+export function isConsultationStatus(value: unknown): value is ConsultationStatus {
+  return (
+    typeof value === "string" &&
+    (CONSULTATION_STATUSES as readonly string[]).includes(value)
+  );
+}
+
+/**
+ * 답 봉투에 칸 이름을 붙인다. 이름은 "지금" 상담 블록의 항목에서 찾고,
+ * 항목이 삭제돼 이름이 없으면 "삭제된 칸"으로 표시한다. 값은 버리지 않는다.
+ * 순서는 항목 정의 순서, 이름 없는 것은 뒤로.
+ */
+export function labelAnswers(
+  answers: Record<string, unknown>,
+  labels: Map<string, string>,
+): { key: string; label: string; value: string; orphan: boolean }[] {
+  const rows = Object.entries(answers)
+    .filter(([, v]) => typeof v === "string" && v !== "")
+    .map(([key, v]) => {
+      const label = labels.get(key);
+      return { key, label: label ?? "삭제된 칸", value: v as string, orphan: !label };
+    });
+  const order = [...labels.keys()];
+  return rows.sort((a, b) => {
+    const ia = a.orphan ? Infinity : order.indexOf(a.key);
+    const ib = b.orphan ? Infinity : order.indexOf(b.key);
+    return ia - ib;
+  });
+}
