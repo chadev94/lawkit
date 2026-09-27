@@ -26,7 +26,7 @@ export function Hero({ section }: { section: PageSection }) {
       as="section"
       threshold={0.1}
       data-hero=""
-      className={`relative flex min-h-[var(--hero-min-height,100svh)] overflow-hidden ${
+      className={`relative flex min-h-[var(--hero-min-height,78svh)] overflow-hidden ${
         alignLeft ? "items-center justify-start" : "items-center justify-center"
       }`}
       style={{ background: "var(--hero-background)" }}
