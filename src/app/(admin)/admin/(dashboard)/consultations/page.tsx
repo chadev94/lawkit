@@ -171,21 +171,23 @@ export default async function ConsultationsPage({
                         <input type="hidden" name="status" value={status ?? ""} />
                         <input type="hidden" name="page" value={page} />
                         {q && <input type="hidden" name="q" value={q} />}
-                        <span className="a-row-ord">{formatTime(request.created_at)}</span>
                         <button type="submit" className="a-row-main">
-                          <span className="a-row-name">
-                            {name}
-                            {request.note && (
-                              <span className="a-note-mark" title="메모 있음">
-                                메모
-                              </span>
-                            )}
+                          <span className="a-row-ord">{formatTime(request.created_at)}</span>
+                          <span className="min-w-0">
+                            <span className="a-row-name">
+                              {name}
+                              {request.note && (
+                                <span className="a-note-mark" title="메모 있음">
+                                  메모
+                                </span>
+                              )}
+                            </span>
+                            <span className="a-row-sub">{sub || "\u00a0"}</span>
                           </span>
-                          <span className="a-row-sub">{sub || " "}</span>
+                          <span className={STATUS_BADGE[request.status]}>
+                            {CONSULTATION_STATUS_LABEL[request.status]}
+                          </span>
                         </button>
-                        <span className={STATUS_BADGE[request.status]}>
-                          {CONSULTATION_STATUS_LABEL[request.status]}
-                        </span>
                       </form>
                     </li>
                   );
