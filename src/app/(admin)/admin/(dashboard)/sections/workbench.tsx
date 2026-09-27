@@ -1,7 +1,31 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import type { Section, PageSection, SitePage } from "@/lib/sections";
+import { toast } from "@/app/(admin)/admin/toast";
+import { reorderSections } from "./actions";
 import type { SiteSettings } from "@/lib/site-settings";
 import type { PreviewNavItem } from "@/app/(admin)/admin/site-preview";
 import { useUnsavedGuard } from "@/app/(admin)/admin/unsaved";
@@ -42,6 +66,57 @@ export function SectionsWorkbench({
   const [flashId, setFlashId] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const pendingFocus = useRef<string | null>(null);
+  const [, startReorder] = useTransition();
+
+  // 드래그로 바꾼 순서. 서버 저장 전에도 목록·미리보기에 바로 반영된다.
+  const [orderIds, setOrderIds] = useState<string[]>(() =>
+    sections.map((s) => s.id),
+  );
+
+  // 저장·추가·삭제로 서버 목록이 갱신되면 로컬 순서를 다시 맞춘다.
+  const [prevSections, setPrevSections] = useState(sections);
+  if (sections !== prevSections) {
+    setPrevSections(sections);
+    setOrderIds(sections.map((s) => s.id));
+  }
+
+  const orderedSections = useMemo(() => {
+    const byId = new Map(sections.map((s) => [s.id, s]));
+    return orderIds
+      .map((id) => byId.get(id))
+      .filter((s): s is PageSection => s !== undefined);
+  }, [sections, orderIds]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const onDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+      const previous = orderIds;
+      const from = previous.indexOf(String(active.id));
+      const to = previous.indexOf(String(over.id));
+      if (from === -1 || to === -1) return;
+      const next = arrayMove(previous, from, to);
+      setOrderIds(next);
+      startReorder(async () => {
+        const result = await reorderSections(pageId, next);
+        if (!result.ok) {
+          setOrderIds(previous);
+          toast({ message: result.error, kind: "error" });
+          return;
+        }
+        toast({
+          message: "순서가 바뀌었습니다 · 사이트에 반영",
+          link: { href: pagePath, label: "사이트에서 보기" },
+        });
+      });
+    },
+    [orderIds, pageId, pagePath],
+  );
 
   // 미리보기 클릭 → 그 블록을 열고, 해당 칸(있으면)에 커서를 둔다.
   const onPick = useCallback(
@@ -101,12 +176,14 @@ export function SectionsWorkbench({
   }, []);
 
   // 저장된 목록에 편집 중인 값을 덮어 미리보기용 배열을 만든다.
+  // 순서는 드래그 직후의 로컬 순서(orderedSections)를 그대로 따른다.
   const previewSections = useMemo(() => {
-    const merged = draft
-      ? sections.map((section) => (section.id === draft.id ? draft : section))
-      : sections;
-    return [...merged].sort((a, b) => a.sort_order - b.sort_order);
-  }, [sections, draft]);
+    return draft
+      ? orderedSections.map((section) =>
+          section.id === draft.id ? draft : section,
+        )
+      : orderedSections;
+  }, [orderedSections, draft]);
 
   return (
     <div className="a-workbench">
@@ -135,24 +212,34 @@ export function SectionsWorkbench({
             이 페이지에 등록된 블록이 없습니다. 위의 블록 추가로 시작하세요.
           </p>
         ) : (
-          <ul className="a-list">
-            {sections.map((section, index) => (
-              <SectionItem
-                key={section.id}
-                section={section}
-                pages={linkablePages}
-                editing={editingId === section.id}
-                position={index}
-                count={sections.length}
-                pagePath={pagePath}
-                flash={flashId === section.id}
-                onEditToggle={() => onEditToggle(section.id)}
-                onDraft={setDraft}
-                onFieldFocus={setActiveField}
-                onSaved={onSaved}
-              />
-            ))}
-          </ul>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={onDragEnd}
+          >
+            <SortableContext
+              items={orderIds}
+              strategy={verticalListSortingStrategy}
+            >
+              <ul className="a-list">
+                {orderedSections.map((section, index) => (
+                  <SectionItem
+                    key={section.id}
+                    section={section}
+                    pages={linkablePages}
+                    editing={editingId === section.id}
+                    position={index}
+                    pagePath={pagePath}
+                    flash={flashId === section.id}
+                    onEditToggle={() => onEditToggle(section.id)}
+                    onDraft={setDraft}
+                    onFieldFocus={setActiveField}
+                    onSaved={onSaved}
+                  />
+                ))}
+              </ul>
+            </SortableContext>
+          </DndContext>
         )}
       </div>
 

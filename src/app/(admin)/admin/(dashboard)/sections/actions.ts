@@ -242,38 +242,22 @@ export async function deleteSection(
 }
 
 /**
- * 블록을 한 칸 위/아래로. 같은 페이지의 블록을 순서대로 다시 번호 매긴 뒤 이웃과 바꾼다.
- * 그래서 sort_order 가 중복돼 있어도 한 번 누르면 정리된다.
+ * 드래그가 끝났을 때 최종 순서를 한 번에 저장한다. 0부터 다시 번호를
+ * 매기므로 sort_order 가 중복돼 있어도 한 번 옮기면 정리된다.
  */
-export async function moveSection(
-  id: string,
+export async function reorderSections(
   pageId: string,
-  direction: "up" | "down",
+  orderedIds: string[],
 ): Promise<ActionResult> {
   const supabase = await requireUser();
   if (!supabase) return UNAUTHORIZED;
 
-  const { data, error } = await supabase
-    .from("page_sections")
-    .select("id, sort_order")
-    .eq("page_id", pageId)
-    .order("sort_order")
-    .order("created_at");
-  if (error)
-    return { ok: false, error: `순서를 읽지 못했습니다: ${error.message}` };
-
-  const ids = (data ?? []).map((row) => row.id);
-  const index = ids.indexOf(id);
-  const target = direction === "up" ? index - 1 : index + 1;
-  if (index === -1 || target < 0 || target >= ids.length) return { ok: true };
-
-  [ids[index], ids[target]] = [ids[target], ids[index]];
-
-  const updates = ids.map((rowId, order) =>
+  const updates = orderedIds.map((rowId, order) =>
     supabase
       .from("page_sections")
       .update({ sort_order: order })
-      .eq("id", rowId),
+      .eq("id", rowId)
+      .eq("page_id", pageId),
   );
   const results = await Promise.all(updates);
   const failed = results.find((r) => r.error);
