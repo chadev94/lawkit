@@ -39,6 +39,10 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      # 어드민에서 고르는 값(표시 방식·variant·순서…)이 실제로 다른 화면을 만드는지. 브라우저·DB 없음
+      - name: QA render matrix
+        run: pnpm qa:render
+
       # ISR 빌드가 공개 페이지를 미리 렌더할 때 Supabase 가 필요하다.
       # NEXT_PUBLIC_* 는 브라우저에 노출되는 공개 값. 저장소 Variables 에 둔다.
       - name: Build

@@ -1,0 +1,94 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { isConsultationStatus } from "@/lib/consultation";
+import {
+  UNAUTHORIZED,
+  type ActionResult,
+} from "@/app/(admin)/admin/action-result";
+
+const PATH = "/admin/consultations";
+
+async function requireUser() {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  return data?.claims ? supabase : null;
+}
+
+/**
+ * 목록에서 한 건을 연다. "새 문의"였다면 "확인함"으로 바꾼 뒤 상세로 간다.
+ * 읽기(GET)에서 상태를 바꾸지 않으려고 버튼(POST)으로 연다.
+ */
+export async function openConsultation(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  if (!/^[0-9a-f-]{36}$/i.test(id)) redirect(PATH);
+
+  const supabase = await requireUser();
+  if (!supabase) redirect("/admin/login");
+
+  await supabase
+    .from("consultation_requests")
+    .update({ status: "read" })
+    .eq("id", id)
+    .eq("status", "new");
+
+  // 보고 있던 필터·페이지를 잃지 않는다.
+  const params = new URLSearchParams();
+  const status = String(formData.get("status") ?? "");
+  const page = String(formData.get("page") ?? "");
+  const q = String(formData.get("q") ?? "");
+  if (status) params.set("status", status);
+  if (page && page !== "1") params.set("page", page);
+  if (q) params.set("q", q);
+  params.set("id", id);
+
+  revalidatePath(PATH);
+  redirect(`${PATH}?${params.toString()}`);
+}
+
+export async function setConsultationStatus(
+  id: string,
+  status: string,
+): Promise<ActionResult> {
+  if (!isConsultationStatus(status)) return { ok: false, error: "잘못된 상태입니다." };
+  const supabase = await requireUser();
+  if (!supabase) return UNAUTHORIZED;
+
+  const { error } = await supabase
+    .from("consultation_requests")
+    .update({ status })
+    .eq("id", id);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath(PATH);
+  return { ok: true };
+}
+
+const NOTE_MAX = 5000;
+
+/** 변호사 메모 저장. 빈 글이면 메모를 지운 것으로 본다. */
+export async function saveConsultationNote(
+  id: string,
+  note: string,
+): Promise<ActionResult> {
+  const trimmed = note.trim();
+  if (trimmed.length > NOTE_MAX) {
+    return { ok: false, error: `메모는 ${NOTE_MAX}자까지 쓸 수 있습니다.` };
+  }
+  const supabase = await requireUser();
+  if (!supabase) return UNAUTHORIZED;
+
+  const { error } = await supabase
+    .from("consultation_requests")
+    .update({
+      note: trimmed === "" ? null : trimmed,
+      note_updated_at: trimmed === "" ? null : new Date().toISOString(),
+    })
+    .eq("id", id);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath(PATH);
+  return { ok: true };
+}

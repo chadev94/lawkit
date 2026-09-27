@@ -13,6 +13,7 @@ import {
   type ClientReviewsContent,
   type HeroContent,
   type YoutubeGalleryContent,
+  kindHasItems,
 } from "@/lib/section-content";
 import {
   SECTION_LAYOUT_LABEL,
@@ -751,13 +752,55 @@ function SectionEditForm({
             <input
               name="content_success_message"
               value={contact.success_message}
-              placeholder="예: 문의가 접수되었습니다. 변호사가 직접 연락드립니다"
+              placeholder="예: 문의가 접수되었습니다"
               onChange={(e) =>
                 setContact({ ...contact, success_message: e.target.value })
               }
+              {...focusProps("content.success_message")}
               className={field}
             />
           </label>
+          <label className="flex flex-col gap-1 sm:col-span-2">
+            <span className={fieldLabel}>
+              접수 안내 한 줄{" "}
+              <span style={{ color: "var(--a-ink-3)" }}>완료 창 제목 아래</span>
+            </span>
+            <input
+              name="content_success_detail"
+              value={contact.success_detail}
+              placeholder="예: 변호사가 직접 연락드립니다. 보통 영업일 기준 하루 안에 답합니다"
+              onChange={(e) =>
+                setContact({ ...contact, success_detail: e.target.value })
+              }
+              {...focusProps("content.success_detail")}
+              className={field}
+            />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className={fieldLabel}>
+              완료 창 전화 버튼{" "}
+              <span style={{ color: "var(--a-ink-3)" }}>비우면 없음</span>
+            </span>
+            <input
+              name="content_success_phone"
+              value={contact.success_phone}
+              placeholder="예: 02-6214-1114"
+              onChange={(e) =>
+                setContact({ ...contact, success_phone: e.target.value })
+              }
+              {...focusProps("content.success_phone")}
+              className={field}
+            />
+          </label>
+          <div className="sm:col-span-3">
+            <ItemListEditor
+              kind="contact"
+              items={items}
+              onChange={setItems}
+              folder={mediaFolder}
+              onFieldFocus={onFieldFocus}
+            />
+          </div>
         </div>
       )}
 
@@ -910,13 +953,7 @@ function SectionEditForm({
         </div>
       )}
 
-      {section.kind !== "page_link" &&
-        section.kind !== "cta" &&
-        section.kind !== "youtube_gallery" &&
-        section.kind !== "news_room" &&
-        section.kind !== "image_gallery" &&
-        section.kind !== "client_reviews" &&
-        !(section.kind === "hero" && hero.variant === "bio") && (
+      {!kindHasItems(section.kind, { variant: hero.variant }) && (
           <input type="hidden" name="items_json" value="[]" />
         )}
 

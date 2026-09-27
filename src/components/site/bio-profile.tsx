@@ -149,7 +149,7 @@ export function BioProfile({ section }: { section: PageSection }) {
                     key={item.id}
                     data-field={`items.${index}`}
                     data-item-no={index + 1}
-                    className={`flex items-stretch gap-3 text-sm sm:text-[0.9375rem] ${
+                    className={`m-row-item flex items-stretch gap-3 text-sm sm:text-[0.9375rem] ${
                       highlighted ? "px-3 py-2 font-semibold" : ""
                     }`}
                     style={
