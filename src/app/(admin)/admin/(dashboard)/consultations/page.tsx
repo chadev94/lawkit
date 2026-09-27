@@ -16,6 +16,7 @@ import {
 } from "@/lib/queries/consultations";
 import { openConsultation } from "./actions";
 import { ConsultationDetail } from "./detail";
+import { SearchBox } from "./search-box";
 
 export const dynamic = "force-dynamic";
 
@@ -142,36 +143,7 @@ export default async function ConsultationsPage({
               ))}
             </nav>
 
-            {/* 검색. GET 폼이라 주소에 남고, 상태 필터는 유지된다. */}
-            <form method="get" action={PATH} className="a-search" role="search">
-              {status && <input type="hidden" name="status" value={status} />}
-              <svg
-                viewBox="0 0 24 24"
-                width="14"
-                height="14"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                aria-hidden="true"
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="m20 20-3.5-3.5" />
-              </svg>
-              <input
-                type="search"
-                name="q"
-                defaultValue={q ?? ""}
-                placeholder="이름 · 번호 · 이메일 · 내용"
-                aria-label="검색"
-                maxLength={100}
-              />
-              {q && (
-                <Link href={href(status, 1, null)} className="a-search-clear" aria-label="검색 지우기">
-                  ×
-                </Link>
-              )}
-            </form>
+            <SearchBox initial={q ?? ""} />
           </div>
 
           {rows.length === 0 ? (

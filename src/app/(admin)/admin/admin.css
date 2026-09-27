@@ -1389,8 +1389,17 @@
   display: none;
 }
 
+/* 결과를 다시 그리는 동안 돋보기를 옅게. 멈춘 게 아니라 찾는 중이라는 표시 */
+.a-search[data-pending] svg {
+  opacity: 0.4;
+}
+
 .a-search-clear {
   display: inline-grid;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
   place-items: center;
   width: 1.375rem;
   height: 1.375rem;
