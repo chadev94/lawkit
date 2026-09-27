@@ -15,17 +15,48 @@ export type ConsultationRequest = {
   created_at: string;
 };
 
-const LIST_LIMIT = 200;
+export const CONSULTATION_PAGE_SIZE = 50;
 
-export async function getConsultationRequests(): Promise<ConsultationRequest[]> {
+export type ConsultationListQuery = {
+  status: ConsultationStatus | null;
+  /** 1부터 */
+  page: number;
+};
+
+/** 목록 한 페이지. total 은 필터 적용 후 전체 건수(페이지 이동 계산용). */
+export async function getConsultationRequests({
+  status,
+  page,
+}: ConsultationListQuery): Promise<{ rows: ConsultationRequest[]; total: number }> {
+  const supabase = await createClient();
+  const from = (page - 1) * CONSULTATION_PAGE_SIZE;
+  let q = supabase
+    .from("consultation_requests")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, from + CONSULTATION_PAGE_SIZE - 1);
+  if (status) q = q.eq("status", status);
+  const { data, count, error } = await q;
+  if (error) throw error;
+  return { rows: (data ?? []) as ConsultationRequest[], total: count ?? 0 };
+}
+
+/** 필터 칩의 숫자. 상태별 건수와 전체. */
+export async function countConsultationsByStatus(): Promise<
+  Record<ConsultationStatus | "all", number>
+> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("consultation_requests")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(LIST_LIMIT);
+    .select("status");
   if (error) throw error;
-  return (data ?? []) as ConsultationRequest[];
+  const counts = { all: 0, new: 0, read: 0, done: 0 };
+  for (const row of data ?? []) {
+    const st = row.status as ConsultationStatus;
+    if (st in counts) counts[st] += 1;
+    counts.all += 1;
+  }
+  return counts;
 }
 
 export async function getConsultationRequest(

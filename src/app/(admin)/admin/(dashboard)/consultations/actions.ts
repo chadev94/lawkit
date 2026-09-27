@@ -34,8 +34,16 @@ export async function openConsultation(formData: FormData) {
     .eq("id", id)
     .eq("status", "new");
 
+  // 보고 있던 필터·페이지를 잃지 않는다.
+  const params = new URLSearchParams();
+  const status = String(formData.get("status") ?? "");
+  const page = String(formData.get("page") ?? "");
+  if (status) params.set("status", status);
+  if (page && page !== "1") params.set("page", page);
+  params.set("id", id);
+
   revalidatePath(PATH);
-  redirect(`${PATH}?id=${id}`);
+  redirect(`${PATH}?${params.toString()}`);
 }
 
 export async function setConsultationStatus(

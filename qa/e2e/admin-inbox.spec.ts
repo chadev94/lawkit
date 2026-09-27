@@ -17,6 +17,11 @@ test.describe("상담 접수함", () => {
     await admin.goto("/admin/consultations");
     await expect(admin.locator(".a-work[data-active]")).toBeVisible();
     await expect(admin.getByRole("heading", { name: "상담 접수" })).toBeVisible();
+    // 상태 칩 넷(전체·새 문의·확인함·처리 완료). 숫자 합이 맞는다.
+    const chips = admin.locator(".a-chipf");
+    await expect(chips).toHaveCount(4);
+    const nums = await chips.locator(".a-chipf-n").allInnerTexts();
+    expect(Number(nums[0])).toBe(nums.slice(1).reduce((a, n) => a + Number(n), 0));
     const rows = admin.locator(".a-row-inbox");
     if ((await rows.count()) === 0) {
       await expect(admin.locator(".a-empty")).toBeVisible();
