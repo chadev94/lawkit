@@ -38,8 +38,10 @@ export async function openConsultation(formData: FormData) {
   const params = new URLSearchParams();
   const status = String(formData.get("status") ?? "");
   const page = String(formData.get("page") ?? "");
+  const q = String(formData.get("q") ?? "");
   if (status) params.set("status", status);
   if (page && page !== "1") params.set("page", page);
+  if (q) params.set("q", q);
   params.set("id", id);
 
   revalidatePath(PATH);
@@ -57,6 +59,33 @@ export async function setConsultationStatus(
   const { error } = await supabase
     .from("consultation_requests")
     .update({ status })
+    .eq("id", id);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath(PATH);
+  return { ok: true };
+}
+
+const NOTE_MAX = 5000;
+
+/** 변호사 메모 저장. 빈 글이면 메모를 지운 것으로 본다. */
+export async function saveConsultationNote(
+  id: string,
+  note: string,
+): Promise<ActionResult> {
+  const trimmed = note.trim();
+  if (trimmed.length > NOTE_MAX) {
+    return { ok: false, error: `메모는 ${NOTE_MAX}자까지 쓸 수 있습니다.` };
+  }
+  const supabase = await requireUser();
+  if (!supabase) return UNAUTHORIZED;
+
+  const { error } = await supabase
+    .from("consultation_requests")
+    .update({
+      note: trimmed === "" ? null : trimmed,
+      note_updated_at: trimmed === "" ? null : new Date().toISOString(),
+    })
     .eq("id", id);
   if (error) return { ok: false, error: error.message };
 

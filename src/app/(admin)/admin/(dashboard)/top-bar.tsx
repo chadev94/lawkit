@@ -16,8 +16,8 @@ const INBOX = { href: "/admin/consultations", label: "상담 접수" };
  * 상단 바. 편집 대상이 셋뿐이라 사이드바 대신 탭 하나로 둔다.
  * 탭을 바꿔도 아래 미리보기는 같은 사이트가 그대로 있고, 왼쪽 편집 패널만 바뀐다.
  *
- * 세 탭은 "사이트를 어떻게 보이게 할까"(설정)이고, 상담 접수는 "들어온 일"(업무)이다.
- * 성격이 달라 같은 알약에 넣지 않고 구분선 뒤에 따로 세운다. 업무가 늘면 그 옆에 붙인다.
+ * 상담 접수는 "들어온 일"(업무), 세 탭은 "사이트를 어떻게 보이게 할까"(설정)이다.
+ * 변호사가 매일 하는 일은 접수 확인이라 업무를 앞에, 구분선 뒤에 설정 알약을 둔다. 업무가 늘면 그 옆에 붙인다.
  */
 export function AdminTopBar({
   siteName,
@@ -46,26 +46,6 @@ export function AdminTopBar({
         <b title={siteName}>{siteName}</b>
       </div>
 
-      <nav className="a-tabs" aria-label="편집 대상">
-        {TABS.map((tab) => {
-          const active =
-            pathname === tab.href || pathname.startsWith(tab.href + "/");
-          return (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              data-active={active || undefined}
-              aria-current={active ? "page" : undefined}
-              onClick={guard(active)}
-            >
-              {tab.label}
-            </Link>
-          );
-        })}
-      </nav>
-
-      <span className="a-topbar-divider" aria-hidden="true" />
-
       <Link
         href={INBOX.href}
         className="a-work"
@@ -93,6 +73,27 @@ export function AdminTopBar({
           </span>
         )}
       </Link>
+
+      <span className="a-topbar-divider" aria-hidden="true" />
+
+      <nav className="a-tabs" aria-label="편집 대상">
+        {TABS.map((tab) => {
+          const active =
+            pathname === tab.href || pathname.startsWith(tab.href + "/");
+          return (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              data-active={active || undefined}
+              aria-current={active ? "page" : undefined}
+              onClick={guard(active)}
+            >
+              {tab.label}
+            </Link>
+          );
+        })}
+      </nav>
+
 
       <div className="a-topbar-right">
         <a href="/" target="_blank" rel="noreferrer" className="a-topbar-link">

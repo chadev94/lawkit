@@ -4,6 +4,7 @@ import {
   CONSULTATION_STATUS_LABEL,
   isConsultationStatus,
   labelAnswers,
+  normalizeSearch,
   type ConsultationStatus,
 } from "@/lib/consultation";
 import {
@@ -15,6 +16,7 @@ import {
 } from "@/lib/queries/consultations";
 import { openConsultation } from "./actions";
 import { ConsultationDetail } from "./detail";
+import { SearchBox } from "./search-box";
 
 export const dynamic = "force-dynamic";
 
@@ -46,10 +48,16 @@ function formatFull(iso: string) {
 }
 
 /** 목록 주소. 필터·페이지를 주소에 두어 새로고침·뒤로가기에도 남는다. */
-function href(status: ConsultationStatus | null, page: number, id?: string) {
+function href(
+  status: ConsultationStatus | null,
+  page: number,
+  q: string | null,
+  id?: string,
+) {
   const params = new URLSearchParams();
   if (status) params.set("status", status);
   if (page > 1) params.set("page", String(page));
+  if (q) params.set("q", q);
   if (id) params.set("id", id);
   const qs = params.toString();
   return qs ? `${PATH}?${qs}` : PATH;
@@ -87,15 +95,16 @@ function pageNumbers(current: number, last: number): (number | "…")[] {
 export default async function ConsultationsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string; status?: string; page?: string }>;
+  searchParams: Promise<{ id?: string; status?: string; page?: string; q?: string }>;
 }) {
   const sp = await searchParams;
   const status = isConsultationStatus(sp.status) ? sp.status : null;
   const page = Math.max(1, Number.parseInt(sp.page ?? "1", 10) || 1);
+  const q = normalizeSearch(sp.q);
 
   const [{ rows, total }, counts, labels, selected] = await Promise.all([
-    getConsultationRequests({ status, page }),
-    countConsultationsByStatus(),
+    getConsultationRequests({ status, page, q }),
+    countConsultationsByStatus(q),
     getConsultationFieldLabels(),
     sp.id ? getConsultationRequest(sp.id) : Promise.resolve(null),
   ]);
@@ -117,13 +126,13 @@ export default async function ConsultationsPage({
         <div className="min-w-0">
           <div className="a-col-head">
             <nav className="a-chipf-list" aria-label="상태로 거르기">
-              <Link href={href(null, 1)} className="a-chipf" data-active={status === null || undefined}>
+              <Link href={href(null, 1, q)} className="a-chipf" data-active={status === null || undefined}>
                 전체 <span className="a-chipf-n">{counts.all}</span>
               </Link>
               {CONSULTATION_STATUSES.map((st) => (
                 <Link
                   key={st}
-                  href={href(st, 1)}
+                  href={href(st, 1, q)}
                   className="a-chipf"
                   data-active={status === st || undefined}
                 >
@@ -133,13 +142,17 @@ export default async function ConsultationsPage({
                 </Link>
               ))}
             </nav>
+
+            <SearchBox initial={q ?? ""} />
           </div>
 
           {rows.length === 0 ? (
             <p className="a-empty">
-              {status
-                ? `${CONSULTATION_STATUS_LABEL[status]} 상태인 문의가 없습니다.`
-                : "아직 들어온 문의가 없습니다. 사이트의 상담 폼으로 접수되면 여기에 쌓입니다."}
+              {q
+                ? `"${q}" 에 맞는 문의가 없습니다.`
+                : status
+                  ? `${CONSULTATION_STATUS_LABEL[status]} 상태인 문의가 없습니다.`
+                  : "아직 들어온 문의가 없습니다. 사이트의 상담 폼으로 접수되면 여기에 쌓입니다."}
             </p>
           ) : (
             <div className="a-list">
@@ -157,14 +170,24 @@ export default async function ConsultationsPage({
                         <input type="hidden" name="id" value={request.id} />
                         <input type="hidden" name="status" value={status ?? ""} />
                         <input type="hidden" name="page" value={page} />
-                        <span className="a-row-ord">{formatTime(request.created_at)}</span>
+                        {q && <input type="hidden" name="q" value={q} />}
                         <button type="submit" className="a-row-main">
-                          <span className="a-row-name">{name}</span>
-                          <span className="a-row-sub">{sub || " "}</span>
+                          <span className="a-row-ord">{formatTime(request.created_at)}</span>
+                          <span className="min-w-0">
+                            <span className="a-row-name">
+                              {name}
+                              {request.note && (
+                                <span className="a-note-mark" title="메모 있음">
+                                  메모
+                                </span>
+                              )}
+                            </span>
+                            <span className="a-row-sub">{sub || "\u00a0"}</span>
+                          </span>
+                          <span className={STATUS_BADGE[request.status]}>
+                            {CONSULTATION_STATUS_LABEL[request.status]}
+                          </span>
                         </button>
-                        <span className={STATUS_BADGE[request.status]}>
-                          {CONSULTATION_STATUS_LABEL[request.status]}
-                        </span>
                       </form>
                     </li>
                   );
@@ -178,7 +201,7 @@ export default async function ConsultationsPage({
                 {last > 1 && (
                   <nav className="a-pager-btns" aria-label="페이지">
                     <Link
-                      href={href(status, page - 1)}
+                      href={href(status, page - 1, q)}
                       className="a-pbtn"
                       aria-disabled={page <= 1 || undefined}
                       aria-label="이전 페이지"
@@ -193,7 +216,7 @@ export default async function ConsultationsPage({
                       ) : (
                         <Link
                           key={p}
-                          href={href(status, p)}
+                          href={href(status, p, q)}
                           className="a-pbtn"
                           data-active={p === page || undefined}
                           aria-current={p === page ? "page" : undefined}
@@ -203,7 +226,7 @@ export default async function ConsultationsPage({
                       ),
                     )}
                     <Link
-                      href={href(status, page + 1)}
+                      href={href(status, page + 1, q)}
                       className="a-pbtn"
                       aria-disabled={page >= last || undefined}
                       aria-label="다음 페이지"

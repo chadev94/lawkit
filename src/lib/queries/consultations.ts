@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { ConsultationStatus } from "@/lib/consultation";
+import { escapeLike, type ConsultationStatus } from "@/lib/consultation";
 
 /**
  * 상담 접수 조회. 어드민 전용 — 쿠키 세션의 클라이언트를 쓰므로 RLS(authenticated select)를 탄다.
@@ -13,7 +13,12 @@ export type ConsultationRequest = {
   consented_at: string;
   status: ConsultationStatus;
   created_at: string;
+  /** 변호사 메모. 방문자가 쓴 answers 와 분리 */
+  note: string | null;
+  note_updated_at: string | null;
 };
+
+const COLUMNS = "id, page_section_id, answers, consented_at, status, created_at, note, note_updated_at";
 
 export const CONSULTATION_PAGE_SIZE = 50;
 
@@ -21,34 +26,38 @@ export type ConsultationListQuery = {
   status: ConsultationStatus | null;
   /** 1부터 */
   page: number;
+  /** 검색어. answers 전체 · 숫자만 · 메모에서 찾는다 */
+  q: string | null;
 };
 
 /** 목록 한 페이지. total 은 필터 적용 후 전체 건수(페이지 이동 계산용). */
 export async function getConsultationRequests({
   status,
   page,
+  q,
 }: ConsultationListQuery): Promise<{ rows: ConsultationRequest[]; total: number }> {
   const supabase = await createClient();
   const from = (page - 1) * CONSULTATION_PAGE_SIZE;
-  let q = supabase
+  let query = supabase
     .from("consultation_requests")
-    .select("*", { count: "exact" })
+    .select(COLUMNS, { count: "exact" })
     .order("created_at", { ascending: false })
     .range(from, from + CONSULTATION_PAGE_SIZE - 1);
-  if (status) q = q.eq("status", status);
-  const { data, count, error } = await q;
+  if (status) query = query.eq("status", status);
+  if (q) query = query.ilike("search", `%${escapeLike(q.toLowerCase())}%`);
+  const { data, count, error } = await query;
   if (error) throw error;
   return { rows: (data ?? []) as ConsultationRequest[], total: count ?? 0 };
 }
 
-/** 필터 칩의 숫자. 상태별 건수와 전체. */
-export async function countConsultationsByStatus(): Promise<
-  Record<ConsultationStatus | "all", number>
-> {
+/** 필터 칩의 숫자. 상태별 건수와 전체. 검색 중이면 검색 결과 안에서 센다. */
+export async function countConsultationsByStatus(
+  q: string | null,
+): Promise<Record<ConsultationStatus | "all", number>> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("consultation_requests")
-    .select("status");
+  let query = supabase.from("consultation_requests").select("status");
+  if (q) query = query.ilike("search", `%${escapeLike(q.toLowerCase())}%`);
+  const { data, error } = await query;
   if (error) throw error;
   const counts = { all: 0, new: 0, read: 0, done: 0 };
   for (const row of data ?? []) {
@@ -65,7 +74,7 @@ export async function getConsultationRequest(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("consultation_requests")
-    .select("*")
+    .select(COLUMNS)
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;

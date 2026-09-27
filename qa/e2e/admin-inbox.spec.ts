@@ -38,4 +38,22 @@ test.describe("상담 접수함", () => {
     if (newRows === 0) expect(await badge.count()).toBe(0);
     else await expect(badge).toHaveText(String(newRows));
   });
+
+  test("검색은 치는 대로 주소(?q=)에 반영되고 상태 필터는 유지된다", async ({ admin }) => {
+    await admin.goto("/admin/consultations?status=read");
+    const box = admin.locator(".a-search input[name=q]");
+    await expect(box).toBeVisible();
+    // Enter 없이 입력만. 잠시 뒤 주소가 바뀐다.
+    await box.fill("zz-없는-검색어-zz");
+    await admin.waitForURL(/q=/);
+    const url = new URL(admin.url());
+    expect(url.searchParams.get("status")).toBe("read");
+    expect(url.searchParams.get("q")).toBe("zz-없는-검색어-zz");
+    await expect(admin.locator(".a-empty")).toContainText("맞는 문의가 없습니다");
+    // 지우기는 상태 필터를 유지한 채 검색만 푼다
+    await admin.locator(".a-search-clear").click();
+    await admin.waitForURL((u) => !u.searchParams.has("q"));
+    expect(new URL(admin.url()).searchParams.get("status")).toBe("read");
+  });
+
 });

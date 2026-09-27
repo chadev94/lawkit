@@ -31,8 +31,8 @@ export default function AdminError({
           <button type="button" onClick={reset} className="a-btn a-btn-primary">
             다시 시도
           </button>
-          <Link href="/admin/sections" className="a-btn a-btn-default">
-            화면 구성으로
+          <Link href="/admin/consultations" className="a-btn a-btn-default">
+            상담 접수로
           </Link>
           <Link href="/admin/login" className="a-btn a-btn-quiet">
             다시 로그인

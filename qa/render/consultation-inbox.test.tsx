@@ -28,3 +28,20 @@ describe("접수함 · 답에 칸 이름 붙이기", () => {
     expect(rows.map((r) => r.key)).toEqual(["body"]);
   });
 });
+
+describe("접수함 · 검색어 다루기", async () => {
+  const { escapeLike, normalizeSearch } = await import("@/lib/consultation");
+
+  it("% 와 _ 는 문자 그대로 찾는다 (전체를 뽑아 가지 못한다)", () => {
+    expect(escapeLike("100%")).toBe("100\\%");
+    expect(escapeLike("a_b")).toBe("a\\_b");
+    expect(escapeLike("back\\slash")).toBe("back\\\\slash");
+  });
+
+  it("공백만 · 빈 값은 null, 앞뒤 공백 제거, 100자 상한", () => {
+    expect(normalizeSearch("   ")).toBeNull();
+    expect(normalizeSearch(undefined)).toBeNull();
+    expect(normalizeSearch("  5555 ")).toBe("5555");
+    expect(normalizeSearch("x".repeat(200))).toHaveLength(100);
+  });
+});
