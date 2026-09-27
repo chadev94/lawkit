@@ -210,3 +210,15 @@ export function labelAnswers(
     return ia - ib;
   });
 }
+
+/** ilike 패턴에 넣기 전에 특수문자를 막는다. "%" 나 "_" 를 친 사람이 전체를 뽑아 가지 않게. */
+export function escapeLike(q: string): string {
+  return q.replace(/[\\%_]/g, (c) => `\\${c}`);
+}
+
+/** 검색어 정리. 앞뒤 공백 제거, 너무 긴 것은 자른다. 비면 null. */
+export function normalizeSearch(raw: unknown): string | null {
+  if (typeof raw !== "string") return null;
+  const q = raw.trim().slice(0, 100);
+  return q === "" ? null : q;
+}
