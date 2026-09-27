@@ -159,38 +159,37 @@ function NoteEditor({
 
   return (
     <div className="a-note">
-      <div className="flex items-center justify-between gap-3">
-        <p className="a-label flex items-center gap-2">
-          메모
-          <span className="a-hint">변호사만 봅니다</span>
-        </p>
-        {updatedAt && !dirty && (
-          <span className="a-hint">{formatFull(updatedAt)} 저장</span>
-        )}
-        {dirty && <span className="a-badge a-badge-warn">저장 전</span>}
-      </div>
-      <textarea
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={(e) => {
-          if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && dirty) save();
-        }}
-        rows={4}
-        maxLength={5000}
-        placeholder="예: 9/25 통화. 경찰 조사 10/2 동석하기로. 수임 여부는 조사 후 결정"
-        className="a-textarea"
-        aria-label="메모"
-      />
-      <div className="flex items-center justify-between gap-3">
-        <span className="a-hint">⌘/Ctrl + Enter 로 저장</span>
-        <button
-          type="button"
-          onClick={save}
-          disabled={pending || !dirty}
-          className="a-btn a-btn-default a-btn-sm"
-        >
-          {pending ? "저장 중..." : "메모 저장"}
-        </button>
+      <p className="a-note-label">메모</p>
+      <div className="flex min-w-0 flex-col gap-2">
+        <textarea
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && dirty) save();
+          }}
+          rows={4}
+          maxLength={5000}
+          placeholder="예: 9/25 통화. 경찰 조사 10/2 동석하기로. 수임 여부는 조사 후 결정"
+          className="a-textarea"
+          aria-label="메모"
+        />
+        <div className="flex min-h-6 items-center justify-between gap-3">
+          <span className="a-hint">
+            {dirty
+              ? "⌘/Ctrl + Enter 로 저장"
+              : updatedAt
+                ? `${formatFull(updatedAt)} 저장`
+                : "이 문의에 대해 한 일과 답한 내용을 남겨 둡니다"}
+          </span>
+          <button
+            type="button"
+            onClick={save}
+            disabled={pending || !dirty}
+            className="a-btn a-btn-default a-btn-sm"
+          >
+            {pending ? "저장 중..." : "메모 저장"}
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1428,14 +1428,31 @@
   border-radius: 999px;
 }
 
-/* 상세 아래 메모 칸 */
+/* 상세 아래 메모 칸. 위의 답 줄들과 같은 격자(이름 7rem · 내용)라 한 표처럼 읽힌다. */
 .a-note {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.875rem 1rem 1rem;
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: 0.75rem;
+  padding: 0.75rem 1rem 1rem;
   background: var(--a-surface-3);
   border-top: 1px solid var(--a-line);
+}
+
+.a-note-label {
+  padding-top: 0.5rem; /* textarea 첫 줄 글자와 같은 높이 */
+  font-size: 0.875rem;
+  color: var(--a-ink-2);
+}
+
+@media (max-width: 760px) {
+  .a-note {
+    grid-template-columns: 1fr;
+    gap: 0.375rem;
+  }
+
+  .a-note-label {
+    padding-top: 0;
+  }
 }
 
 @media (max-width: 760px) {
