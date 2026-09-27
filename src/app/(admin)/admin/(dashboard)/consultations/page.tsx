@@ -113,7 +113,7 @@ export default async function ConsultationsPage({
         </p>
       </div>
 
-      <div className="a-workbench">
+      <div className="a-workbench a-workbench-inbox">
         <div className="min-w-0">
           <div className="a-col-head">
             <nav className="a-chipf-list" aria-label="상태로 거르기">
