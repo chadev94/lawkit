@@ -80,6 +80,18 @@ export function Hero({ section }: { section: PageSection }) {
         </div>
       )}
 
+      {/* 상단 스크림. 배경이 밝아도 고정 헤더 글자가 묻히지 않게 한다. */}
+      {hasMedia && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-36"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 55%, transparent 100%)",
+          }}
+        />
+      )}
+
       {!hasMedia && (
         <div
           aria-hidden
