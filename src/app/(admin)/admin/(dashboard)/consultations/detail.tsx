@@ -52,7 +52,7 @@ export function ConsultationDetail({
   }
 
   return (
-    <div className="a-card flex flex-col">
+    <div className="a-card flex flex-col overflow-hidden">
       <div
         className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
         style={{ borderBottom: "1px solid var(--a-line)" }}
