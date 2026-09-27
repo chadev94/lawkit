@@ -1,15 +1,15 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { ConfirmDeleteButton } from "@/app/(admin)/admin/confirm-delete";
-import { OrderButtons } from "@/app/(admin)/admin/order-buttons";
 import { runAction } from "@/app/(admin)/admin/run-action";
 import { toast } from "@/app/(admin)/admin/toast";
 import { HOME_PAGE_SLUG, pagePath, type SitePage } from "@/lib/sections";
 import {
   countPageSections,
   deletePage,
-  movePage,
   togglePage,
   updatePage,
   type ActionState,
@@ -20,15 +20,14 @@ const initialState: ActionState = { error: null };
 export function PageItem({
   page,
   position,
-  count,
   editing,
   onEditToggle,
   onDraft,
   onFieldFocus,
 }: {
   page: SitePage;
+  /** 목록에서의 위치(0부터). 순번 표시 */
   position: number;
-  count: number;
   editing: boolean;
   onEditToggle: () => void;
   /** 편집 중 값. 미리보기의 상단 메뉴가 저장 전에 바뀐다 */
@@ -40,20 +39,38 @@ export function PageItem({
   const isHome = page.slug === HOME_PAGE_SLUG;
   const path = pagePath(page.slug);
 
+  // 편집 중에는 드래그를 잠근다. 순서 저장과 편집 저장이 섞이지 않게.
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: page.id, disabled: editing });
+
   return (
-    <li className={editing ? "a-row-open" : undefined}>
+    <li
+      ref={setNodeRef}
+      className={editing ? "a-row-open" : undefined}
+      data-dragging={isDragging || undefined}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+      }}
+    >
       <div className="a-row" data-flash={flash || undefined}>
         <span className="a-row-ord">
-          <OrderButtons
-            canUp={position > 0}
-            canDown={position < count - 1}
-            label={`${page.title} 페이지`}
-            onMove={(direction) =>
-              runAction(() => movePage(page.id, direction), {
-                message: "메뉴 순서가 바뀌었습니다 · 사이트에 반영",
-              }).then(() => undefined)
-            }
-          />
+          <button
+            type="button"
+            className="a-drag"
+            aria-label={`${page.title} 페이지 순서 이동`}
+            disabled={editing}
+            {...attributes}
+            {...listeners}
+          >
+            ⠿
+          </button>
           <span>{position + 1}</span>
         </span>
 

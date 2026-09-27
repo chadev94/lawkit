@@ -147,32 +147,24 @@ export async function togglePage(
   return { ok: true };
 }
 
-/** 페이지를 한 칸 위/아래로. 전체를 다시 번호 매긴 뒤 이웃과 바꾼다. */
-export async function movePage(
-  id: string,
-  direction: "up" | "down",
+/**
+ * 드래그가 끝났을 때 최종 순서를 한 번에 저장한다. 0부터 다시 번호를
+ * 매기므로 sort_order 가 중복돼 있어도 한 번 옮기면 정리된다.
+ */
+export async function reorderPages(
+  orderedIds: string[],
 ): Promise<ActionResult> {
   const supabase = await requireUser();
   if (!supabase) return UNAUTHORIZED;
 
-  const { data, error } = await supabase
-    .from("pages")
-    .select("id, slug")
-    .order("sort_order")
-    .order("created_at");
-  if (error)
-    return { ok: false, error: `순서를 읽지 못했습니다: ${error.message}` };
-
-  const rows = data ?? [];
-  const index = rows.findIndex((row) => row.id === id);
-  const target = direction === "up" ? index - 1 : index + 1;
-  if (index === -1 || target < 0 || target >= rows.length) return { ok: true };
-
-  [rows[index], rows[target]] = [rows[target], rows[index]];
-
   const results = await Promise.all(
-    rows.map((row, order) =>
-      supabase.from("pages").update({ sort_order: order }).eq("id", row.id),
+    orderedIds.map((id, order) =>
+      supabase
+        .from("pages")
+        .update({ sort_order: order })
+        .eq("id", id)
+        .select("slug")
+        .maybeSingle(),
     ),
   );
   const failed = results.find((r) => r.error);
@@ -183,7 +175,7 @@ export async function movePage(
     };
   }
 
-  revalidateAll(...rows.map((row) => row.slug));
+  revalidateAll(...results.map((r) => r.data?.slug ?? ""));
   return { ok: true };
 }
 

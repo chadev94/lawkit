@@ -925,44 +925,7 @@
   white-space: nowrap;
 }
 
-/* ─────────────────────────── 순서 ▲▼ ─────────────────────────── */
-
-.a-ord {
-  display: inline-flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.a-ord button {
-  appearance: none;
-  width: 1.75rem;
-  height: 1.5rem; /* 터치 최소 24px */
-  padding: 0;
-  font-size: 0.5625rem;
-  line-height: 1;
-  color: var(--a-ink-2);
-  background: var(--a-surface);
-  border: 1px solid var(--a-line);
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.a-ord button:hover:not(:disabled) {
-  border-color: var(--a-ink-3);
-  color: var(--a-ink);
-}
-
-.a-ord button:disabled {
-  opacity: 0.3;
-  cursor: default;
-}
-
-.a-ord button:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--a-ring);
-}
-
-/* ─────────────────────── 드래그 핸들(블록 순서) ─────────────────────── */
+/* ─────────────────────── 드래그 핸들(목록 순서) ─────────────────────── */
 
 .a-drag {
   appearance: none;
