@@ -22,13 +22,13 @@ import {
   type SectionLayout,
   type SitePage,
 } from "@/lib/sections";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { ConfirmDeleteButton } from "@/app/(admin)/admin/confirm-delete";
-import { OrderButtons } from "@/app/(admin)/admin/order-buttons";
 import { runAction } from "@/app/(admin)/admin/run-action";
 import { toast } from "@/app/(admin)/admin/toast";
 import {
   deleteSection,
-  moveSection,
   toggleSection,
   updateSection,
   type ActionState,
@@ -76,13 +76,13 @@ const fieldLabel = "a-label";
 /**
  * 목록의 한 줄. 열면 편집 폼이 펼쳐지고, 입력하는 값은 그때그때
  * onDraft 로 올라가 오른쪽 미리보기에 반영된다(저장 전).
+ * 순번 옆 핸들을 잡아 드래그하면 순서가 바뀐다(편집 중에는 잠김).
  */
 export function SectionItem({
   section,
   pages,
   editing,
   position,
-  count,
   pagePath,
   flash,
   onEditToggle,
@@ -93,9 +93,8 @@ export function SectionItem({
   section: PageSection;
   pages: SitePage[];
   editing: boolean;
-  /** 목록에서의 위치(0부터). ▲▼ 활성 판단 */
+  /** 목록에서의 위치(0부터). 순번 표시 */
   position: number;
-  count: number;
   /** 공개 사이트 경로. 토스트의 "사이트에서 보기" */
   pagePath: string;
   /** 방금 저장돼 잠깐 빛나야 하는가 */
@@ -110,29 +109,43 @@ export function SectionItem({
     initialState,
   );
 
+  // 편집 중에는 드래그를 잠근다. 순서 저장과 편집 저장이 섞이지 않게.
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: section.id, disabled: editing });
+
   const kindLabel = section.section?.name ?? section.kind;
   const requiresPage = section.section?.requires_page ?? false;
   const displayName = section.title ?? section.source_page?.title ?? "—";
 
   return (
-    <li className={editing ? "a-row-open" : undefined}>
+    <li
+      ref={setNodeRef}
+      className={editing ? "a-row-open" : undefined}
+      data-dragging={isDragging || undefined}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+      }}
+    >
       {/* 고정 격자. 제목 길이와 무관하게 상태·동작이 같은 자리에 온다. */}
       <div className="a-row" data-flash={flash || undefined}>
         <span className="a-row-ord">
-          <OrderButtons
-            canUp={position > 0}
-            canDown={position < count - 1}
-            label={`${displayName} 블록`}
-            onMove={(direction) =>
-              runAction(
-                () => moveSection(section.id, section.page_id, direction),
-                {
-                  message: "순서가 바뀌었습니다 · 사이트에 반영",
-                  link: { href: pagePath, label: "사이트에서 보기" },
-                },
-              )
-            }
-          />
+          <button
+            type="button"
+            className="a-drag"
+            aria-label={`${displayName} 블록 순서 이동`}
+            disabled={editing}
+            {...attributes}
+            {...listeners}
+          >
+            ⠿
+          </button>
           <span>{position + 1}</span>
         </span>
 

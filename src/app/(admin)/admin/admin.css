@@ -925,44 +925,51 @@
   white-space: nowrap;
 }
 
-/* ─────────────────────────── 순서 ▲▼ ─────────────────────────── */
+/* ─────────────────────── 드래그 핸들(목록 순서) ─────────────────────── */
 
-.a-ord {
-  display: inline-flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.a-ord button {
+.a-drag {
   appearance: none;
   width: 1.75rem;
-  height: 1.5rem; /* 터치 최소 24px */
+  height: 1.75rem;
   padding: 0;
-  font-size: 0.5625rem;
+  font-size: 0.75rem;
   line-height: 1;
-  color: var(--a-ink-2);
+  color: var(--a-ink-3);
   background: var(--a-surface);
   border: 1px solid var(--a-line);
   border-radius: 4px;
-  cursor: pointer;
+  cursor: grab;
+  touch-action: none; /* 터치 드래그가 스크롤로 새지 않게 */
 }
 
-.a-ord button:hover:not(:disabled) {
+.a-drag:hover:not(:disabled) {
   border-color: var(--a-ink-3);
   color: var(--a-ink);
 }
 
-.a-ord button:disabled {
+.a-drag:disabled {
   opacity: 0.3;
   cursor: default;
 }
 
-.a-ord button:focus-visible {
+.a-drag:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--a-ring);
+  box-shadow: 0 0 0 3px var(--a-ring);
 }
 
-/* 순서 열: ▲▼ + 번호 */
+/* 드래그 중인 행. 목록 위로 떠 보이게 한다. */
+li[data-dragging] {
+  position: relative;
+  z-index: 1;
+  background: var(--a-surface);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.12);
+}
+
+li[data-dragging] .a-drag {
+  cursor: grabbing;
+}
+
+/* 순서 열: 핸들 + 번호 */
 .a-row {
   grid-template-columns: 3.5rem minmax(0, 1fr) 4.5rem auto;
 }

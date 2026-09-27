@@ -1,12 +1,29 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useTransition } from "react";
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { PageSections } from "@/components/site/page-sections";
 import type { PageSection, SitePage } from "@/lib/sections";
 import type { SiteSettings } from "@/lib/site-settings";
 import { HOME_PAGE_SLUG } from "@/lib/sections";
 import { SitePreviewFrame } from "@/app/(admin)/admin/site-preview";
+import { toast } from "@/app/(admin)/admin/toast";
 import { useUnsavedGuard } from "@/app/(admin)/admin/unsaved";
+import { reorderPages } from "./actions";
 import { PageForm } from "./page-form";
 import { PageItem } from "./page-item";
 
@@ -28,7 +45,55 @@ export function PagesWorkbench({
   const [draft, setDraft] = useState<SitePage | null>(null);
   const [activeField, setActiveField] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  const [, startReorder] = useTransition();
   useUnsavedGuard("pages", draft !== null);
+
+  // 드래그로 바꾼 순서. 서버 저장 전에도 목록·미리보기 메뉴에 바로 반영된다.
+  const [orderIds, setOrderIds] = useState<string[]>(() =>
+    pages.map((p) => p.id),
+  );
+
+  // 저장·추가·삭제로 서버 목록이 갱신되면 로컬 순서를 다시 맞춘다.
+  const [prevPages, setPrevPages] = useState(pages);
+  if (pages !== prevPages) {
+    setPrevPages(pages);
+    setOrderIds(pages.map((p) => p.id));
+  }
+
+  const orderedPages = useMemo(() => {
+    const byId = new Map(pages.map((p) => [p.id, p]));
+    return orderIds
+      .map((id) => byId.get(id))
+      .filter((p): p is SitePage => p !== undefined);
+  }, [pages, orderIds]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const onDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+      const previous = orderIds;
+      const from = previous.indexOf(String(active.id));
+      const to = previous.indexOf(String(over.id));
+      if (from === -1 || to === -1) return;
+      const next = arrayMove(previous, from, to);
+      setOrderIds(next);
+      startReorder(async () => {
+        const result = await reorderPages(next);
+        if (!result.ok) {
+          setOrderIds(previous);
+          toast({ message: result.error, kind: "error" });
+          return;
+        }
+        toast({ message: "메뉴 순서가 바뀌었습니다 · 사이트에 반영" });
+      });
+    },
+    [orderIds],
+  );
 
   const onEditToggle = useCallback((id: string) => {
     setEditingId((cur) => (cur === id ? null : id));
@@ -37,19 +102,19 @@ export function PagesWorkbench({
   }, []);
 
   // 저장된 목록에 편집 중인 값을 덮어 상단 메뉴를 만든다. 공개 사이트와 같은 조건.
+  // 순서는 드래그 직후의 로컬 순서(orderedPages)를 그대로 따른다.
   const nav = useMemo(() => {
     const merged = draft
-      ? pages.map((p) => (p.id === draft.id ? draft : p))
-      : pages;
+      ? orderedPages.map((p) => (p.id === draft.id ? draft : p))
+      : orderedPages;
     return merged
       .filter((p) => p.is_active && p.show_in_nav && p.slug !== HOME_PAGE_SLUG)
-      .sort((a, b) => a.sort_order - b.sort_order)
       .map((p) => ({
         id: p.id,
         title: p.title || "이름 없음",
         active: p.id === editingId,
       }));
-  }, [pages, draft, editingId]);
+  }, [orderedPages, draft, editingId]);
 
   const editingHiddenFromNav =
     editingId !== null &&
@@ -81,20 +146,30 @@ export function PagesWorkbench({
             등록된 페이지가 없습니다. 위에서 첫 페이지를 추가하세요.
           </p>
         ) : (
-          <ul className="a-list">
-            {pages.map((page, index) => (
-              <PageItem
-                key={page.id}
-                page={page}
-                position={index}
-                count={pages.length}
-                editing={editingId === page.id}
-                onEditToggle={() => onEditToggle(page.id)}
-                onDraft={setDraft}
-                onFieldFocus={setActiveField}
-              />
-            ))}
-          </ul>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={onDragEnd}
+          >
+            <SortableContext
+              items={orderIds}
+              strategy={verticalListSortingStrategy}
+            >
+              <ul className="a-list">
+                {orderedPages.map((page, index) => (
+                  <PageItem
+                    key={page.id}
+                    page={page}
+                    position={index}
+                    editing={editingId === page.id}
+                    onEditToggle={() => onEditToggle(page.id)}
+                    onDraft={setDraft}
+                    onFieldFocus={setActiveField}
+                  />
+                ))}
+              </ul>
+            </SortableContext>
+          </DndContext>
         )}
       </div>
 
