@@ -5,7 +5,7 @@ import { PageSections } from "@/components/site/page-sections";
 import type { PageSection } from "@/lib/sections";
 import {
   FONT_OPTIONS,
-  parseContent,
+  contentFromFormData,
   parseTypography,
   type SiteColors,
   type SiteContent,
@@ -21,6 +21,7 @@ import { toast } from "@/app/(admin)/admin/toast";
 import { useUnsavedGuard } from "@/app/(admin)/admin/unsaved";
 import { updateSiteSettings, type ActionState } from "./actions";
 import { AddressSearchInput } from "./address-search-input";
+import { ChannelsEditor } from "./channels-editor";
 import { ThemeColorSection } from "./theme-color-section";
 
 const initialState: ActionState = { error: null };
@@ -72,9 +73,10 @@ export function SettingsForm({
   // 폼 전체에서 한 번에 읽는다. AddressSearchInput 처럼 내부 상태를 가진 칸도 함께 잡힌다.
   function syncFromForm() {
     if (!formRef.current) return;
-    const raw = Object.fromEntries(new FormData(formRef.current));
-    setContent(parseContent(raw));
-    setTypography(parseTypography(raw));
+    const formData = new FormData(formRef.current);
+    // 저장 액션과 같은 함수로 읽는다. 그래야 channels_json 같은 묶음 칸도 초안에 들어온다.
+    setContent(contentFromFormData(formData));
+    setTypography(parseTypography(Object.fromEntries(formData)));
   }
 
   useEffect(() => {
@@ -104,6 +106,11 @@ export function SettingsForm({
     const name = target.name ?? "";
     if (name && CONTENT_KEYS.has(name as keyof SiteContent)) {
       setActiveField(`content.${name === "address_detail" ? "address" : name}`);
+      return;
+    }
+    // 채널 주소 칸 → 미리보기 꼬리말의 그 로고
+    if (name.startsWith("channel_url_")) {
+      setActiveField(`channels.${name.slice("channel_url_".length)}`);
     }
   }
 
@@ -224,6 +231,17 @@ export function SettingsForm({
               />
             </label>
           </div>
+        </section>
+
+        <section className="flex flex-col gap-4">
+          <div>
+            <h2 className="text-sm font-semibold">채널</h2>
+            <p className="a-hint mt-1">
+              주소를 넣고 순서를 정합니다. 숨김으로 두면 주소는 남고 사이트에서만
+              빠집니다. 카카오톡 채널은 상담 버튼에도 쓰입니다.
+            </p>
+          </div>
+          <ChannelsEditor initial={settings.content.channels} onChange={syncFromForm} />
         </section>
 
         <section className="flex flex-col gap-4">

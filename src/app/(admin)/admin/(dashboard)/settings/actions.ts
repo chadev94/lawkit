@@ -8,6 +8,7 @@ import {
   contentFromFormData,
   typographyFromFormData,
 } from "@/lib/site-settings";
+import { CHANNEL_META, channelUrlError } from "@/lib/site-channels";
 
 export type ActionState = { error: string | null };
 
@@ -18,6 +19,14 @@ export async function updateSiteSettings(
   const colors = colorsFromFormData(formData);
   const typography = typographyFromFormData(formData);
   const content = contentFromFormData(formData);
+
+  // 채널 주소는 그 서비스 도메인이어야 한다. 브라우저 표시는 편의, 여기서 다시 본다.
+  for (const channel of content.channels) {
+    const problem = channelUrlError(channel.key, channel.url);
+    if (problem) {
+      return { error: `${CHANNEL_META[channel.key].label}: ${problem}` };
+    }
+  }
 
   const supabase = await createClient();
   const { error } = await supabase

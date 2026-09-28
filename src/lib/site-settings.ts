@@ -1,3 +1,4 @@
+import { normalizeChannels, type SiteChannel } from "@/lib/site-channels";
 /**
  * 사이트 전역 설정 (브랜드 / 타이포 / 공통 콘텐츠).
  * DB jsonb 스키마는 앱이 정의하고, 공개 사이트는 CSS 변수로 주입한다.
@@ -34,6 +35,8 @@ export type SiteContent = {
   business_number: string;
   representative: string;
   privacy_policy_url: string;
+  /** 채널 링크. 순서 있는 배열. 자세한 규칙은 site-channels.ts */
+  channels: SiteChannel[];
 };
 
 export type SiteSettings = {
@@ -108,7 +111,7 @@ export const DEFAULT_CONTENT: SiteContent = {
   email: "",
   business_number: "",
   representative: "",
-  privacy_policy_url: "",
+  privacy_policy_url: "",  channels: normalizeChannels([]),
 };
 
 export const COLOR_FIELDS: { key: keyof SiteColors; label: string }[] = [
@@ -195,6 +198,7 @@ export function parseContent(raw: unknown): SiteContent {
       o.privacy_policy_url,
       DEFAULT_CONTENT.privacy_policy_url,
     ),
+    channels: normalizeChannels(o.channels),
   };
 }
 
@@ -268,5 +272,15 @@ export function contentFromFormData(formData: FormData): SiteContent {
     business_number: formData.get("business_number"),
     representative: formData.get("representative"),
     privacy_policy_url: formData.get("privacy_policy_url"),
+    channels: parseJson(formData.get("channels_json")),
   });
+}
+
+function parseJson(value: FormDataEntryValue | null): unknown {
+  if (typeof value !== "string") return undefined;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return undefined;
+  }
 }
