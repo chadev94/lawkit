@@ -1089,3 +1089,34 @@ body {
     stroke-dashoffset: 0;
   }
 }
+
+/* ─────────── 꼬리말 채널 로고 ───────────
+ * 공식 마크를 그대로 쓰므로 색은 로고가 갖는다. 링크는 크기·포커스·살짝 뜨기만. */
+.m-channel {
+  display: block;
+  width: 2.125rem;
+  height: 2.125rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  transition:
+    transform 0.18s cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 0.18s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.m-channel:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .m-channel:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px -8px rgb(0 0 0 / 0.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .m-channel {
+    transition: none;
+  }
+}

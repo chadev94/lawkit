@@ -1603,6 +1603,56 @@ li[data-dragging] .a-drag {
   font-style: italic;
 }
 
+/* ─────────────────────────── 사이트 설정 · 채널 목록 ───────────────────────────
+ * 페이지·블록 목록과 같은 a-row 위에 로고 칸 하나 더. 숨긴 행은 흐리게. */
+.a-row-channel {
+  grid-template-columns: auto 2.125rem minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.a-row-channel[data-off] .a-channel-logo,
+.a-row-channel[data-off] .a-row-name {
+  opacity: 0.55;
+}
+
+.a-channel-logo {
+  display: block;
+  width: 2.125rem;
+  height: 2.125rem;
+  margin-top: 0.125rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.a-row-channel .a-row-name {
+  cursor: text;
+}
+
+.a-channel-url {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem 0.625rem;
+  margin-top: 0.375rem;
+}
+
+.a-channel-url .a-input {
+  flex: 1 1 14rem;
+  min-height: 2rem;
+  padding-block: 0.25rem;
+}
+
+@media (max-width: 640px) {
+  .a-row-channel {
+    grid-template-columns: auto 2.125rem minmax(0, 1fr);
+  }
+
+  .a-row-channel > .a-badge {
+    grid-column: 3;
+    justify-self: start;
+  }
+}
+
 /* 좌 편집 / 우 미리보기. 세 화면이 같은 격자를 쓴다. */
 .a-workbench {
   display: grid;

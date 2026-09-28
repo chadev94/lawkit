@@ -1,4 +1,6 @@
 import { KakaoMap } from "@/components/site/kakao-map";
+import { ChannelLogo } from "@/components/site/channel-logo";
+import { CHANNEL_META, visibleChannels } from "@/lib/site-channels";
 import type { SiteSettings } from "@/lib/site-settings";
 
 function display(value: string) {
@@ -8,6 +10,7 @@ function display(value: string) {
 export function SiteFooter({ settings }: { settings: SiteSettings }) {
   const { content } = settings;
   const privacyUrl = content.privacy_policy_url.trim();
+  const channels = visibleChannels(content.channels);
 
   return (
     <footer
@@ -65,14 +68,21 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
             </div>
           </dl>
 
-          <div className="space-y-1">
-            <p style={{ color: "var(--accent)" }} data-field="content.business_number">
-              사업자등록번호 {display(content.business_number)}
-            </p>
-            <p style={{ color: "var(--accent)" }} data-field="content.representative">
-              대표변호사 {display(content.representative)}
-            </p>
-          </div>
+          {/* 전화·이메일 줄과 같은 규칙: 이름은 회색, 값만 강조색 */}
+          <dl className="space-y-1">
+            <div className="flex gap-2">
+              <dt className="shrink-0">사업자등록번호</dt>
+              <dd style={{ color: "var(--accent)" }} data-field="content.business_number">
+                {display(content.business_number)}
+              </dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="shrink-0">대표변호사</dt>
+              <dd style={{ color: "var(--accent)" }} data-field="content.representative">
+                {display(content.representative)}
+              </dd>
+            </div>
+          </dl>
 
           <div className="space-y-1">
             {privacyUrl ? (
@@ -88,6 +98,30 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
             )}
           </div>
         </div>
+
+        {channels.length > 0 && (
+          <ul
+            className="mt-6 flex flex-wrap items-center gap-2.5 border-t pt-5"
+            style={{ borderColor: "var(--border)" }}
+            aria-label="채널"
+          >
+            {channels.map((channel) => (
+              <li key={channel.key}>
+                <a
+                  href={channel.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={CHANNEL_META[channel.key].label}
+                  title={`${CHANNEL_META[channel.key].label} (새 창)`}
+                  data-field={`channels.${channel.key}`}
+                  className="m-channel"
+                >
+                  <ChannelLogo channel={channel.key} />
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
 
         {content.address.trim() && (
           <div className="mt-8">

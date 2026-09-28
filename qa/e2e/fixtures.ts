@@ -14,6 +14,8 @@ export const test = base.extend<{ admin: Page; blocked: string[] }>({
       const req = route.request();
       const method = req.method();
       if (method === "GET" || method === "HEAD" || method === "OPTIONS") return route.continue();
+      // Next 개발 서버 내부 요청(오류 오버레이의 스택 조회 등)은 앱의 쓰기가 아니다. 막되 세지는 않는다.
+      if (new URL(req.url()).pathname.startsWith("/__nextjs")) return route.abort("blockedbyclient");
       blocked.push(`${method} ${req.url()}`);
       return route.abort("blockedbyclient");
     });
