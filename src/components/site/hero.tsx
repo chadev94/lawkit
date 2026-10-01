@@ -18,8 +18,67 @@ export function Hero({ section }: { section: PageSection }) {
 
   const backgroundImage = mediaPublicUrl(content.background_image);
   const backgroundVideo = mediaPublicUrl(content.background_video);
+  // 모바일(md 미만) 전용본. 없으면 PC 본을 그대로 쓴다.
+  const mobileImage = mediaPublicUrl(content.background_image_mobile);
+  const mobileVideo = mediaPublicUrl(content.background_video_mobile);
+  const hasMobileVariant = Boolean(mobileVideo || mobileImage);
   const hasMedia = Boolean(backgroundVideo || backgroundImage);
   const alignLeft = content.text_align === "left";
+
+  const overlay = (
+    <div
+      aria-hidden
+      className="absolute inset-0"
+      style={{
+        background: alignLeft
+          ? "linear-gradient(90deg, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.35) 42%, rgba(0,0,0,0.2) 100%)"
+          : "rgba(0,0,0,0.45)",
+      }}
+    />
+  );
+
+  const renderMedia = (
+    video: string | null,
+    image: string | null,
+    visibility: string,
+  ) => {
+    if (video) {
+      return (
+        <div className={`m-clip absolute inset-0 ${visibility}`}>
+          <video
+            className={`absolute inset-0 h-full w-full object-cover ${
+              alignLeft ? "object-right" : ""
+            }`}
+            src={video}
+            poster={image ?? undefined}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            aria-hidden
+          />
+          {overlay}
+        </div>
+      );
+    }
+    if (image) {
+      return (
+        <div className={`m-clip absolute inset-0 ${visibility}`}>
+          <Image
+            src={image}
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className={`object-cover ${alignLeft ? "object-right" : ""}`}
+          />
+          {overlay}
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <Reveal
@@ -31,54 +90,20 @@ export function Hero({ section }: { section: PageSection }) {
       }`}
       style={{ background: "var(--hero-background)" }}
     >
-      {backgroundVideo && (
-        <div className="m-clip absolute inset-0">
-          <video
-            className={`absolute inset-0 h-full w-full object-cover ${
-              alignLeft ? "object-right" : ""
-            }`}
-            src={backgroundVideo}
-            poster={backgroundImage ?? undefined}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            aria-hidden
-          />
-          <div
-            aria-hidden
-            className="absolute inset-0"
-            style={{
-              background: alignLeft
-                ? "linear-gradient(90deg, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.35) 42%, rgba(0,0,0,0.2) 100%)"
-                : "rgba(0,0,0,0.45)",
-            }}
-          />
-        </div>
+      {/* PC 본. 모바일 전용본이 있으면 md 이상에서만 보인다. */}
+      {renderMedia(
+        backgroundVideo,
+        backgroundImage,
+        hasMobileVariant ? "hidden md:block" : "",
       )}
 
-      {!backgroundVideo && backgroundImage && (
-        <div className="m-clip absolute inset-0">
-          <Image
-            src={backgroundImage}
-            alt=""
-            fill
-            priority
-            sizes="100vw"
-            className={`object-cover ${alignLeft ? "object-right" : ""}`}
-          />
-          <div
-            aria-hidden
-            className="absolute inset-0"
-            style={{
-              background: alignLeft
-                ? "linear-gradient(90deg, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.35) 42%, rgba(0,0,0,0.2) 100%)"
-                : "rgba(0,0,0,0.45)",
-            }}
-          />
-        </div>
-      )}
+      {/* 모바일 전용본(md 미만). 비어 있는 쪽은 PC 본으로 폴백. */}
+      {hasMobileVariant &&
+        renderMedia(
+          mobileVideo ?? backgroundVideo,
+          mobileImage ?? backgroundImage,
+          "md:hidden",
+        )}
 
       {/* 상단 스크림. 배경이 밝아도 고정 헤더 글자가 묻히지 않게 한다. */}
       {hasMedia && (
