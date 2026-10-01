@@ -22,10 +22,6 @@ export type HeroContent = {
   background_image: string;
   /** storage path 또는 `/` 로 시작하는 public 경로. 있으면 배경 이미지 대신 재생 */
   background_video: string;
-  /** 모바일(md 미만) 전용 배경 이미지. PC 이미지가 있어야 의미가 있고, 없으면 PC 를 그대로 쓴다 */
-  background_image_mobile: string;
-  /** 모바일 전용 배경 영상. PC 영상이 있어야 의미가 있고, 없으면 PC 를 그대로 쓴다 */
-  background_video_mobile: string;
   /** left 면 카피를 왼쪽에 두어 인물 배너(오른쪽)와 맞춘다 */
   text_align: "" | "left";
   /**
@@ -124,8 +120,6 @@ export const DEFAULT_HERO_CONTENT: HeroContent = {
   cta_href: "",
   background_image: "",
   background_video: "",
-  background_image_mobile: "",
-  background_video_mobile: "",
   text_align: "",
   variant: "",
   role: "",
@@ -168,17 +162,12 @@ function asString(value: unknown, fallback = ""): string {
 
 export function parseHeroContent(raw: unknown): HeroContent {
   const o = asRecord(raw);
-  const backgroundImage = asString(o.background_image);
-  const backgroundVideo = asString(o.background_video);
   return {
     eyebrow: asString(o.eyebrow, DEFAULT_HERO_CONTENT.eyebrow),
     cta_label: asString(o.cta_label),
     cta_href: asString(o.cta_href),
-    background_image: backgroundImage,
-    background_video: backgroundVideo,
-    // 모바일 전용본은 PC 본이 있을 때만 유효하다. PC 없이 모바일만 저장되는 일을 막는다.
-    background_image_mobile: backgroundImage ? asString(o.background_image_mobile) : "",
-    background_video_mobile: backgroundVideo ? asString(o.background_video_mobile) : "",
+    background_image: asString(o.background_image),
+    background_video: asString(o.background_video),
     text_align: o.text_align === "left" ? "left" : "",
     variant: o.variant === "bio" ? "bio" : "",
     role: asString(o.role),
@@ -298,8 +287,6 @@ export function contentFromFormData(
         cta_href: formData.get("content_cta_href"),
         background_image: formData.get("content_background_image"),
         background_video: formData.get("content_background_video"),
-        background_image_mobile: formData.get("content_background_image_mobile"),
-        background_video_mobile: formData.get("content_background_video_mobile"),
         text_align: formData.get("content_text_align"),
         variant: formData.get("content_variant"),
         role: formData.get("content_role"),

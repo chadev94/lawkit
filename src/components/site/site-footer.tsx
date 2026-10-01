@@ -20,7 +20,7 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
         background: "var(--muted)",
       }}
     >
-      <div className="mx-auto max-w-5xl px-6 sm:px-8 py-12">
+      <div className="mx-auto max-w-5xl px-6 py-12">
         <p
           className="text-sm font-semibold tracking-tight"
           style={{ fontFamily: "var(--font-site-heading)" }}

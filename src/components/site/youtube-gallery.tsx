@@ -37,7 +37,7 @@ export function YoutubeGallery({ section }: { section: PageSection }) {
       className="py-20"
       style={{ background: "color-mix(in srgb, var(--primary) 6%, var(--background))" }}
     >
-      <div className="mx-auto flex max-w-6xl flex-col gap-10 px-6 sm:px-8">
+      <div className="mx-auto flex max-w-6xl flex-col gap-10 px-6">
         {section.title && (
           <h2
             data-field="title"
@@ -59,7 +59,7 @@ export function YoutubeGallery({ section }: { section: PageSection }) {
           </p>
         ) : (
           <div
-            className="m-up -mx-6 sm:-mx-8 flex snap-x snap-mandatory gap-5 overflow-x-auto px-6 sm:px-8 pb-2 [scrollbar-width:thin]"
+            className="m-up -mx-6 flex snap-x snap-mandatory gap-5 overflow-x-auto px-6 pb-2 [scrollbar-width:thin]"
             style={{ "--m-i": 1 } as React.CSSProperties}
           >
             {videos.map((video, index) => (

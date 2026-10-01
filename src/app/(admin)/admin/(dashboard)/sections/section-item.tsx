@@ -555,38 +555,15 @@ function SectionEditForm({
             {fieldError("content_cta_href")}
           </label>
           <ImageField
-            label="배경 이미지 (PC)"
+            label="배경 이미지"
             name="content_background_image"
             value={hero.background_image}
             folder={mediaFolder}
-            onChange={(path) =>
-              setHero({
-                ...hero,
-                background_image: path,
-                // PC 본을 지우면 모바일 전용본도 의미가 없어 같이 지운다.
-                background_image_mobile: path ? hero.background_image_mobile : "",
-              })
-            }
+            onChange={(path) => setHero({ ...hero, background_image: path })}
           />
-          {hero.background_image ? (
-            <ImageField
-              label="배경 이미지 (모바일, 선택 — 없으면 PC 이미지 사용)"
-              name="content_background_image_mobile"
-              value={hero.background_image_mobile}
-              folder={mediaFolder}
-              onChange={(path) =>
-                setHero({ ...hero, background_image_mobile: path })
-              }
-            />
-          ) : (
-            <p className="a-empty px-3 py-4 text-xs">
-              모바일 전용 이미지는 PC 배경 이미지를 먼저 넣은 뒤 올릴 수
-              있습니다.
-            </p>
-          )}
           <label className="flex flex-col gap-1 sm:col-span-2">
             <span className={fieldLabel}>
-              배경 영상 경로 (PC){" "}
+              배경 영상 경로{" "}
               <span style={{ color: "var(--a-ink-3)" }}>
                 있으면 이미지 대신 재생
               </span>
@@ -595,37 +572,12 @@ function SectionEditForm({
               name="content_background_video"
               value={hero.background_video}
               onChange={(e) =>
-                setHero({
-                  ...hero,
-                  background_video: e.target.value,
-                  background_video_mobile: e.target.value
-                    ? hero.background_video_mobile
-                    : "",
-                })
+                setHero({ ...hero, background_video: e.target.value })
               }
               placeholder="예: /hero/background.mp4"
               className={field}
             />
           </label>
-          {hero.background_video && (
-            <label className="flex flex-col gap-1 sm:col-span-2">
-              <span className={fieldLabel}>
-                배경 영상 경로 (모바일, 선택){" "}
-                <span style={{ color: "var(--a-ink-3)" }}>
-                  없으면 PC 영상 재생
-                </span>
-              </span>
-              <input
-                name="content_background_video_mobile"
-                value={hero.background_video_mobile}
-                onChange={(e) =>
-                  setHero({ ...hero, background_video_mobile: e.target.value })
-                }
-                placeholder="예: /hero/background-mobile.mp4"
-                className={field}
-              />
-            </label>
-          )}
           <label className="a-check sm:col-span-2">
             <input
               type="hidden"

@@ -22,7 +22,7 @@ export function NewsRoom({ section }: { section: PageSection }) {
         background: "color-mix(in srgb, var(--muted) 70%, var(--background))",
       }}
     >
-      <div className="mx-auto flex max-w-xl flex-col gap-8 px-6 sm:px-8">
+      <div className="mx-auto flex max-w-xl flex-col gap-8 px-6">
         {section.title && (
           <h2
             data-field="title"
