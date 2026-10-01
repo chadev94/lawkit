@@ -186,7 +186,7 @@ export function SectionForm({
             />
           </label>
           <ImageField
-            label="배경 이미지"
+            label="배경 이미지 (PC)"
             name="content_background_image"
             value={hero.background_image}
             folder={mediaFolder}
@@ -194,8 +194,21 @@ export function SectionForm({
               setHero(parseHeroContent({ ...hero, background_image: path }))
             }
           />
+          {hero.background_image && (
+            <ImageField
+              label="배경 이미지 (모바일, 선택 — 없으면 PC 이미지 사용)"
+              name="content_background_image_mobile"
+              value={hero.background_image_mobile}
+              folder={mediaFolder}
+              onChange={(path) =>
+                setHero(
+                  parseHeroContent({ ...hero, background_image_mobile: path }),
+                )
+              }
+            />
+          )}
           <label className="flex flex-col gap-1 sm:col-span-2">
-            <span className="a-label">배경 영상 경로</span>
+            <span className="a-label">배경 영상 경로 (PC)</span>
             <input
               name="content_background_video"
               placeholder="예: /hero/background.mp4"
@@ -215,6 +228,28 @@ export function SectionForm({
               poster(첫 프레임 대체)로 쓰입니다.
             </span>
           </label>
+          {hero.background_video && (
+            <label className="flex flex-col gap-1 sm:col-span-2">
+              <span className="a-label">배경 영상 경로 (모바일, 선택)</span>
+              <input
+                name="content_background_video_mobile"
+                placeholder="예: /hero/background-mobile.mp4"
+                value={hero.background_video_mobile}
+                onChange={(e) =>
+                  setHero(
+                    parseHeroContent({
+                      ...hero,
+                      background_video_mobile: e.target.value,
+                    }),
+                  )
+                }
+                className="a-input"
+              />
+              <span className="text-xs text-muted-foreground">
+                md 미만 화면에서 재생됩니다. 없으면 PC 영상을 그대로 씁니다.
+              </span>
+            </label>
+          )}
           <label className="a-check sm:col-span-2">
             <input
               type="checkbox"

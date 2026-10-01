@@ -12,7 +12,7 @@ export function ConsultationCta({ section }: { section: PageSection }) {
 
   return (
     <Reveal as="section" className="bg-muted py-20">
-      <div className="mx-auto max-w-xl px-6 text-center">
+      <div className="mx-auto max-w-xl px-6 sm:px-8 text-center">
         <p
           data-field="content.badge"
           className="m-up text-xs font-medium tracking-[0.2em] text-accent"

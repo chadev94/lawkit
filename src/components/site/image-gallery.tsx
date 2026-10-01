@@ -14,7 +14,7 @@ export function ImageGallery({ section }: { section: PageSection }) {
 
   return (
     <Reveal as="section" className="border-b border-border/60 py-20">
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-6xl px-6 sm:px-8">
         {section.title && (
           <h2
             data-field="title"

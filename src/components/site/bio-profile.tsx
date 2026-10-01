@@ -56,7 +56,7 @@ export function BioProfile({ section }: { section: PageSection }) {
       )}
 
       <div
-        className={`relative z-[1] mx-auto flex w-full max-w-6xl flex-col px-6 ${
+        className={`relative z-[1] mx-auto flex w-full max-w-6xl flex-col px-6 sm:px-8 ${
           isSection ? "py-14 sm:py-16 md:py-20" : "py-24 sm:py-28"
         }`}
         style={{ "--m-base": "0.3s" } as React.CSSProperties}
