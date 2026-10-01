@@ -20,7 +20,8 @@ export default async function SiteLayout({
   const cssVars = siteSettingsToCssVars(settings);
 
   return (
-    <div className="site-theme flex min-h-screen flex-col" style={cssVars}>
+    // lg 이상에서는 페이지 전체(히어로 포함)를 가장자리에서 띄운다.
+    <div className="site-theme flex min-h-screen flex-col lg:px-16 xl:px-24" style={cssVars}>
       <SiteHeader settings={settings} />
       {/* 고정 헤더 높이만큼 본문을 내린다. 히어로가 첫 자식이면 CSS :has 로 패딩을 없앤다. */}
       <div className="site-main flex-1">{children}</div>

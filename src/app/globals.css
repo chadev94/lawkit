@@ -52,6 +52,19 @@ body {
   font-family: var(--font-site-sans);
 }
 
+/* lg 이상: 페이지 전체(히어로 포함)를 가장자리에서 띄운다 (layout 의 lg:px-10).
+   여백은 본문보다 아주 살짝 어두운 톤으로 깔아 "떠보이는" 카드 느낌을 줄이고,
+   본문·푸터는 제 배경색을 유지한다. */
+@media (min-width: 64rem) {
+  .site-theme {
+    background: color-mix(in srgb, var(--foreground) 5%, var(--background));
+  }
+  .site-main,
+  .site-theme > footer {
+    background: var(--background);
+  }
+}
+
 .site-theme h1,
 .site-theme h2,
 .site-theme h3 {
