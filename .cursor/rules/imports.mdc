@@ -55,7 +55,7 @@ src/
 import type { SitePage } from "@/lib/sections";
 
 // ❌ 값을 가져오면 서버 모듈이 번들에 딸려온다
-import { SECTION_KIND_LABEL } from "@/lib/queries/home-sections";
+import { getActiveSectionsCatalog } from "@/lib/queries/sections";
 ```
 
 라벨이나 상수처럼 **양쪽에서 다 쓰는 값**은 서버 코드가 없는 별도 파일(`@/lib/sections.ts` 같은)에 둔다. 조회 함수(`queries/*`)와 같은 파일에 두지 않는다.
