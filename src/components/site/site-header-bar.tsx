@@ -68,7 +68,7 @@ export function SiteHeaderBar({
           : { background: "transparent" }
       }
     >
-      <div className="mx-auto flex h-[var(--site-nav-h,4.75rem)] max-w-6xl items-center justify-between px-6 sm:px-8">
+      <div className="mx-auto flex h-[var(--site-nav-h,4.75rem)] max-w-6xl items-center justify-between px-6">
         <Link
           href="/"
           data-field="content.site_name"
@@ -142,7 +142,7 @@ export function SiteHeaderBar({
             boxShadow: "0 1px 0 var(--border)",
           }}
         >
-          <div className="mx-auto flex max-w-6xl flex-col px-6 sm:px-8 pb-4 pt-1">
+          <div className="mx-auto flex max-w-6xl flex-col px-6 pb-4 pt-1">
             {pages.map((page) => (
               <Link
                 key={page.id}

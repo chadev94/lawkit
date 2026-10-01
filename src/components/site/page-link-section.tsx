@@ -51,7 +51,7 @@ export function PageLinkSection({ section }: { section: PageSection }) {
         isCarousel ? "m-cases-band overflow-hidden" : ""
       }`}
     >
-      <div className="mx-auto max-w-5xl px-6 sm:px-8">
+      <div className="mx-auto max-w-5xl px-6">
         <div
           className={
             isCarousel ? "text-center" : "flex items-end justify-between"
@@ -217,7 +217,7 @@ function BandsSection({
 
   return (
     <Reveal as="section" className="m-bands border-b border-border/40 py-24">
-      <div className="mx-auto max-w-5xl px-6 sm:px-8">
+      <div className="mx-auto max-w-5xl px-6">
         <header className="m-bands-head">
           <p className="m-up m-bands-eyebrow" style={mi(0)}>
             <span>{eyebrow}</span>
