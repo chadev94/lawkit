@@ -85,7 +85,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 규칙은 문서로만 두지 않고 기계가 막는다.
 
-- **CI** (`.github/workflows/ci.yml`): `pnpm check:migrations` → lint → typecheck → build. 하나라도 실패하면 머지 불가.
+- **CI** (`.github/workflows/ci.yml`): `pnpm check:migrations` → lint → typecheck → `qa:render` → build. 하나라도 실패하면 머지 불가.
 - **Claude Code 훅** (`.claude/hooks/guard-db.sh`): `supabase/migrations/` 에 파일 직접 생성, `db reset --linked`, 원격 DB 파괴 SQL 을 거부하고 `db push` 는 확인을 받는다.
 - **ESLint** (`eslint.config.mjs`): 순환·역방향·상대경로 import 를 오류로 잡는다.
 

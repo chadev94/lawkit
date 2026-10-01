@@ -60,7 +60,10 @@ schema_paths = []
 enabled = true
 # Specifies an ordered list of seed files to load during db reset.
 # Supports glob patterns relative to supabase directory: "./seeds/*.sql"
-sql_paths = ["./seed.sql"]
+# 리셋용 시드는 없다. seed_from_source_sites.sql 은 dev DB에 일회 적용한 기록이며
+# (삭제된 menus 테이블·dev 고정 UUID 전제) 리셋에 쓸 수 없다. 콘텐츠 시드는
+# scripts/apply-seed-content.mjs 를 쓴다.
+sql_paths = []
 
 [db.network_restrictions]
 # Enable management of network restrictions.
