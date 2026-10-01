@@ -43,7 +43,7 @@ supabase login
 supabase link --project-ref ectpbcqluleitqrxoobx
 
 supabase start       # 로컬 스택 기동 (Docker)
-supabase db reset    # migrations + seed 적용
+supabase db reset    # migrations 적용 (리셋용 시드는 없다)
 
 pnpm dev
 ```
@@ -98,7 +98,7 @@ qa/                             렌더 테스트(Vitest) + 어드민 E2E(Playwri
 supabase/
 ├── config.toml
 ├── migrations/                 스키마 단일 출처
-└── seed_from_source_sites.sql  개발용 시드 (유앤파트너스 콘텐츠)
+└── seed_from_source_sites.sql  dev DB에 일회 적용한 콘텐츠 기록 (리셋 시드 아님)
 ```
 
 `(site)` / `(admin)` / `(dashboard)` 는 Route Group이라 URL에 나타나지 않는다.
