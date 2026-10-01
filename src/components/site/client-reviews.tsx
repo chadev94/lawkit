@@ -42,7 +42,7 @@ export function ClientReviews({ section }: { section: PageSection }) {
       className="overflow-hidden py-16 sm:py-20"
       style={{ background: "#0a0a0a", color: "#fff" }}
     >
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-6xl px-6 sm:px-8">
         {section.title && (
           <h2
             data-field="title"
@@ -180,7 +180,7 @@ export function ClientReviews({ section }: { section: PageSection }) {
       {content.note && (
         <p
           data-field="content.note"
-          className="m-up mx-auto mt-8 max-w-6xl px-6 text-center text-xs opacity-50"
+          className="m-up mx-auto mt-8 max-w-6xl px-6 sm:px-8 text-center text-xs opacity-50"
           style={{ "--m-i": 4 } as React.CSSProperties}
         >
           {content.note}

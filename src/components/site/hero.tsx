@@ -104,7 +104,7 @@ export function Hero({ section }: { section: PageSection }) {
       )}
 
       <div
-        className={`relative z-[1] w-full px-6 py-28 sm:py-32 ${
+        className={`relative z-[1] w-full px-6 sm:px-8 py-28 sm:py-32 ${
           alignLeft
             ? "mx-0 max-w-xl text-left md:ml-[max(1.5rem,calc((100%-72rem)/2+1.5rem))] md:max-w-lg"
             : "mx-auto max-w-3xl text-center"
