@@ -18,9 +18,12 @@ pnpm 버전은 `package.json` 의 `packageManager` 가 단일 출처다. 버전�
 | 공개 홈 | `/` | `pages.slug = home` 의 섹션 목록 렌더 |
 | 공개 페이지 | `/[slug]` | `pages.slug` 에 대응하는 섹션 목록 렌더 |
 | 관리자 로그인 | `/admin/login` | Supabase Auth 세션 |
-| 사이트 설정 | `/admin/settings` | 색상·폰트·브랜드/연락·사업자 정보 (`site_settings`) |
-| 화면 구성 | `/admin/sections` | 페이지별 블록(hero/page_link/cta/contact) 편집 · 실시간 미리보기 · ▲▼ 순서 |
+| 상담 접수함 | `/admin/consultations` | 공개 사이트 문의 폼으로 들어온 상담 목록·상태·메모·검색 (`docs/consultation.md`) |
+| 사이트 설정 | `/admin/settings` | 색상·폰트·브랜드/연락·사업자 정보·채널 링크 (`site_settings`) |
+| 화면 구성 | `/admin/sections` | 페이지별 블록 편집 · 실시간 미리보기 · 드래그로 순서 변경 |
 | 페이지 관리 | `/admin/pages` | 페이지 등록·경로·순서·메뉴 노출. 헤더 네비게이션은 `show_in_nav` 로 결정 |
+
+블록 kind: `hero` / `page_link` / `cta` / `contact` / `youtube_gallery` / `news_room` / `image_gallery` / `client_reviews`
 
 인증은 `src/proxy.ts` 에서 `/admin` 을 보호한다. 로그인 없이 대시보드에 접근하면 `/admin/login` 으로 보낸다.
 
@@ -62,6 +65,9 @@ Supabase 접근 권한은 `chameleondev` org에서 초대받는다.
 | `pnpm build` | 프로덕션 빌드 |
 | `pnpm lint` | ESLint |
 | `pnpm typecheck` | 타입 검사 |
+| `pnpm check:migrations` | 마이그레이션 파일 규칙 검사 (CI 첫 단계) |
+| `pnpm qa:render` | 사이트 컴포넌트 렌더 테스트 (Vitest, CI 포함) |
+| `pnpm qa:admin` | 어드민 E2E (Playwright, 로컬 전용 — `qa/README.md`) |
 
 ## 구조
 
@@ -71,23 +77,28 @@ src/
 │   ├── (site)/                 공개 사이트 (/ , /[slug])
 │   └── (admin)/admin/
 │       ├── login/              로그인
-│       └── (dashboard)/        설정·섹션·메뉴 (인증 필요)
-├── components/site/            히어로·메뉴·CTA·문의·헤더/푸터
+│       └── (dashboard)/        상담 접수함·화면·페이지·설정 (인증 필요)
+├── components/site/            블록 컴포넌트·헤더/푸터·모션
 ├── lib/
-│   ├── queries/                pages / sections / menus / site_settings
-│   ├── section-content.ts      섹션 kind별 content 파서
+│   ├── actions/                공개 폼 서버 액션 (상담 접수)
+│   ├── queries/                pages / sections / page-sections / site-settings / theme-presets / consultations
+│   ├── section-content.ts      블록 kind별 content 파서
 │   ├── section-media.ts        Storage 업로드
 │   ├── site-settings.ts        테마·콘텐츠 스키마 / CSS 변수
 │   └── supabase/
-│       ├── client.ts
-│       ├── server.ts
+│       ├── client.ts           브라우저
+│       ├── server.ts           서버 (쿠키 세션)
+│       ├── public.ts           쿠키 없는 anon — 공개 페이지 ISR 용
+│       ├── admin.ts            service role — 서버 전용
 │       └── proxy.ts
 └── proxy.ts                    Next.js 요청 가드 (admin auth)
+
+qa/                             렌더 테스트(Vitest) + 어드민 E2E(Playwright)
 
 supabase/
 ├── config.toml
 ├── migrations/                 스키마 단일 출처
-└── seed.sql
+└── seed_from_source_sites.sql  개발용 시드 (유앤파트너스 콘텐츠)
 ```
 
 `(site)` / `(admin)` / `(dashboard)` 는 Route Group이라 URL에 나타나지 않는다.
@@ -96,13 +107,14 @@ supabase/
 
 | 테이블 / 버킷 | 역할 |
 |---|---|
-| `menus` | 헤더 네비 |
-| `pages` | 공개 페이지 (`slug`, home 예약) |
-| `sections` | 섹션 kind 카탈로그 (hero, menu, cta, contact) |
-| `page_sections` | 페이지에 배치된 섹션 + `content` jsonb |
-| `page_section_items` | 메뉴형 섹션의 아이템(+ `image_path`) |
+| `pages` | 공개 페이지 (`slug`, home 예약). 헤더 네비는 `show_in_nav` |
+| `sections` | 블록 kind 카탈로그 |
+| `page_sections` | 페이지에 배치된 블록 + `content` jsonb |
+| `page_section_items` | 목록형 블록의 아이템(+ `image_path`). contact 블록에선 폼 필드 정의 |
 | `site_settings` | 싱글톤 전역 설정 (`colors` / `typography` / `content` jsonb) |
-| Storage `section-media` | 섹션 이미지. DB에는 path만 저장 |
+| `theme_presets` | 어드민용 테마 프리셋 (authenticated 만 읽기) |
+| `consultation_requests` | 상담 접수. 쓰기는 서버 액션(service role)만 — `docs/consultation.md` |
+| Storage `section-media` | 블록 이미지·영상. DB에는 path만 저장 |
 
 이미지 path 예: `{page_section_id}/{uuid}.png`  
 공개 URL: `{SUPABASE_URL}/storage/v1/object/public/section-media/{path}`
@@ -175,12 +187,12 @@ supabase db push     # 검증 후 원격 반영
 
 | | |
 |---|---|
-| `SUPABASE_SERVICE_ROLE_KEY` | `NEXT_PUBLIC_` 금지. RLS를 전부 우회한다 |
+| `SUPABASE_SERVICE_ROLE_KEY` | `NEXT_PUBLIC_` 금지. RLS를 전부 우회한다. 상담 접수 서버 액션에서만 사용 |
 | `.env.local` | 커밋 금지 |
 | 공개 테이블 | RLS 필수. anon key는 노출이 전제다 |
 | `site_settings` / 섹션 | `anon` 은 읽기, 쓰기는 `authenticated` |
 | `section-media` | public read, 업로드는 `authenticated` |
-| `inquiries` | `anon` 은 INSERT만. 사건 내용이 들어오는 민감정보 |
+| `consultation_requests` | `anon` 정책 없음(INSERT 포함). 쓰기는 서버 액션이 service role 로만. 사건 내용이 들어오는 민감정보 |
 | 해결사례 문서 이미지 | 사건관계인 정보 마스킹 확인 후 업로드 |
 
 `NEXT_PUBLIC_` 값은 빌드 시점에 브라우저 번들에 박힌다. 나중에 지워도 배포된 번들에는 남는다.
