@@ -50,11 +50,12 @@ create policy "공개 조회" on cases
 create policy "관리자 전체 접근" on cases
   for all to authenticated using (true) with check (true);
 
--- 접수: 방문자는 넣기만, 관리자는 읽기만. anon 에 select 정책을 만들지 않는 것이 핵심
-create policy "누구나 접수" on inquiries
-  for insert to anon with check (consented_at is not null);
-create policy "관리자 조회" on inquiries
+-- 접수(consultation_requests): anon 정책을 아예 만들지 않는다. INSERT 도 금지.
+-- 쓰기는 서버 액션이 service role 로만 넣는다 (docs/consultation.md).
+create policy "관리자 조회" on consultation_requests
   for select to authenticated using (true);
+create policy "관리자 갱신" on consultation_requests
+  for update to authenticated using (true) with check (true);
 ```
 
 ## 원격 반영 순서
@@ -96,7 +97,7 @@ create policy "관리자 조회" on inquiries
 | --- | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | `.env.local`, Vercel | 공개 |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` (publishable) | `.env.local`, Vercel | 공개. RLS 가 지킨다 |
-| `SUPABASE_SERVICE_ROLE_KEY` (secret) | 서버 전용. 현재 미사용 | **절대 `NEXT_PUBLIC_` 금지** |
+| `SUPABASE_SERVICE_ROLE_KEY` (secret) | 서버 전용. 상담 접수 서버 액션(`src/lib/actions/consultation.ts`)에서 사용 | **절대 `NEXT_PUBLIC_` 금지** |
 
 ## 무엇이 막는가
 
