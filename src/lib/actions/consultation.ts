@@ -8,6 +8,7 @@ import {
   validateAnswers,
   type ConsultationState,
 } from "@/lib/consultation";
+import { notifyNewConsultation } from "@/lib/consultation-notify";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { PageSectionItem } from "@/lib/sections";
@@ -99,6 +100,10 @@ export async function submitConsultation(
     console.error("consultation_requests insert 실패", error.message);
     return fail("접수 중 문제가 생겼습니다. 잠시 후 다시 시도해 주세요.");
   }
+
+  // 저장이 끝난 뒤에만 알린다. 발송 실패는 안에서 삼키므로 접수 결과에 영향이 없다.
+  // 서버리스에서 응답 후 백그라운드 실행은 보장되지 않으므로 await 한다.
+  await notifyNewConsultation();
 
   return { status: "ok", message: null, errors: {} };
 }
