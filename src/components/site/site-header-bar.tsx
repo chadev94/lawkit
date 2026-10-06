@@ -57,7 +57,7 @@ export function SiteHeaderBar({
   return (
     <header
       data-scrolled={scrolled || undefined}
-      className="site-nav fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow,backdrop-filter] duration-300"
+      className="site-nav fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow,backdrop-filter] duration-300 lg:px-16 xl:px-24"
       style={
         solid
           ? {
